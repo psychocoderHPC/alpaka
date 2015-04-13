@@ -97,6 +97,20 @@ IF(ALPAKA_ROOT)
     ENDIF()
 
     #-------------------------------------------------------------------------------
+    # Find hwloc.
+    #-------------------------------------------------------------------------------
+    FIND_PACKAGE(hwloc)
+    IF(NOT hwloc_FOUND)
+        MESSAGE(WARNING "Required alpaka dependency hwloc could not be found!")
+        SET(ALPAKA_FOUND_INTERNAL FALSE)
+
+    ELSE()
+        LIST(APPEND alpaka_INCLUDE_DIRS ${HWLOC_INCLUDE_DIRS})
+        list_add_prefix("general;" HWLOC_LIBRARIES)
+        LIST(APPEND alpaka_LIBRARIES ${HWLOC_LIBRARIES})
+    ENDIF()
+
+    #-------------------------------------------------------------------------------
     # Find OpenMP.
     #-------------------------------------------------------------------------------
     IF(ALPAKA_OPENMP2_ENABLE)

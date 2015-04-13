@@ -46,6 +46,7 @@ env:
         - ALPAKA_FIBERS_ENABLE=ON
         - ALPAKA_CUDA_VERSION=7.0
         - ALPAKA_CLANG_LIBSTDCPP_VERSION=4.9
+        - ALPAKA_HWLOC_VERSION=1.10.1
 
     matrix:
         - ALPAKA_ANALYSIS=OFF ALPAKA_DEBUG=2 ALPAKA_CMAKE_VER=3.2.1    CMAKE_BUILD_TYPE=Debug   OMP_NUM_THREADS=4 ALPAKA_GCC_VER=4.9 ALPAKA_CLANG_VER=3.6 ALPAKA_BOOST_VER=1.56.0 ALPAKA_CUDA_ENABLE=ON
@@ -271,6 +272,24 @@ install:
         && sudo cp -fR cmake-${ALPAKA_CMAKE_VER}-Linux-x86_64/* /usr
         && sudo rm -rf ${ALPAKA_CMAKE_PKG_FILE_NAME}.tar.gz ${ALPAKA_CMAKE_PKG_FILE_NAME}
       ;fi
+
+    #-------------------------------------------------------------------------------
+    # Install hwloc.
+    # NOTE: After installing CUDA for device discovery.
+
+    # The version 1.3 is too old...
+    # https://launchpad.net/ubuntu/+source/hwloc
+    #- sudo apt-get install hwloc-nox libhwloc-common libhwloc-dev libhwloc-doc libhwloc4
+
+    - sudo apt-get install libnuma1 numactl libnuma-dev
+    - sudo apt-get install libpciaccess0 libpciaccess-dev
+    - git clone -b hwloc-${ALPAKA_HWLOC_VERSION} --single-branch --depth 1 https://github.com/open-mpi/hwloc.git hwloc
+    - cd hwloc/
+    - ./autogen.sh
+    - ./configure
+    - make
+    - sudo make install
+    - sudo rm -rf hwloc
 
     #-------------------------------------------------------------------------------
     # Clone boost.

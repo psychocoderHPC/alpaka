@@ -1,0 +1,46 @@
+# Copyright (c)      2014 Thomas Heller
+# Copyright (c) 2007-2012 Hartmut Kaiser
+# Copyright (c) 2010-2011 Matt Anderson
+# Copyright (c) 2011      Bryce Lelbach
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+FIND_PACKAGE(PkgConfig QUIET)
+pkg_check_modules(PC_HWLOC QUIET hwloc)
+
+FIND_PATH(hwloc_INCLUDE_DIR hwloc.h
+  HINTS
+    ${HWLOC_ROOT} ENV HWLOC_ROOT
+    ${PC_HWLOC_MINIMAL_INCLUDEDIR}
+    ${PC_HWLOC_MINIMAL_INCLUDE_DIRS}
+    ${PC_HWLOC_INCLUDEDIR}
+    ${PC_HWLOC_INCLUDE_DIRS}
+  PATH_SUFFIXES include)
+
+FIND_LIBRARY(hwloc_LIBRARY NAMES hwloc libhwloc
+  HINTS
+    ${HWLOC_ROOT} ENV HWLOC_ROOT
+    ${PC_HWLOC_MINIMAL_LIBDIR}
+    ${PC_HWLOC_MINIMAL_LIBRARY_DIRS}
+    ${PC_HWLOC_LIBDIR}
+    ${PC_HWLOC_LIBRARY_DIRS}
+  PATH_SUFFIXES lib lib64)
+
+SET(hwloc_LIBRARIES ${hwloc_LIBRARY})
+SET(hwloc_INCLUDE_DIRS ${hwloc_INCLUDE_DIR})
+
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(
+    "hwloc"
+    FOUND_VAR hwloc_FOUND
+    REQUIRED_VARS hwloc_LIBRARY hwloc_INCLUDE_DIR)
+
+GET_PROPERTY(_type CACHE HWLOC_ROOT PROPERTY TYPE)
+IF(_type)
+  SET_PROPERTY(CACHE HWLOC_ROOT PROPERTY ADVANCED 1)
+  IF("x${_type}" STREQUAL "xUNINITIALIZED")
+    SET_PROPERTY(CACHE HWLOC_ROOT PROPERTY TYPE PATH)
+  ENDIF()
+ENDIF()
+
+MARK_AS_ADVANCED(HWLOC_ROOT hwloc_LIBRARY hwloc_INCLUDE_DIR)
