@@ -59,10 +59,10 @@ namespace alpaka
                 TElem * pMem,
                 TDev const & dev,
                 TExtents const & extents = TExtents()) :
-                    m_vExtentsElements(Vec<TDim::value>::fromExtents(extents)),
                     m_pMem(pMem),
-                    m_uiPitchBytes(extent::getWidth(extents) * sizeof(TElem)),
-                    m_Dev(dev)
+                    m_Dev(dev),
+                    m_vExtentsElements(Vec<TDim::value>::fromExtents(extents)),
+                    m_uiPitchBytes(extent::getWidth(extents) * sizeof(TElem))
             {}
 
             //-----------------------------------------------------------------------------

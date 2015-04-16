@@ -437,9 +437,9 @@ auto main(
 #if ALPAKA_INTEGRATION_TEST
             for(std::size_t uiL(1u); uiL <= 64u; uiL *= 8u)
             {
-                for(std::size_t uiM(1u); uiM <= 512u; uiM *= 8u)
+                for(std::size_t uiM(1u); uiM <= 79u; uiM *= 79u)
                 {
-                    for(std::size_t uiN(1u); uiN <= 64u; uiN *= 8u)
+                    for(std::size_t uiN(1u); uiN <= 23u; uiN *= 23u)
                     {
 #else
             for(std::size_t uiL(1u); uiL <= 1024u; uiL *= 4u)
