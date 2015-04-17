@@ -31,7 +31,7 @@ UNSET(alpaka_LIBRARIES)
 UNSET(alpaka_VERSION)
 
 UNSET(ALPAKA_FOUND_INTERNAL)
-    
+
 IF(ALPAKA_ROOT)
     #-------------------------------------------------------------------------------
     # Set found to true initially and set it on false if a required dependency is missing.
@@ -77,7 +77,7 @@ IF(ALPAKA_ROOT)
             SET(ALPAKA_FIBERS_ENABLE OFF CACHE BOOL "Enable the Fibers accelerator" FORCE)
             FIND_PACKAGE(Boost)
         ENDIF()
-        
+
     ELSE()
         FIND_PACKAGE(Boost)
     ENDIF()
@@ -85,7 +85,7 @@ IF(ALPAKA_ROOT)
     IF(NOT Boost_FOUND)
         MESSAGE(WARNING "Required alpaka dependency Boost could not be found!")
         SET(ALPAKA_FOUND_INTERNAL FALSE)
-        
+
     ELSE()
         LIST(APPEND alpaka_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
 
@@ -104,7 +104,7 @@ IF(ALPAKA_ROOT)
         IF(NOT OPENMP_FOUND)
             MESSAGE(WARNING "Optional alpaka dependency OpenMP could not be found! OpenMP accelerator disabled!")
             SET(ALPAKA_OPENMP2_ENABLE OFF CACHE BOOL "Enable the OpenMP accelerator" FORCE)
-        
+
         ELSE()
             SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
             SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -124,13 +124,13 @@ IF(ALPAKA_ROOT)
         IF(ALPAKA_CUDA_VERSION VERSION_LESS 7.0)
             MESSAGE(WARNING "CUDA Toolkit < 7.0 is not supported! CUDA accelerator disabled!")
             SET(ALPAKA_CUDA_ENABLE OFF CACHE BOOL "Enable the CUDA accelerator" FORCE)
-            
+
         ELSE()
             FIND_PACKAGE(CUDA ${ALPAKA_CUDA_VERSION})
             IF(NOT CUDA_FOUND)
                 MESSAGE(WARNING "Optional alpaka dependency CUDA could not be found! CUDA accelerator disabled!")
                 SET(ALPAKA_CUDA_ENABLE OFF CACHE BOOL "Enable the CUDA accelerator" FORCE)
-                
+
             ELSE()
                 #SET(CUDA_VERBOSE_BUILD ON)
                 SET(CUDA_PROPAGATE_HOST_FLAGS ON)
@@ -201,7 +201,7 @@ IF(ALPAKA_ROOT)
     #-------------------------------------------------------------------------------
     FILE(STRINGS "${ALPAKA_ROOT}/include/alpaka/alpaka.hpp"
          ALPAKA_VERSION_DEFINE REGEX "#define ALPAKA_VERSION BOOST_VERSION_NUMBER")
-         
+
     STRING(REGEX REPLACE "[^0-9]*([0-9]+), ([0-9]+), ([0-9]+).*" "\\1" ALPAKA_VER_MAJOR "${ALPAKA_VERSION_DEFINE}")
     STRING(REGEX REPLACE "[^0-9]*([0-9]+), ([0-9]+), ([0-9]+).*" "\\2" ALPAKA_VER_MINOR "${ALPAKA_VERSION_DEFINE}")
     STRING(REGEX REPLACE "[^0-9]*([0-9]+), ([0-9]+), ([0-9]+).*" "\\3" ALPAKA_VER_PATCH "${ALPAKA_VERSION_DEFINE}")
@@ -217,7 +217,7 @@ IF(ALPAKA_ROOT)
     ELSE()
         # Select C++ standard version.
         LIST(APPEND ALPAKA_COMPILE_OPTIONS "-std=c++11")
-        
+
         # Add linker options.
         IF(ALPAKA_THREADS_ENABLE)
             LIST(APPEND alpaka_LIBRARIES "general;pthread")
@@ -237,7 +237,7 @@ IF(ALPAKA_ROOT)
     MARK_AS_ADVANCED(
         alpaka_INCLUDE_DIR
         alpaka_LIBRARY)
-        
+
     IF(ALPAKA_THREADS_ENABLE)
         LIST(APPEND alpaka_DEFINITIONS "ALPAKA_THREADS_ENABLED")
         MESSAGE(STATUS ALPAKA_THREADS_ENABLED)
@@ -254,7 +254,7 @@ IF(ALPAKA_ROOT)
         LIST(APPEND alpaka_DEFINITIONS "ALPAKA_CUDA_ENABLED")
         MESSAGE(STATUS ALPAKA_CUDA_ENABLED)
     ENDIF()
-    
+
     IF(${ALPAKA_DEBUG} GREATER 0)
         LIST(APPEND alpaka_DEFINITIONS "ALPAKA_DEBUG=${ALPAKA_DEBUG}")
     ENDIF()
@@ -280,7 +280,7 @@ IF(ALPAKA_ROOT)
         ADD_LIBRARY(
             alpaka
             ${ALPAKA_HEADER_FILES_ALL} ${ALPAKA_SOURCE_FILES_ALL} ${ALPAKA_CMAKE_FILES_ALL})
-            
+
         # Compile options.
         SET(ALPAKA_COMPILE_OPTIONS_COPY ${ALPAKA_COMPILE_OPTIONS})
         list_add_prefix("PUBLIC;" ALPAKA_COMPILE_OPTIONS_COPY)
@@ -296,7 +296,7 @@ IF(ALPAKA_ROOT)
                 "alpaka"
                 ${ALPAKA_COMPILE_OPTIONS_COPY})
         ENDIF()
-        
+
         # Compile definitions.
         SET(ALPAKA_COMPILE_DEFINITIONS_COPY ${alpaka_DEFINITIONS})
         list_add_prefix("PUBLIC;" ALPAKA_COMPILE_DEFINITIONS_COPY)
@@ -312,7 +312,7 @@ IF(ALPAKA_ROOT)
                 "alpaka"
                 ${ALPAKA_COMPILE_DEFINITIONS_COPY})
         ENDIF()
-        
+
         # Include directories.
         SET(ALPAKA_INCLUDE_DIRS_COPY ${alpaka_INCLUDE_DIRS})
         list_add_prefix("PUBLIC;" ALPAKA_INCLUDE_DIRS_COPY)
@@ -328,7 +328,7 @@ IF(ALPAKA_ROOT)
                 "alpaka"
                 ${ALPAKA_INCLUDE_DIRS_COPY})
         ENDIF()
-        
+
         # Link libraries.
         SET(ALPAKA_LINK_LIBS_COPY ${alpaka_LIBRARIES})
         # NOTE: All libraries are required to be prefixed with general, debug or optimized!

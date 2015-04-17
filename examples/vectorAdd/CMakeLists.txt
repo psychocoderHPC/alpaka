@@ -87,7 +87,7 @@ IF(ALPAKA_CUDA_ENABLE)
 ELSE()
     # Force the .cu files to be recognized as headers and not be compiled so there wont be a second entry point.
     SET_SOURCE_FILES_PROPERTIES(
-        ${CU_FILES_ALL} 
+        ${CU_FILES_ALL}
         PROPERTIES HEADER_FILE_ONLY TRUE)
     ADD_EXECUTABLE(
         "${TARGET_NAME}"

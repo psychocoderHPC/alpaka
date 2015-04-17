@@ -118,7 +118,7 @@ namespace alpaka
         -> Vec<TuiDim, TVal>
         {
             return create(
-                &Vec<TuiDim, TVal>::createSingleVal<TVal2>, 
+                &Vec<TuiDim, TVal>::createSingleVal<TVal2>,
                 std::forward<TVal2>(val));
         }
     private:
@@ -435,7 +435,7 @@ namespace alpaka
         });
 
         return Vec<TuiDim, TVal>::create(
-            add, 
+            add,
             p,
             q);
     }
@@ -461,7 +461,7 @@ namespace alpaka
         });
 
         return Vec<TuiDim, TVal>::create(
-            mul, 
+            mul,
             p,
             q);
     }

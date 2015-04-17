@@ -28,13 +28,13 @@ FUNCTION(append_recursive_files In_RootDir In_FileExtension Out_VariableAllFileP
         #MESSAGE("Out_VariableAllFilePathsList: ${Out_VariableAllFilePathsList}")
     # Get all recursive files.
     FILE(
-        GLOB_RECURSE 
-        allFilePathsList 
+        GLOB_RECURSE
+        allFilePathsList
         "${In_RootDir}*.${In_FileExtension}")
         #MESSAGE( "allFilePathsList: ${allFilePathsList}" )
     # Set the return value.
     SET(
-        "${Out_VariableAllFilePathsList}" 
+        "${Out_VariableAllFilePathsList}"
         "${${Out_VariableAllFilePathsList}}" "${allFilePathsList}"
         PARENT_SCOPE)
 ENDFUNCTION()
@@ -46,8 +46,8 @@ FUNCTION(append_recursive_relative_subdirs In_RootDir Out_VariableAllSubDirPaths
         #MESSAGE("In_RootDir: ${In_RootDir}")
     # Get all the recursive files with their relative paths.
     FILE(
-        GLOB_RECURSE 
-        "recursiveFilePathsList" 
+        GLOB_RECURSE
+        "recursiveFilePathsList"
         RELATIVE "${In_RootDir}" "${In_RootDir}*")
         #MESSAGE("recursiveFilePathsList: ${recursiveFilePathsList}")
 
@@ -55,11 +55,11 @@ FUNCTION(append_recursive_relative_subdirs In_RootDir Out_VariableAllSubDirPaths
     SET(
         "allSubDirPathsList")    # Create empty list for the case of no subdirectories being present.
     FOREACH(
-        "filePath" 
+        "filePath"
         "${recursiveFilePathsList}")
         GET_FILENAME_COMPONENT(
-            "dirPath" 
-            "${filePath}" 
+            "dirPath"
+            "${filePath}"
             PATH)
         LIST(
             APPEND
@@ -177,10 +177,10 @@ FUNCTION(append_recursive_files_add_to_src_group In_RootDir In_SrcGroupIgnorePre
         "allFilePathsList")
         #MESSAGE( "allFilePathsList: ${allFilePathsList}" )
     SET(
-        "${Out_VariableAllFilePathsList}" 
+        "${Out_VariableAllFilePathsList}"
         "${allFilePathsList}"
         PARENT_SCOPE)
-        
+
     add_recursive_files_to_src_group(
         "${In_RootDir}"
         "${In_SrcGroupIgnorePrefix}"
@@ -194,12 +194,12 @@ ENDFUNCTION()
 #------------------------------------------------------------------------------
 FUNCTION(list_add_prefix prefix list_of_items)
     SET("local_list")
-    
+
     FOREACH(
-        "item" 
-        IN LISTS 
+        "item"
+        IN LISTS
         "${list_of_items}")
-        
+
         IF(NOT "${item}" STREQUAL "")
             LIST(
                 APPEND
@@ -207,7 +207,7 @@ FUNCTION(list_add_prefix prefix list_of_items)
                 "${prefix}${item}")
         ENDIF()
     ENDFOREACH()
-    
+
     SET(
         "${list_of_items}"
         "${local_list}"
@@ -221,12 +221,12 @@ ENDFUNCTION()
 #------------------------------------------------------------------------------
 FUNCTION(list_add_prefix_to prefix item_to_prefix list_of_items)
     SET("local_list")
-    
+
     FOREACH(
         "item"
         IN LISTS
         "${list_of_items}")
-        
+
         IF("${item}" STREQUAL "${item_to_prefix}")
             LIST(
                 APPEND
@@ -239,9 +239,9 @@ FUNCTION(list_add_prefix_to prefix item_to_prefix list_of_items)
                 "${item}")
         ENDIF()
     ENDFOREACH()
-    
+
     SET(
-        "${list_of_items}" 
+        "${list_of_items}"
         "${local_list}"
         PARENT_SCOPE)
 ENDFUNCTION()
