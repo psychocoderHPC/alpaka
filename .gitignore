@@ -2,3 +2,4 @@
 !/doc/doxygen/Doxyfile
 /doc/latex/*
 **/build
+/nbproject/
