@@ -73,7 +73,7 @@ namespace alpaka
                 {
                     std::lock_guard<std::mutex> lk(m_Mutex);
 
-                    std::queue<T>::push(std::forward<T>(t));
+                    std::queue<T>::push(t);
                 }
                 //-----------------------------------------------------------------------------
                 //! Pops the given value from the front of the queue.
@@ -159,7 +159,7 @@ namespace alpaka
                 TaskPkg(
                     TFnObj && func) :
                         m_Promise(),
-                        m_FnObj(std::forward<TFnObj>(func))
+                        m_FnObj(func)
                 {}
 
             private:
@@ -209,7 +209,7 @@ namespace alpaka
                 TaskPkg(
                     TFnObj && func) :
                         m_Promise(),
-                        m_FnObj(std::forward<TFnObj>(func))
+                        m_FnObj(func)
                 {}
 
             private:
@@ -359,7 +359,7 @@ namespace alpaka
                 -> typename std::result_of< decltype(&TPromise<typename std::result_of<TFnObj(TArgs...)>::type>::get_future)(TPromise<typename std::result_of<TFnObj(TArgs...)>::type> *) >::type
 #endif
                 {
-                    auto boundTask(std::bind(std::forward<TFnObj>(task), std::forward<TArgs>(args)...));
+                    auto boundTask(std::bind(task, args...));
 
                     // Return type of the function object, can be void via specialization of TaskPkg.
                     using FnObjReturn = typename std::result_of<TFnObj(TArgs...)>::type;
@@ -578,7 +578,7 @@ namespace alpaka
                 -> typename std::result_of< decltype(&TPromise<typename std::result_of<TFnObj(TArgs...)>::type>::get_future)(TPromise<typename std::result_of<TFnObj(TArgs...)>::type> *) >::type
 #endif
                 {
-                    auto boundTask(std::bind(std::forward<TFnObj>(task), std::forward<TArgs>(args)...));
+                    auto boundTask(std::bind(task, args...));
 
                     // Return type of the function object, can be void via specialization of TaskPkg.
                     using FnObjReturn = typename std::result_of<TFnObj(TArgs...)>::type;
@@ -589,6 +589,7 @@ namespace alpaka
 
                     auto future(pTaskPackage->m_Promise.get_future());
 
+                    std::lock_guard<TMutex> lock(m_mtxWakeup);
                     m_qTasks.push(std::move(upTaskPackage));
 
                     m_cvWakeup.notify_one();
@@ -628,17 +629,18 @@ namespace alpaka
                         {
                             currentTaskPackage->runTask();
                         }
-                        else
                         {
                             std::unique_lock<TMutex> lock(m_mtxWakeup);
-
-                            // If the shutdown flag has been set since the last check, return now.
-                            if(m_bShutdownFlag)
+                            if(m_qTasks.empty())
                             {
-                                return;
-                            }
+                                // If the shutdown flag has been set since the last check, return now.
+                                if(m_bShutdownFlag)
+                                {
+                                    return;
+                                }
 
-                            m_cvWakeup.wait(lock, [this]() { return ((!m_qTasks.empty()) || m_bShutdownFlag); });
+                                m_cvWakeup.wait(lock, [this]() { return ((!m_qTasks.empty()) || m_bShutdownFlag); });
+                            }
                         }
                     }
                 }
