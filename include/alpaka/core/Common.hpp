@@ -39,7 +39,7 @@
 #if defined(ALPAKA_ACC_GPU_CUDA_ENABLED) && defined(__CUDACC__)
     #define ALPAKA_FN_ACC_CUDA_ONLY __device__ __forceinline__
     #define ALPAKA_FN_ACC_NO_CUDA __host__ __forceinline__
-    #define ALPAKA_FN_ACC __device__ __host__ __forceinline__
+    #define ALPAKA_FN_ACC __device__ __forceinline__
     #define ALPAKA_FN_HOST_ACC __device__ __host__ __forceinline__
     #define ALPAKA_FN_HOST __host__ __forceinline__
 #else

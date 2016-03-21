@@ -64,6 +64,8 @@ namespace alpaka
                     //-----------------------------------------------------------------------------
                     //! Constructor.
                     //-----------------------------------------------------------------------------
+                    ALPAKA_FN_ACC_CUDA_ONLY Xor() = default;
+                    
                     ALPAKA_FN_ACC_CUDA_ONLY Xor(
                         std::uint32_t const & seed,
                         std::uint32_t const & subsequence = 0,
