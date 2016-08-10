@@ -22,7 +22,25 @@
 #include <alpaka/alpaka.hpp>                        // alpaka::exec::create
 
 #include <iostream>                                 // std::cout
+#include <string>
 #include <typeinfo>                                 // typeid
+#include <chrono>                       // std::chrono::high_resolution_clock
+
+
+/** dummy kernel to initialize the device
+ */
+class Dummy
+{
+public:
+    ALPAKA_NO_HOST_ACC_WARNING
+    template<
+        typename TAcc>
+    ALPAKA_FN_ACC auto operator()(
+        TAcc const & acc) const
+    -> void
+    {
+    }
+};
 
 //#############################################################################
 //! A vector addition kernel.
@@ -67,7 +85,7 @@ public:
             // Calculate the number of elements to compute in this thread.
             // The result is uniform for all but the last thread.
             auto const threadLastElemIdx(threadFirstElemIdx+threadElemExtent);
-            auto const threadLastElemIdxClipped((numElements > threadLastElemIdx) ? threadLastElemIdx : numElements);
+            auto const threadLastElemIdxClipped((threadLastElemIdx < numElements) ? threadLastElemIdx : numElements);
 
             for(TSize i(threadFirstElemIdx); i<threadLastElemIdxClipped; ++i)
             {
@@ -80,20 +98,44 @@ public:
 //-----------------------------------------------------------------------------
 //! Program entry point.
 //-----------------------------------------------------------------------------
-auto main()
+auto main(int argc,  char *argv[])
 -> int
 {
     using Val = float;
     using Size = std::size_t;
+    using Dim = alpaka::dim::DimInt<1u>;
 
-    using Acc = alpaka::acc::AccCpuSerial<alpaka::dim::DimInt<1u>, Size>;
+    /** accelerator types
+     * - AccGpuCudaRt
+     * - AccCpuThreads
+     * - AccCpuOmp2Threads
+     * - AccCpuOmp2Blocks
+     * - AccCpuSerial
+     */
+    using Acc = alpaka::acc::AccCpuSerial<Dim, Size>;
     using DevAcc = alpaka::dev::Dev<Acc>;
     using PltfAcc = alpaka::pltf::Pltf<DevAcc>;
+
+    /** possible stream versions
+     *
+     * CPU:
+     *   - StreamCpuAsync
+     *   - StreamCpuSync
+     * GPU:
+     *   - StreamCudaRtAsync
+     *   - StreamCudaRtSync
+     */
     using StreamAcc = alpaka::stream::StreamCpuSync;
 
     using PltfHost = alpaka::pltf::PltfCpu;
 
-    Size const numElements(123456);
+    Size numElements(123456);
+
+    // check for user input
+    if( argc == 2 )
+    {
+        numElements = std::stoi(argv[1]);
+    }
 
     // Create the kernel function object.
     VectorAddKernel kernel;
@@ -109,16 +151,34 @@ auto main()
     // Get a stream on this device.
     StreamAcc stream(devAcc);
 
+    /* execute a dummy kernel to avoid initialize overhead while
+     * time measurement
+     */
+    alpaka::stream::enqueue(
+        stream,
+        alpaka::exec::create<Acc>(
+            alpaka::workdiv::WorkDivMembers<
+                Dim,
+                Size
+            >(
+                alpaka::Vec<Dim, Size>(static_cast<Size>(1)),
+                alpaka::Vec<Dim, Size>(static_cast<Size>(1)),
+                alpaka::Vec<Dim, Size>(static_cast<Size>(1))
+            ),
+            Dummy()
+        )
+     );
+
     // The data extent.
-    alpaka::Vec<alpaka::dim::DimInt<1u>, Size> const extent(
+    alpaka::Vec<Dim, Size> const extent(
         numElements);
 
     // Let alpaka calculate good block and grid sizes given our full problem extent.
-    alpaka::workdiv::WorkDivMembers<alpaka::dim::DimInt<1u>, Size> const workDiv(
+    alpaka::workdiv::WorkDivMembers<Dim, Size> const workDiv(
         alpaka::workdiv::getValidWorkDiv<Acc>(
             devAcc,
             extent,
-            static_cast<Size>(3u),
+            static_cast<Size>(4u),
             false,
             alpaka::workdiv::GridBlockExtentSubDivRestrictions::Unrestricted));
 
@@ -160,11 +220,27 @@ auto main()
         alpaka::mem::view::getPtrNative(memBufAccC),
         numElements));
 
-    // Profile the kernel execution.
+    /* wait for the stream */
+    alpaka::wait::wait(stream);
+    // Take the time prior to the execution.
+    auto const execStr(std::chrono::high_resolution_clock::now());
+
+    // vector add the kernel execution.
     alpaka::stream::enqueue(stream, exec);
+
+    alpaka::wait::wait(stream);
+    // Take the time after to the execution.
+    auto const execEnd(std::chrono::high_resolution_clock::now());
 
     // Copy back the result.
     alpaka::mem::view::copy(stream, memBufHostC, memBufAccC, extent);
+
+    alpaka::wait::wait(stream);
+
+    // the duration.
+    auto const execDur(execEnd - execStr);
+    auto durExecution = std::chrono::duration_cast<std::chrono::microseconds>(execDur).count();
+    std::cout<<"execution time "<<durExecution<<" us"<<std::endl;
 
     bool resultCorrect(true);
     auto const pHostData(alpaka::mem::view::getPtrNative(memBufHostC));
