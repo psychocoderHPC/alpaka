@@ -223,6 +223,60 @@ namespace alpaka
         };
     }
 
+#ifdef ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLED
+    namespace queue
+    {
+        namespace traits
+        {
+            //#############################################################################
+            //! The CPU blocking device queue enqueue trait specialization.
+            //! This default implementation for all tasks directly invokes the function call operator of the task.
+            template<
+                typename TDim,
+                typename TIdx,
+                typename TKernelFnObj,
+                typename... TArgs>
+            struct Enqueue<
+                queue::QueueCpuOmp2Collective,
+                kernel::TaskKernelCpuOmp2Blocks<
+                    TDim,
+                    TIdx,
+                    TKernelFnObj,
+                    TArgs...>>
+            {
+            private:
+                using Task = kernel::TaskKernelCpuOmp2Blocks<
+                    TDim,
+                    TIdx,
+                    TKernelFnObj,
+                    TArgs ...>;
+            public:
+                //-----------------------------------------------------------------------------
+                ALPAKA_FN_HOST static auto enqueue(
+                    queue::QueueCpuOmp2Collective & queue,
+                    Task const & task)
+                -> void
+                {
+                    if(::omp_in_parallel() != 0)
+                    {
+                        while(!queue::empty(*queue.m_spBlockingQueue)){}
+                        // execute within an OpenMP parallel region
+                        queue.m_spQueueImpl->m_uCurrentlyExecutingTask += 1u;
+                        // execute task within an OpenMP parallel region
+                        task();
+                        queue.m_spQueueImpl->m_uCurrentlyExecutingTask -= 1u;
+                    }
+                    else
+                    {
+                        std::lock_guard<std::mutex> lk(queue.m_spQueueImpl->m_mutex);
+                        queue::enqueue(*queue.m_spBlockingQueue, task);
+                    }
+                }
+            };
+        }
+    }
+#endif
+    
     namespace acc
     {
         namespace traits

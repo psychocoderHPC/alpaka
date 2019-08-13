@@ -192,6 +192,7 @@
 #include <alpaka/queue/QueueCudaRtBlocking.hpp>
 #include <alpaka/queue/QueueCpuNonBlocking.hpp>
 #include <alpaka/queue/QueueCpuBlocking.hpp>
+#include <alpaka/queue/QueueCpuOmp2Collective.hpp>
 #include <alpaka/queue/Traits.hpp>
 //-----------------------------------------------------------------------------
 // time

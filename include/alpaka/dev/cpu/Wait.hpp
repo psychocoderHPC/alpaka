@@ -71,8 +71,12 @@ namespace alpaka
                     auto vspQueuesBlocking(
                         dev.m_spDevCpuImpl->GetAllBlockingQueueImpls());
 
+                    auto vspQueuesOmp2Collective(
+                        dev.m_spDevCpuImpl->GetAllOmp2CollectiveQueueImpls());
+
                     detail::currentThreadWaitForDevice(dev, vspQueuesNonBlocking);
                     detail::currentThreadWaitForDevice(dev, vspQueuesBlocking);
+                    detail::currentThreadWaitForDevice(dev, vspQueuesOmp2Collective);
                 }
             };
         }

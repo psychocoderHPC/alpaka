@@ -1,4 +1,4 @@
-/* Copyright 2019 Axel Huebl, Benjamin Worpitz, Matthias Werner
+/* Copyright 2019 Axel Huebl, Benjamin Worpitz, Matthias Werner, Rene Widera
  *
  * This file is part of Alpaka.
  *
@@ -29,6 +29,7 @@ namespace alpaka
     {
         class QueueCpuNonBlocking;
         class QueueCpuBlocking;
+        class QueueCpuOmp2Collective;
 
         namespace cpu
         {
@@ -36,6 +37,7 @@ namespace alpaka
             {
                 class QueueCpuNonBlockingImpl;
                 class QueueCpuBlockingImpl;
+                class QueueCpuOmp2CollectiveImpl;
             }
         }
     }
@@ -63,10 +65,14 @@ namespace alpaka
                 class DevCpuImpl
                 {
                 private:
-                    // queue::QueueCpuNonBlocking::QueueCpuNonBlocking calls RegisterNonBlockingQueue.
+                    // queue::QueueCpuNonBlocking calls RegisterNonBlockingQueue.
                     friend queue::QueueCpuNonBlocking;
-                    // queue::QueueCpuBlocking::QueueCpuNonBlocking calls RegisterBlockingQueue.
+                    // queue::QueueCpuBlocking calls RegisterBlockingQueue.
                     friend queue::QueueCpuBlocking;
+#ifdef ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLED
+                    // queue::QueueCpuOmp2Collective calls RegisterOmp2CollectiveQueue.
+                    friend queue::QueueCpuOmp2Collective;
+#endif
 
                     //-----------------------------------------------------------------------------
                     template< typename TQueue>
@@ -122,6 +128,15 @@ namespace alpaka
                             queue::cpu::detail::QueueCpuBlockingImpl>(m_queuesBlocking);
                     }
 
+#ifdef ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLED
+                    ALPAKA_FN_HOST auto GetAllOmp2CollectiveQueueImpls() const
+                    -> std::vector<std::shared_ptr<queue::cpu::detail::QueueCpuOmp2CollectiveImpl>>
+                    {
+                        return GetAllQueueImpls<
+                            queue::cpu::detail::QueueCpuOmp2CollectiveImpl>(m_queuesOmp2Collective);
+                    }
+#endif
+
                 private:
                     //-----------------------------------------------------------------------------
                     //! Registers the given queue on this device.
@@ -148,10 +163,26 @@ namespace alpaka
                         m_queuesBlocking.push_back(spQueueImpl);
                     }
 
+#ifdef ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLED
+                    ALPAKA_FN_HOST auto RegisterOmp2CollectiveQueue(std::shared_ptr<queue::cpu::detail::QueueCpuOmp2CollectiveImpl> spQueueImpl)
+                    -> void
+                    {
+                        std::lock_guard<std::mutex> lk(m_Mutex);
+
+                        // Register this queue on the device.
+                        // NOTE: We have to store the plain pointer next to the weak pointer.
+                        // This is necessary to find the entry on unregistering because the weak pointer will already be invalid at that point.
+                        m_queuesOmp2Collective.push_back(spQueueImpl);
+                    }
+#endif
+
                 private:
                     std::mutex mutable m_Mutex;
                     std::vector<std::weak_ptr<queue::cpu::detail::QueueCpuNonBlockingImpl>> mutable m_queuesNonBlocking;
                     std::vector<std::weak_ptr<queue::cpu::detail::QueueCpuBlockingImpl>> mutable m_queuesBlocking;
+#ifdef ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLED
+                    std::vector<std::weak_ptr<queue::cpu::detail::QueueCpuOmp2CollectiveImpl>> mutable m_queuesOmp2Collective;
+#endif
                 };
             }
         }

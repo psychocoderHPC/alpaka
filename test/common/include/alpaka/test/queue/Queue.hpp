@@ -116,6 +116,15 @@ namespace alpaka
                     static constexpr bool value = false;
                 };
 
+                //#############################################################################
+                //! The blocking queue trait specialization for a OpenMP2 collective CPU queue.
+                template<>
+                struct IsBlockingQueue<
+                    alpaka::queue::QueueCpuOmp2Collective>
+                {
+                    static constexpr bool value = false;
+                };
+
 #ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
 
 #if !BOOST_LANG_CUDA
@@ -176,6 +185,10 @@ namespace alpaka
                 std::tuple<
                     std::tuple<alpaka::dev::DevCpu, alpaka::queue::QueueCpuBlocking>,
                     std::tuple<alpaka::dev::DevCpu, alpaka::queue::QueueCpuNonBlocking>
+#ifdef ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLED
+                    ,
+                    std::tuple<alpaka::dev::DevCpu, alpaka::queue::QueueCpuOmp2Collective>
+#endif
 #ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
                     ,
                     std::tuple<alpaka::dev::DevCudaRt, alpaka::queue::QueueCudaRtBlocking>,

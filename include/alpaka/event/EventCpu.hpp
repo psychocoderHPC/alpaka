@@ -15,6 +15,7 @@
 #include <alpaka/dev/DevCpu.hpp>
 #include <alpaka/queue/QueueCpuNonBlocking.hpp>
 #include <alpaka/queue/QueueCpuBlocking.hpp>
+#include <alpaka/queue/QueueCpuOmp2Collective.hpp>
 
 #include <alpaka/dev/Traits.hpp>
 #include <alpaka/event/Traits.hpp>
@@ -299,6 +300,55 @@ namespace alpaka
                     queue::enqueue(queue.m_spQueueImpl, event);
                 }
             };
+
+#ifdef ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLED
+            //#############################################################################
+            //! The CPU OpenMP2 collective device queue enqueue trait specialization.
+            template<>
+            struct Enqueue<
+                std::shared_ptr<queue::cpu::detail::QueueCpuOmp2CollectiveImpl>,
+                event::EventCpu>
+            {
+                //-----------------------------------------------------------------------------
+                ALPAKA_FN_HOST static auto enqueue(
+                    std::shared_ptr<queue::cpu::detail::QueueCpuOmp2CollectiveImpl> &,
+                    event::EventCpu &)
+                -> void
+                {
+                    ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
+
+                    #pragma omp barrier
+                }
+            };
+            //#############################################################################
+            //! The CPU OpenMP2 collective device queue enqueue trait specialization.
+            template<>
+            struct Enqueue<
+                queue::QueueCpuOmp2Collective,
+                event::EventCpu>
+            {
+                //-----------------------------------------------------------------------------
+                ALPAKA_FN_HOST static auto enqueue(
+                    queue::QueueCpuOmp2Collective & queue,
+                    event::EventCpu & event)
+                -> void
+                {
+                    ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
+
+                    if(::omp_in_parallel() != 0)
+                    {
+                        // wait for all tasks en-queued before the parallel region
+                        while(!queue::empty(*queue.m_spBlockingQueue)){}
+                        #pragma omp barrier
+                    }
+                    else
+                    {
+                        queue::enqueue(*queue.m_spBlockingQueue, event);
+                    }
+
+                }
+            };
+#endif
         }
     }
     namespace wait
@@ -438,6 +488,46 @@ namespace alpaka
                     wait::wait(queue.m_spQueueImpl, event);
                 }
             };
+
+            //#############################################################################
+            //! The CPU OpenMP2 collective device queue event wait trait specialization.
+            template<>
+            struct WaiterWaitFor<
+                std::shared_ptr<queue::cpu::detail::QueueCpuOmp2CollectiveImpl>,
+                event::EventCpu>
+            {
+                //-----------------------------------------------------------------------------
+                ALPAKA_FN_HOST static auto waiterWaitFor(
+                    std::shared_ptr<queue::cpu::detail::QueueCpuOmp2CollectiveImpl> &,
+                    event::EventCpu const &)
+                -> void
+                {
+                    #pragma omp barrier
+                }
+            };
+            //#############################################################################
+            //! The CPU OpenMP2 collective queue event wait trait specialization.
+            template<>
+            struct WaiterWaitFor<
+                queue::QueueCpuOmp2Collective,
+                event::EventCpu>
+            {
+                //-----------------------------------------------------------------------------
+                ALPAKA_FN_HOST static auto waiterWaitFor(
+                    queue::QueueCpuOmp2Collective & queue,
+                    event::EventCpu const & event)
+                -> void
+                {
+                    if(::omp_in_parallel() != 0)
+                    {
+                        // wait for all tasks en-queued before the parallel region
+                        while(!queue::empty(*queue.m_spBlockingQueue)){}
+                        wait::wait(queue);
+                    }
+                    else
+                        wait::wait(*queue.m_spBlockingQueue, event);
+                }
+            };
             //#############################################################################
             //! The CPU non-blocking device event wait trait specialization.
             //!
@@ -459,6 +549,8 @@ namespace alpaka
                         dev.m_spDevCpuImpl->GetAllNonBlockingQueueImpls());
                     auto vspQueuesBlocking(
                         dev.m_spDevCpuImpl->GetAllBlockingQueueImpls());
+                    auto vspQueuesOmp2Collective(
+                        dev.m_spDevCpuImpl->GetAllOmp2CollectiveQueueImpls());
 
                     // Let all the queues wait for this event.
                     // \TODO: This should be done atomically for all queues.
@@ -470,6 +562,12 @@ namespace alpaka
 
                     // wait for blocking queues
                     for(auto && spQueue : vspQueuesBlocking)
+                    {
+                        wait::wait(spQueue, event);
+                    }
+
+                    // wait for collective queues
+                    for(auto && spQueue : vspQueuesOmp2Collective)
                     {
                         wait::wait(spQueue, event);
                     }
