@@ -83,7 +83,7 @@ namespace alpaka
             ALPAKA_FN_HOST TaskKernelCpuThreads(
                 TWorkDiv && workDiv,
                 TKernelFnObj const & kernelFnObj,
-                TArgs const & ... args) :
+                TArgs && ... args) :
                     workdiv::WorkDivMembers<TDim, TIdx>(std::forward<TWorkDiv>(workDiv)),
                     m_kernelFnObj(kernelFnObj),
                     m_args(args...)
@@ -120,7 +120,7 @@ namespace alpaka
                 // Get the size of the block shared dynamic memory.
                 auto const blockSharedMemDynSizeBytes(
                     meta::apply(
-                        [&](TArgs const & ... args)
+                        [&](TArgs && ... args)
                         {
                             return
                                 kernel::getBlockSharedMemDynSizeBytes<
@@ -146,7 +146,7 @@ namespace alpaka
                 // Bind the kernel and its arguments to the grid block function.
                 auto const boundGridBlockExecHost(
                     meta::apply(
-                        [this, &acc, &blockThreadExtent, &threadPool](TArgs const & ... args)
+                        [this, &acc, &blockThreadExtent, &threadPool](TArgs && ... args)
                         {
                             return
                                 std::bind(
@@ -175,7 +175,7 @@ namespace alpaka
                 vec::Vec<TDim, TIdx> const & blockThreadExtent,
                 ThreadPool & threadPool,
                 TKernelFnObj const & kernelFnObj,
-                TArgs const & ... args)
+                TArgs && ... args)
             -> void
             {
                     // The futures of the threads in the current block.
@@ -231,7 +231,7 @@ namespace alpaka
                 ThreadPool &,
 #endif
                 TKernelFnObj const & kernelFnObj,
-                TArgs const & ... args)
+                TArgs && ... args)
             -> void
             {
                 // Bind the arguments to the accelerator block thread execution function.
@@ -261,7 +261,7 @@ namespace alpaka
                 acc::AccCpuThreads<TDim, TIdx> & acc,
                 vec::Vec<TDim, TIdx> const & blockThreadIdx,
                 TKernelFnObj const & kernelFnObj,
-                TArgs const & ... args)
+                TArgs && ... args)
             -> void
             {
                 // We have to store the thread data before the kernel is calling any of the methods of this class depending on them.

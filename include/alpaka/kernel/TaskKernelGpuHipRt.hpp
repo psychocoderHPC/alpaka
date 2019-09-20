@@ -160,7 +160,7 @@ namespace alpaka
             ALPAKA_FN_HOST TaskKernelGpuHipRt(
                 TWorkDiv && workDiv,
                 TKernelFnObj const & kernelFnObj,
-                TArgs const & ... args) :
+                TArgs && ... args) :
                     workdiv::WorkDivMembers<TDim, TIdx>(std::forward<TWorkDiv>(workDiv)),
                     m_kernelFnObj(kernelFnObj),
                     m_args(args...)
@@ -348,7 +348,7 @@ namespace alpaka
                             #if defined(BOOST_COMP_HCC) && BOOST_COMP_HCC
                             ALPAKA_FN_HOST_ACC
                             #endif
-                            [&](TArgs const & ... args)
+                            [&](TArgs && ... args)
                             {
                                 return
                                     kernel::getBlockSharedMemDynSizeBytes<
@@ -473,7 +473,7 @@ namespace alpaka
                     // Get the size of the block shared dynamic memory.
                     auto const blockSharedMemDynSizeBytes(
                         meta::apply(
-                            [&](TArgs const & ... args)
+                            [&](TArgs && ... args)
                             {
                                 return
                                     kernel::getBlockSharedMemDynSizeBytes<

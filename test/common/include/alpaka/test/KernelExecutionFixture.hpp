@@ -53,7 +53,7 @@ namespace alpaka
                 typename... TArgs>
             auto operator()(
                 TKernelFnObj const & kernelFnObj,
-                TArgs const & ... args)
+                TArgs && ... args)
             -> bool
             {
                 // Allocate the result value

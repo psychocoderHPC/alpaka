@@ -60,7 +60,7 @@ namespace alpaka
             ALPAKA_FN_HOST TaskKernelCpuTbbBlocks(
                 TWorkDiv && workDiv,
                 TKernelFnObj const & kernelFnObj,
-                TArgs const & ... args) :
+                TArgs && ... args) :
                     workdiv::WorkDivMembers<TDim, TIdx>(std::forward<TWorkDiv>(workDiv)),
                     m_kernelFnObj(kernelFnObj),
                     m_args(args...)
@@ -97,7 +97,7 @@ namespace alpaka
                 // Get the size of the block shared dynamic memory.
                 auto const blockSharedMemDynSizeBytes(
                     meta::apply(
-                        [&](TArgs const & ... args)
+                        [&](TArgs && ... args)
                         {
                             return
                                 kernel::getBlockSharedMemDynSizeBytes<
@@ -117,7 +117,7 @@ namespace alpaka
                 // TODO: With C++14 we could create a perfectly argument forwarding function object within the constructor.
                 auto const boundKernelFnObj(
                     meta::apply(
-                        [this](TArgs const & ... args)
+                        [this](TArgs && ... args)
                         {
                             return
                                 std::bind(

@@ -83,7 +83,7 @@ namespace alpaka
                     TKernelFnObj const & kernelFnObj,
                     vec::Vec<TDim, idx::Idx<TAcc>> const & blockThreadExtent,
                     vec::Vec<TDim, idx::Idx<TAcc>> const & threadElemExtent,
-                    TArgs const & ... args)
+                    TArgs && ... args)
                 -> idx::Idx<TAcc>
                 {
                     alpaka::ignore_unused(kernelFnObj);
@@ -121,7 +121,7 @@ namespace alpaka
             TKernelFnObj const & kernelFnObj,
             vec::Vec<TDim, idx::Idx<TAcc>> const & blockThreadExtent,
             vec::Vec<TDim, idx::Idx<TAcc>> const & threadElemExtent,
-            TArgs const & ... args)
+            TArgs && ... args)
         -> idx::Idx<TAcc>
         {
             return
@@ -179,7 +179,7 @@ namespace alpaka
         ALPAKA_FN_HOST auto createTaskKernel(
             TWorkDiv const & workDiv,
             TKernelFnObj const & kernelFnObj,
-            TArgs const & ... args)
+            TArgs && ... args)
 #ifdef BOOST_NO_CXX14_RETURN_TYPE_DEDUCTION
         -> decltype(
             traits::CreateTaskKernel<
@@ -245,7 +245,7 @@ namespace alpaka
             TQueue & queue,
             TWorkDiv const & workDiv,
             TKernelFnObj const & kernelFnObj,
-            TArgs const & ... args)
+            TArgs && ... args)
         -> void
         {
             queue::enqueue(

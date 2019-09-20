@@ -159,7 +159,7 @@ namespace alpaka
             ALPAKA_FN_HOST TaskKernelGpuCudaRt(
                 TWorkDiv && workDiv,
                 TKernelFnObj const & kernelFnObj,
-                TArgs const & ... args) :
+                TArgs && ... args) :
                     workdiv::WorkDivMembers<TDim, TIdx>(std::forward<TWorkDiv>(workDiv)),
                     m_kernelFnObj(kernelFnObj),
                     m_args(args...)
@@ -335,7 +335,7 @@ namespace alpaka
                     // Get the size of the block shared dynamic memory.
                     auto const blockSharedMemDynSizeBytes(
                         meta::apply(
-                            [&](TArgs const & ... args)
+                            [&](TArgs && ... args)
                             {
                                 return
                                     kernel::getBlockSharedMemDynSizeBytes<
@@ -455,7 +455,7 @@ namespace alpaka
                     // Get the size of the block shared dynamic memory.
                     auto const blockSharedMemDynSizeBytes(
                         meta::apply(
-                            [&](TArgs const & ... args)
+                            [&](TArgs && ... args)
                             {
                                 return
                                     kernel::getBlockSharedMemDynSizeBytes<
