@@ -27,9 +27,10 @@ struct HelloWorldKernel
 {
     //-----------------------------------------------------------------------------
     template<
-        typename TAcc>
+        typename TAcc,
+        typename T>
     ALPAKA_FN_ACC auto operator()(
-        TAcc const & acc) const
+        TAcc const & acc, T* data) const
     -> void
     {
         using Dim = alpaka::dim::Dim<TAcc>;
@@ -62,7 +63,7 @@ struct HelloWorldKernel
             static_cast<unsigned>(globalThreadIdx[0u]),
             static_cast<unsigned>(globalThreadIdx[1u]),
             static_cast<unsigned>(globalThreadIdx[2u]),
-            static_cast<unsigned>(linearizedGlobalThreadIdx[0u]));
+            static_cast<unsigned>(linearizedGlobalThreadIdx[0u]) + static_cast<unsigned>(data[0]));
     }
 };
 
@@ -192,10 +193,12 @@ auto main()
     // The queue can be blocking or non-blocking
     // depending on the choosen queue type (see type definitions above).
     // Here it is synchronous which means that the kernel is directly executed.
+    double data[4] = { };
     alpaka::kernel::exec<Acc>(
         queue,
         workDiv,
-        helloWorldKernel
+        helloWorldKernel,
+        data
         /* put kernel arguments here */);
 
     return EXIT_SUCCESS;

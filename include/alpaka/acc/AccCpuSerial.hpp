@@ -261,7 +261,7 @@ namespace alpaka
                             TArgs...>(
                                 workDiv,
                                 kernelFnObj,
-                                args...);
+                                std::forward<TArgs>(args)...);
                 }
             };
         }

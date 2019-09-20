@@ -217,7 +217,7 @@ namespace alpaka
                     TArgs...>::createTaskKernel(
                         workDiv,
                         kernelFnObj,
-                        args...);
+                        std::forward<TArgs>(args)...);
         }
 
 #if BOOST_COMP_CLANG
