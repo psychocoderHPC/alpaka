@@ -39,7 +39,7 @@ namespace alpaka
 #if (ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL)
                     using type = alpaka::queue::QueueCpuBlocking;
 #else
-                    using type = alpaka::queue::QueueCpuNonBlocking;
+                    using type = alpaka::queue::QueueCpuBlocking;
 #endif
                 };
 
@@ -57,7 +57,7 @@ namespace alpaka
 #if (ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL)
                     using type = alpaka::queue::QueueCudaRtBlocking;
 #else
-                    using type = alpaka::queue::QueueCudaRtNonBlocking;
+                    using type = alpaka::queue::QueueCudaRtBlocking;
 #endif
                 };
 #endif
