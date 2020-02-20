@@ -455,7 +455,7 @@ namespace alpaka
                                 static_cast<std::size_t>(extent::getHeight(extent)),
                                 static_cast<std::size_t>(extent::getDepth(extent))));
 
-                        hipPitchedPtr hipPitchedPtrVal = {0};
+                        hipPitchedPtr hipPitchedPtrVal;
 
                         //FIXME: hcc cannot handle zero-size input
                         if(hipExtentVal.width!=0

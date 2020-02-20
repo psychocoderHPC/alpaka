@@ -69,7 +69,7 @@ namespace alpaka
                     typename TKernelFnObj,
                     typename... TArgs>
                 __global__ void hipKernel(
-                    hipLaunchParm lp,
+                    hipLaunchParm ,
                     vec::Vec<TDim, TIdx> const threadElemExtent,
                     TKernelFnObj const kernelFnObj,
                     TArgs ... args)

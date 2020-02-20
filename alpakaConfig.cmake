@@ -77,12 +77,6 @@ SET(_ALPAKA_FOUND TRUE)
 # Add module search path
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${_ALPAKA_ROOT_DIR}/cmake/modules/")
 
-option(ALPAKA_EMU_MEMCPY3D "Emulate hipMemcpy3D(async) with a kernel" ON)
-
-if(ALPAKA_EMU_MEMCPY3D)
-    add_definitions(-DALPAKA_EMU_MEMCPY3D=1)
-endif()
-
 #-------------------------------------------------------------------------------
 # Options.
 SET(ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE_DEFAULT ON)
@@ -100,13 +94,6 @@ OPTION(ALPAKA_ACC_GPU_HIP_ONLY_MODE "Only back-ends using HIP can be enabled in 
 # Drop-down combo box in cmake-gui for HIP platforms.
 SET(ALPAKA_HIP_PLATFORM "nvcc" CACHE STRING "Specify HIP platform")
 SET_PROPERTY(CACHE ALPAKA_HIP_PLATFORM PROPERTY STRINGS "nvcc;hcc;clang")
-
-IF(ALPAKA_ACC_GPU_HIP_ENABLE AND (ALPAKA_HIP_PLATFORM MATCHES "hcc" OR ALPAKA_HIP_PLATFORM MATCHES "clang"))
-    MESSAGE(WARNING
-        "The HIP back-end is currently experimental, especially for HCC. "
-        "In alpaka HIP(HCC) has a few workarounds and does not support 3D memory and constant memory. "
-        )
-ENDIF()
 
 OPTION(ALPAKA_ACC_GPU_CUDA_ONLY_MODE "Only back-ends using CUDA can be enabled in this mode (This allows to mix alpaka code with native CUDA code)." OFF)
 # If CUDA-only mode is enabled, we set the defaults for all CPU back-ends to OFF.
@@ -136,10 +123,6 @@ ENDIF()
 
 IF(ALPAKA_ACC_GPU_CUDA_ONLY_MODE AND NOT ALPAKA_ACC_GPU_CUDA_ENABLE)
     MESSAGE(WARNING "If ALPAKA_ACC_GPU_CUDA_ONLY_MODE is enabled, ALPAKA_ACC_GPU_CUDA_ENABLE has to be enabled as well.")
-    SET(_ALPAKA_FOUND FALSE)
-ENDIF()
-IF(ALPAKA_ACC_GPU_HIP_ONLY_MODE AND NOT ALPAKA_ACC_GPU_HIP_ENABLE)
-    MESSAGE(WARNING "If ALPAKA_ACC_GPU_HIP_ONLY_MODE is enabled, ALPAKA_ACC_GPU_HIP_ENABLE has to be enabled as well.")
     SET(_ALPAKA_FOUND FALSE)
 ENDIF()
 
@@ -692,143 +675,20 @@ IF(ALPAKA_ACC_GPU_HIP_ENABLE)
         SET(ALPAKA_HIP_VERSION 1.5)
     ENDIF()
 
-    IF(ALPAKA_HIP_VERSION VERSION_LESS 1.5)
-        MESSAGE(WARNING "HIP < 1.5 is not supported!")
-        SET(_ALPAKA_FOUND FALSE)
 
-    ELSE()
-        # must set this for HIP package (note that you also need certain env vars)
-        SET(HIP_PLATFORM "${ALPAKA_HIP_PLATFORM}" CACHE STRING "")
-        SET(HIP_RUNTIME "${ALPAKA_HIP_PLATFORM}" CACHE STRING "")
+    LIST(APPEND _ALPAKA_COMPILE_DEFINITIONS_PUBLIC "__HIP_ARCH_GFX906__=1")
 
-        FIND_PACKAGE(HIP "${ALPAKA_HIP_VERSION}")
-        IF(NOT HIP_FOUND)
-            MESSAGE(WARNING "Optional alpaka dependency HIP could not be found! HIP back-end disabled!")
-            SET(ALPAKA_ACC_GPU_HIP_ENABLE OFF CACHE BOOL "Enable the HIP GPU back-end" FORCE)
-
-        ELSE()
-            SET(ALPAKA_HIP_VERSION "${HIP_VERSION}")
-            IF(ALPAKA_HIP_VERSION VERSION_LESS 1.5.19211)
-                MESSAGE(STATUS "HIP < 1.5.19211 untested!")
-            ENDIF()
-            SET(ALPAKA_HIP_COMPILER "hipcc" CACHE STRING "HIP compiler")
-            SET_PROPERTY(CACHE ALPAKA_HIP_COMPILER PROPERTY STRINGS "hipcc")
-
-            OPTION(ALPAKA_HIP_FAST_MATH "Enable fast-math" ON)
-            OPTION(ALPAKA_HIP_FTZ "Set flush to zero for GPU" OFF)
-            OPTION(ALPAKA_HIP_SHOW_REGISTER "Show kernel registers and create PTX" OFF)
-            OPTION(ALPAKA_HIP_KEEP_FILES "Keep all intermediate files that are generated during internal compilation steps (folder: nvcc_tmp)" OFF)
-
-            SET(HIP_HIPCC_FLAGS)
-
-            IF(ALPAKA_HIP_PLATFORM MATCHES "nvcc")
-                FIND_PACKAGE(CUDA)
-                IF(NOT CUDA_FOUND)
-                    MESSAGE(WARNING "Could not found CUDA while HIP platform is set to nvcc. Compiling might fail.")
-                ENDIF()
-
-                SET(ALPAKA_CUDA_ARCH "30" CACHE STRING "GPU architecture")
-
-                IF(CUDA_VERSION VERSION_LESS 9.0)
-                    MESSAGE(WARNING "CUDA Toolkit < 9.0 is not supported!")
-                    SET(_ALPAKA_FOUND FALSE)
-                ENDIF()
-
-                IF(${ALPAKA_DEBUG} GREATER 1)
-                    SET(HIP_VERBOSE_BUILD ON)
-                ENDIF()
-
-                LIST(APPEND HIP_NVCC_FLAGS "--expt-extended-lambda")
-                LIST(APPEND HIP_NVCC_FLAGS "--expt-relaxed-constexpr")
-                LIST(APPEND _ALPAKA_HIP_LIBRARIES "cudart")
-
-                FOREACH(_HIP_ARCH_ELEM ${ALPAKA_CUDA_ARCH})
-                    # set flags to create device code for the given architecture
-                    LIST(APPEND CUDA_NVCC_FLAGS
-                        --generate-code arch=compute_${_HIP_ARCH_ELEM},code=sm_${_HIP_ARCH_ELEM}
-                        --generate-code arch=compute_${_HIP_ARCH_ELEM},code=compute_${_HIP_ARCH_ELEM}
-                    )
-                ENDFOREACH()
-                # for CUDA cmake adds automatically compiler flags as nvcc does not do this,
-                # but for HIP we have to do this here
-                LIST(APPEND HIP_NVCC_FLAGS "-D__CUDACC__")
-                LIST(APPEND HIP_NVCC_FLAGS "-ccbin ${CMAKE_CXX_COMPILER}")
-                LIST(APPEND HIP_NVCC_FLAGS "-Xcompiler" "-g")
-
-                IF(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-                    LIST(APPEND HIP_HIPCC_FLAGS "-G")
-                ENDIF()
-                # propage host flags
-                # SET(CUDA_PROPAGATE_HOST_FLAGS ON) # does not exist in HIP, so do it manually
-                string(TOUPPER "${CMAKE_BUILD_TYPE}" build_config)
-                FOREACH( _flag ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${build_config}})
-                    LIST(APPEND HIP_NVCC_FLAGS "-Xcompiler ${_flag}")
-                ENDFOREACH()
-
-                IF(ALPAKA_HIP_FAST_MATH)
-                    LIST(APPEND HIP_HIPCC_FLAGS "--use_fast_math")
-                ENDIF()
-
-                IF(ALPAKA_HIP_FTZ)
-                    LIST(APPEND HIP_HIPCC_FLAGS "--ftz=true")
-                ELSE()
-                    LIST(APPEND HIP_HIPCC_FLAGS "--ftz=false")
-                ENDIF()
-
-                IF(ALPAKA_HIP_SHOW_REGISTER)
-                    LIST(APPEND HIP_HIPCC_FLAGS "-Xptxas=-v")
-                ENDIF()
-                IF(CUDA_VERSION GREATER_EQUAL 9.0)
-                    # avoids warnings on host-device signatured, default constructors/destructors
-                    LIST(APPEND HIP_HIPCC_FLAGS "-Xcudafe --diag_suppress=esa_on_defaulted_function_ignored")
-                ENDIF()
-            ENDIF() # nvcc
-
-            # # HIP random numbers
-            FIND_PACKAGE(hiprand REQUIRED CONFIG PATHS "${HIP_ROOT_DIR}/hiprand")
-            IF(hiprand_FOUND)
-                LIST(APPEND _ALPAKA_INCLUDE_DIRECTORIES_PUBLIC "${hiprand_INCLUDE_DIRS}")
-                LIST(APPEND _ALPAKA_LINK_LIBRARIES_PUBLIC "${hiprand_LIBRARIES}")
-            ELSE()
-                MESSAGE(FATAL_ERROR "Could not find hipRAND (also searched in: HIP_ROOT_DIR=${HIP_ROOT_DIR}/hiprand).")
-            ENDIF()
-
-            IF(ALPAKA_HIP_PLATFORM MATCHES "hcc" OR ALPAKA_HIP_PLATFORM MATCHES "clang")
-
-                # # hiprand requires ROCm implementation of random numbers by rocrand
-                FIND_PACKAGE(rocrand REQUIRED CONFIG PATHS "${HIP_ROOT_DIR}/rocrand")
-                IF(rocrand_FOUND)
-                    LIST(APPEND _ALPAKA_INCLUDE_DIRECTORIES_PUBLIC "${rocrand_INCLUDE_DIRS}")
-                    LIST(APPEND _ALPAKA_LINK_LIBRARIES_PUBLIC "${rocrand_LIBRARIES}")
-                ELSE()
-                    MESSAGE(FATAL_ERROR "Could not find rocRAND (also searched in: HIP_ROOT_DIR=${HIP_ROOT_DIR}/rocrand).")
-                ENDIF()
-            ENDIF()
-
-            LIST(APPEND HIP_HIPCC_FLAGS "-D__HIPCC__")
-            LIST(APPEND HIP_HIPCC_FLAGS "-std=c++${ALPAKA_CXX_STANDARD}")
-
-            IF(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-                LIST(APPEND HIP_HIPCC_FLAGS "-g")
-            ENDIF()
-
-
-            IF(ALPAKA_HIP_KEEP_FILES)
-                MAKE_DIRECTORY("${PROJECT_BINARY_DIR}/hip_tmp")
-                LIST(APPEND HIP_HIPCC_FLAGS "--keep" "--keep-dir" "${PROJECT_BINARY_DIR}/hip_tmp")
-            ENDIF()
-
-            OPTION(ALPAKA_HIP_SHOW_CODELINES "Show kernel lines in cuda-gdb and cuda-memcheck" OFF)
-            IF(ALPAKA_HIP_SHOW_CODELINES)
-                LIST(APPEND HIP_HIPCC_FLAGS "--source-in-ptx" "-lineinfo")
-                LIST(APPEND HIP_HIPCC_FLAGS "-Xcompiler" "-rdynamic")
-                SET(ALPAKA_HIP_KEEP_FILES ON CACHE BOOL "activate keep files" FORCE)
-            ENDIF()
-            IF(_ALPAKA_HIP_LIBRARIES)
-                LIST(APPEND _ALPAKA_LINK_LIBRARIES_PUBLIC "general;${_ALPAKA_HIP_LIBRARIES}")
-            ENDIF()
-        ENDIF()
-    ENDIF()
+    LIST(APPEND _ALPAKA_COMPILE_OPTIONS_PUBLIC "--cuda-gpu-arch=gfx906")
+    LIST(APPEND _ALPAKA_COMPILE_OPTIONS_PUBLIC "-O3")
+    LIST(APPEND _ALPAKA_COMPILE_OPTIONS_PUBLIC "-xhip")
+    LIST(APPEND _ALPAKA_COMPILE_OPTIONS_PUBLIC "--hip-device-lib-path=/opt/rocm/lib")
+    LIST(APPEND _ALPAKA_COMPILE_OPTIONS_PUBLIC "-std=c++14")
+    LIST(APPEND _ALPAKA_COMPILE_OPTIONS_PUBLIC "-I/opt/rocm/hsa/include")
+    LIST(APPEND _ALPAKA_COMPILE_OPTIONS_PUBLIC "-I/opt/rocm/hip/include")
+    LIST(APPEND _ALPAKA_COMPILE_OPTIONS_PUBLIC "-I/opt/rocm/hiprand/include")
+    LIST(APPEND _ALPAKA_COMPILE_OPTIONS_PUBLIC "-I/opt/rocm/rocrand/include")
+    LIST(APPEND _ALPAKA_COMPILE_OPTIONS_PUBLIC -cxx-isystem /opt/rocm/llvm/lib/clang/10.0.0/include/)
+  
 ENDIF() # HIP
 
 #-------------------------------------------------------------------------------
@@ -891,30 +751,10 @@ SET(_ALPAKA_SUFFIXED_INCLUDE_DIR "${_ALPAKA_INCLUDE_DIRECTORY}/alpaka")
 
 SET(_ALPAKA_LINK_LIBRARY)
 
-# # cxx flags will not be forwarded to hip wrapped compiler, so it has to be provided manually
-IF(ALPAKA_ACC_GPU_HIP_ENABLE)
-    SET(_ALPAKA_COMPILE_DEFINITIONS_HIP ${_ALPAKA_COMPILE_DEFINITIONS_PUBLIC})
-    LIST_ADD_PREFIX("-D" _ALPAKA_COMPILE_DEFINITIONS_HIP)
-    LIST(APPEND HIP_HIPCC_FLAGS
-        ${_ALPAKA_COMPILE_DEFINITIONS_HIP}
-        )
-    HIP_INCLUDE_DIRECTORIES(
-        # ${_ALPAKA_INCLUDE_DIRECTORY}
-        # ${_ALPAKA_INCLUDE_DIRECTORIES_PUBLIC}
-        ${HIP_INCLUDE_DIRS}
-        ${Boost_INCLUDE_DIRS}
-        ${_ALPAKA_ROOT_DIR}/test/common/include
-        )
 
-    IF(OPENMP_FOUND) # remove fopenmp link from nvcc, otherwise linker error will occur
-        LIST(REMOVE_ITEM _ALPAKA_LINK_FLAGS_PUBLIC "${OpenMP_CXX_FLAGS}")
-        LIST(APPEND _ALPAKA_LINK_FLAGS_PUBLIC "-Xcompiler ${OpenMP_CXX_FLAGS}")
-    ENDIF()
-    IF(ALPAKA_HIP_PLATFORM MATCHES "hcc" OR ALPAKA_HIP_PLATFORM MATCHES "clang")
-        # GFX600, GFX601, GFX700, GFX701, GFX702, GFX703, GFX704, GFX801, GFX802, GFX803, GFX810, GFX900, GFX902
-        SET(_ALPAKA_LINK_LIBRARIES_PUBLIC "${_ALPAKA_LINK_LIBRARIES_PUBLIC}" "--amdgpu-target=gfx803 --amdgpu-target=gfx900 --amdgpu-target=gfx906")
-    ENDIF()
-ENDIF()
+# GFX600, GFX601, GFX700, GFX701, GFX702, GFX703, GFX704, GFX801, GFX802, GFX803, GFX810, GFX900, GFX902
+SET(_ALPAKA_LINK_LIBRARIES_PUBLIC "${_ALPAKA_LINK_LIBRARIES_PUBLIC}" "--cuda-gpu-arch=gfx906  -L/opt/rocm/hip/lib -lhip_hcc --cuda-gpu-arch=gfx906 -lgcc_s -lgcc -lpthread -lm")
+
 
 # Add all the source and include files in all recursive subdirectories and group them accordingly.
 append_recursive_files_add_to_src_group("${_ALPAKA_SUFFIXED_INCLUDE_DIR}" "${_ALPAKA_SUFFIXED_INCLUDE_DIR}" "hpp" _ALPAKA_FILES_HEADER)

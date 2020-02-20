@@ -23,6 +23,10 @@
     #include <alpaka/core/Cuda.hpp>
 #endif
 
+#if defined(ALPAKA_ACC_GPU_HIP_ENABLED) && BOOST_LANG_HIP
+    #include <alpaka/core/Hip.hpp>
+#endif
+
 #include <alpaka/mem/alloc/AllocCpuBoostAligned.hpp>
 
 #include <alpaka/meta/DependentFalseType.hpp>
