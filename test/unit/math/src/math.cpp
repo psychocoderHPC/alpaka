@@ -61,7 +61,7 @@ struct TestKernel
     {
         for( size_t i = 0; i < TArgs::capacity; ++i )
         {
-          results(i, acc) = functor(args(i, acc), acc);
+          results(i, acc) = functor.executeOnDevice(acc, args(i, acc));
         }
     }
 };
@@ -170,7 +170,7 @@ struct TestTemplate
         for( size_t i = 0; i < Args::capacity; ++i )
         {
             INFO("Idx i: " << i)
-            TData std_result = functor(args(i));
+            TData std_result = functor.executeOnHost(args(i));
             REQUIRE( results(i) == Approx(std_result) );
         }
     }

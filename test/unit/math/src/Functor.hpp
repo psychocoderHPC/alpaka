@@ -38,60 +38,42 @@ namespace math {
                                                                                 \
     ALPAKA_NO_HOST_ACC_WARNING                                                  \
     template<typename TAcc,                                                     \
-             typename... TArgs,                                                 \
-             /* SFINAE: Enables if called from device. */                       \
-             typename std::enable_if<                                           \
-                 !std::is_same<TAcc, std::nullptr_t>::value,                    \
-                 int>::type = 0>                                                \
+             typename T>                                                 \
     ALPAKA_FN_ACC                                                               \
-    auto execute(                                                               \
+    auto executeOnDevice(                                                       \
         TAcc const & acc,                                                       \
-        TArgs const & ... args ) const                                          \
+        ArgsItem<T, Arity::Unary> const & args ) const                           \
     {                                                                           \
-        return ALPAKA_OP(acc, args... );                                        \
+        return ALPAKA_OP(acc, args.arg[0] );                                    \
     }                                                                           \
-                                                                                \
     ALPAKA_NO_HOST_ACC_WARNING                                                  \
+    template<typename TAcc,                                                     \
+             typename T>                                                 \
+    ALPAKA_FN_ACC                                                               \
+    auto executeOnDevice(                                                       \
+        TAcc const & acc,                                                       \
+        ArgsItem<T, Arity::Binary>  & args ) const                           \
+    {                                                                           \
+        return ALPAKA_OP(acc, args.arg[0], args.arg[1] );                       \
+    }                                                                           \
+    /* assigns args by arity */                                                 \
     template<                                                                   \
-        typename TAcc = std::nullptr_t,                                         \
-        typename... TArgs,                                                      \
-             /* SFINAE: Enables if called from host. */                         \
-             typename std::enable_if<                                           \
-                 std::is_same< TAcc, std::nullptr_t>::value,                    \
-                 int>::type = 0>                                                \
+        typename T>                                                             \
     ALPAKA_FN_HOST                                                              \
-    auto execute(                                                               \
-        TAcc const & acc,                                                       \
-        TArgs const &... args ) const                                           \
+    auto executeOnHost(                                                       \
+        ArgsItem<T, Arity::Unary> const & args) const                           \
     {                                                                           \
-      alpaka::ignore_unused( acc );                                             \
-      return STD_OP( args... );                                                 \
+        return STD_OP(args.arg[0]);                                             \
     }                                                                           \
                                                                                 \
     /* assigns args by arity */                                                 \
-    ALPAKA_NO_HOST_ACC_WARNING                                                  \
     template<                                                                   \
-        typename T,                                                             \
-        typename TAcc = std::nullptr_t>                                         \
-    ALPAKA_FN_HOST_ACC                                                          \
-    auto operator()(                                                            \
-        ArgsItem<T, Arity::Unary> const & args,                                 \
-        TAcc const & acc = nullptr) const                                       \
+        typename T>                                                             \
+    ALPAKA_FN_HOST                                                              \
+    auto executeOnHost(                                                            \
+        ArgsItem<T, Arity::Binary> const & args) const                          \
     {                                                                           \
-        return execute(acc, args.arg[0]);                                       \
-    }                                                                           \
-                                                                                \
-    /* assigns args by arity */                                                 \
-    ALPAKA_NO_HOST_ACC_WARNING                                                  \
-    template<                                                                   \
-        typename T,                                                             \
-        typename TAcc = std::nullptr_t>                                         \
-    ALPAKA_FN_HOST_ACC                                                          \
-    auto operator()(                                                            \
-        ArgsItem<T, Arity::Binary> const & args,                                \
-        TAcc const & acc = nullptr) const                                       \
-    {                                                                           \
-        return execute(acc, args.arg[0], args.arg[1]);                          \
+        return STD_OP(args.arg[0], args.arg[1]);                                \
     }                                                                           \
                                                                                 \
     friend std::ostream & operator << (                                         \
