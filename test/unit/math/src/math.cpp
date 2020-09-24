@@ -61,7 +61,7 @@ struct TestKernel
     {
         for( size_t i = 0; i < TArgs::capacity; ++i )
         {
-          results(i, acc) = functor.executeOnDevice(acc, args(i, acc));
+          //results(i, acc) = functor.executeOnDevice(acc, args(i, acc));
         }
     }
 };
@@ -98,7 +98,7 @@ struct TestTemplate
         using QueueAcc = alpaka::test::queue::DefaultQueue< DevAcc >;
         using TArgsItem = alpaka::test::unit::math::ArgsItem<TData, TFunctor::arity>;
 
-        static constexpr auto capacity = 1000;
+        constexpr auto capacity = 1000;
 
         using Args = alpaka::test::unit::math::Buffer<
             TAcc,
@@ -112,8 +112,8 @@ struct TestTemplate
         >;
 
         // Every functor is executed individual on one kernel.
-        static constexpr size_t elementsPerThread = 1u;
-        static constexpr size_t sizeExtent = 1u;
+        constexpr size_t elementsPerThread = 1u;
+        constexpr size_t sizeExtent = 1u;
 
         DevAcc const devAcc{ alpaka::pltf::getDevByIdx< PltfAcc >( 0u ) };
         DevHost const devHost{ alpaka::pltf::getDevByIdx< PltfHost >( 0u ) };

@@ -234,32 +234,11 @@ ALPAKA_TEST_MATH_OP_FUNCTOR( OpRemainder,
     Range::NotZero )
 
 using BinaryFunctors = std::tuple<
-    OpAtan2,
-    OpFmod,
-    OpMax,
-    OpMin,
-    OpPow,
-    OpRemainder
+    OpMax
     >;
 
 using UnaryFunctors = std::tuple<
-    OpAbs,
-    OpAcos,
-    OpAsin,
-    OpAtan,
-    OpCbrt,
-    OpCeil,
-    OpCos,
-    OpErf,
-    OpExp,
-    OpFloor,
-    OpLog,
-    OpRound,
-    OpRsqrt,
-    OpSin,
-    OpSqrt,
-    OpTan,
-    OpTrunc
+    OpAbs
     >;
 
 } // math
