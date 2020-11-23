@@ -10,6 +10,7 @@
 #pragma once
 
 #include <alpaka/alpaka.hpp>
+#include <alpaka/core/Decay.hpp>
 
 #include <type_traits>
 
@@ -44,7 +45,7 @@ namespace alpaka
                 typename TSfinae = void>
             class IteratorView
             {
-                using TViewDecayed = std::decay_t<TView>;
+                using TViewDecayed = ALPAKA_DECAY_T(TView);
                 using Dim = alpaka::Dim<TViewDecayed>;
                 using Idx = alpaka::Idx<TViewDecayed>;
                 using Elem = MimicConst<alpaka::Elem<TViewDecayed>, TView>;

@@ -10,6 +10,7 @@
 #pragma once
 
 #include <alpaka/alpaka.hpp>
+#include <alpaka/core/Decay.hpp>
 
 #include <type_traits>
 #include <utility>
@@ -34,7 +35,7 @@ namespace alpaka
                 std::cout
                     << "measureKernelRunTime("
                     << " queue: " << typeid(TQueue).name()
-                    << " task: " << typeid(std::decay_t<TTask>).name()
+                    << " task: " << typeid(ALPAKA_DECAY_T(TTask)).name()
                     << ")" << std::endl;
 #endif
                 // Wait for the queue to finish all tasks enqueued prior to the giventask.

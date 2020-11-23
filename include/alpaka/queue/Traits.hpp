@@ -12,6 +12,7 @@
 #include <alpaka/wait/Traits.hpp>
 
 #include <alpaka/core/Common.hpp>
+#include <alpaka/core/Decay.hpp>
 
 #include <type_traits>
 #include <utility>
@@ -66,7 +67,7 @@ namespace alpaka
     {
         traits::Enqueue<
             TQueue,
-            std::decay_t<TTask>>
+            ALPAKA_DECAY_T(TTask)>
         ::enqueue(
             queue,
             std::forward<TTask>(task));

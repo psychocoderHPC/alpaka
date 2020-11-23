@@ -11,6 +11,7 @@
 
 #include <alpaka/core/Common.hpp>
 #include <alpaka/core/Unused.hpp>
+#include <alpaka/core/Decay.hpp>
 
 #include <utility>
 #include <tuple>
@@ -90,7 +91,7 @@ namespace alpaka
                 detail::apply_impl(
                     std::forward<F>(f),
                     std::forward<Tuple>(t),
-                    std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>::value>{});
+                    std::make_index_sequence<std::tuple_size<ALPAKA_DECAY_T(Tuple)>::value>{});
         }
     }
 }

@@ -10,6 +10,7 @@
 #pragma once
 
 #include <type_traits>
+#include <alpaka/core/Decay.hpp>
 
 namespace alpaka
 {
@@ -24,6 +25,6 @@ namespace alpaka
             std::integral_constant<
                 bool,
                 std::is_base_of<TBase, TDerived>::value
-                && !std::is_same<TBase, std::decay_t<TDerived>>::value>;
+                && !std::is_same<TBase, ALPAKA_DECAY_T(TDerived)>::value>;
     }
 }
