@@ -184,19 +184,15 @@ public:
     {
         testAtomicHierarchies<Add>(acc, success, operandOrig);
         testAtomicHierarchies<Sub>(acc, success, operandOrig);
-        testAtomicHierarchies<Min>(acc, success, operandOrig);
-        testAtomicHierarchies<Max>(acc, success, operandOrig);
         testAtomicHierarchies<Exch>(acc, success, operandOrig);
 
         testAtomicHierarchies<Inc>(acc, success, operandOrig);
         testAtomicHierarchies<Dec>(acc, success, operandOrig);
-        testAtomicHierarchies<And>(acc, success, operandOrig);
-        testAtomicHierarchies<Or>(acc, success, operandOrig);
-        testAtomicHierarchies<Xor>(acc, success, operandOrig);
 
         testAtomicCasHierarchies<alpaka::hierarchy::Threads>(acc, success, operandOrig);
     }
 };
+
 
 template<typename TAcc, typename T>
 class AtomicTestKernel<TAcc, T, std::enable_if_t<std::is_floating_point_v<T>>>
@@ -207,13 +203,48 @@ public:
     {
         testAtomicHierarchies<Add>(acc, success, operandOrig);
         testAtomicHierarchies<Sub>(acc, success, operandOrig);
-        testAtomicHierarchies<Min>(acc, success, operandOrig);
-        testAtomicHierarchies<Max>(acc, success, operandOrig);
         testAtomicHierarchies<Exch>(acc, success, operandOrig);
 
-        // Inc, Dec, Or, And, Xor  are not supported on float/double types
+        // Inc, Dec are not supported on float/double types
 
         testAtomicCasHierarchies<alpaka::hierarchy::Threads>(acc, success, operandOrig);
+    }
+};
+
+template<typename TAcc, typename T, typename Sfinae = void>
+class AtomicCompareOperationsTestKernel
+{
+public:
+    ALPAKA_NO_HOST_ACC_WARNING
+    ALPAKA_FN_ACC auto operator()(TAcc const& acc, bool* success, T operandOrig) const -> void
+    {
+        testAtomicHierarchies<Min>(acc, success, operandOrig);
+        testAtomicHierarchies<Max>(acc, success, operandOrig);
+    }
+};
+
+template<typename TAcc, typename T, typename Sfinae = void>
+class AtomicBitOperationsTestKernel
+{
+public:
+    ALPAKA_NO_HOST_ACC_WARNING
+    ALPAKA_FN_ACC auto operator()(TAcc const& acc, bool* success, T operandOrig) const -> void
+    {
+        testAtomicHierarchies<And>(acc, success, operandOrig);
+        testAtomicHierarchies<Or>(acc, success, operandOrig);
+        testAtomicHierarchies<Xor>(acc, success, operandOrig);
+    }
+};
+
+template<typename TAcc, typename T>
+class AtomicBitOperationsTestKernel<TAcc, T, std::enable_if_t<std::is_floating_point_v<T>>>
+{
+public:
+    ALPAKA_NO_HOST_ACC_WARNING
+    ALPAKA_FN_ACC auto operator()(TAcc const& /* acc */, bool* success, T /* operandOrig */) const -> void
+    {
+        // Do not perform bitwise atomic operations for floating point types
+        ALPAKA_CHECK(*success, true);
     }
 };
 
@@ -232,7 +263,43 @@ public:
         bool* success,
         T /* operandOrig */) const -> void
     {
-        // All other types are not supported by CUDA/HIP atomic operations.
+        // Only 32/64bit atomics are supported
+        ALPAKA_CHECK(*success, true);
+    }
+};
+
+template<typename TApi, typename TDim, typename TIdx, typename T>
+class AtomicBitOperationsTestKernel<
+    alpaka::AccGpuUniformCudaHipRt<TApi, TDim, TIdx>,
+    T,
+    std::enable_if_t<!std::is_floating_point_v<T> && (sizeof(T) != 4u && sizeof(T) != 8u)>>
+{
+public:
+    ALPAKA_NO_HOST_ACC_WARNING
+    ALPAKA_FN_ACC auto operator()(
+        alpaka::AccGpuUniformCudaHipRt<TApi, TDim, TIdx> const& /* acc */,
+        bool* success,
+        T /* operandOrig */) const -> void
+    {
+        // Only 32/64bit atomics are supported
+        ALPAKA_CHECK(*success, true);
+    }
+};
+
+template<typename TApi, typename TDim, typename TIdx, typename T>
+class AtomicCompareOperationsTestKernel<
+    alpaka::AccGpuUniformCudaHipRt<TApi, TDim, TIdx>,
+    T,
+    std::enable_if_t<sizeof(T) != 4u && sizeof(T) != 8u>>
+{
+public:
+    ALPAKA_NO_HOST_ACC_WARNING
+    ALPAKA_FN_ACC auto operator()(
+        alpaka::AccGpuUniformCudaHipRt<TApi, TDim, TIdx> const& /* acc */,
+        bool* success,
+        T /* operandOrig */) const -> void
+    {
+        // Only 32/64bit atomics are supported
         ALPAKA_CHECK(*success, true);
     }
 };
@@ -249,7 +316,39 @@ public:
     ALPAKA_FN_ACC auto operator()(alpaka::AccOacc<TDim, TIdx> const& /* acc */, bool* success, T /* operandOrig */)
         const -> void
     {
-        // All other types are not supported by OpenACC atomic operations.
+        // Only 32/64bit atomics are supported
+        ALPAKA_CHECK(*success, true);
+    }
+};
+
+template<typename TDim, typename TIdx, typename T>
+class AtomicBitOperationsTestKernel<
+    alpaka::AccOacc<TDim, TIdx>,
+    T,
+    std::enable_if_t<!std::is_floating_point_v<T> && (sizeof(T) != 4u && sizeof(T) != 8u)>>
+{
+public:
+    ALPAKA_NO_HOST_ACC_WARNING
+    ALPAKA_FN_ACC auto operator()(alpaka::AccOacc<TDim, TIdx> const& /* acc */, bool* success, T /* operandOrig */)
+        const -> void
+    {
+        // Only 32/64bit atomics are supported
+        ALPAKA_CHECK(*success, true);
+    }
+};
+
+template<typename TDim, typename TIdx, typename T>
+class AtomicCompareOperationsTestKernel<
+    alpaka::AccOacc<TDim, TIdx>,
+    T,
+    std::enable_if_t<sizeof(T) != 4u && sizeof(T) != 8u>>
+{
+public:
+    ALPAKA_NO_HOST_ACC_WARNING
+    ALPAKA_FN_ACC auto operator()(alpaka::AccOacc<TDim, TIdx> const& /* acc */, bool* success, T /* operandOrig */)
+        const -> void
+    {
+        // Only 32/64bit atomics are supported
         ALPAKA_CHECK(*success, true);
     }
 };
@@ -266,10 +365,19 @@ struct TestAtomicOperations
 
         alpaka::test::KernelExecutionFixture<TAcc> fixture(alpaka::Vec<Dim, Idx>::ones());
 
-        AtomicTestKernel<TAcc, T> kernel;
-
         T value = static_cast<T>(32);
+
+        // The tests are split into multiple kernel to avoid breaking the maximum kernel size.
+        // clang (HIP) e.g. shows compile error: 'error: stack size limit exceeded (155632) in
+        // _ZN6alpaka16uniform_cuda_hip6de'
+        AtomicTestKernel<TAcc, T> kernel;
         REQUIRE(fixture(kernel, value));
+
+        AtomicBitOperationsTestKernel<TAcc, T> kernelBitOps;
+        REQUIRE(fixture(kernelBitOps, value));
+
+        AtomicCompareOperationsTestKernel<TAcc, T> kernelCompareOps;
+        REQUIRE(fixture(kernelCompareOps, value));
     }
 };
 
