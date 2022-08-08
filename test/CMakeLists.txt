@@ -19,6 +19,5 @@ add_subdirectory(common)
 
 list(APPEND _alpaka_TEST_OPTIONS --colour-mode default)
 
-add_subdirectory(analysis)
-add_subdirectory(integ)
+
 add_subdirectory(unit)
