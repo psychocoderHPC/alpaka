@@ -75,132 +75,136 @@ ALPAKA_FN_ACC auto testAtomicCall(TAcc const& acc, bool* success, T operandOrig,
     }
 }
 
-ALPAKA_NO_HOST_ACC_WARNING
-template<typename THierarchy, typename TOp, typename TAcc, typename T>
-ALPAKA_FN_ACC auto testAtomicCombinations(TAcc const& acc, bool* success, T operandOrig) -> void
+template<typename TOp>
+class TestAtomicOp
 {
+public:
+    ALPAKA_NO_HOST_ACC_WARNING
+    template<typename THierarchy, typename TAcc, typename T>
+    static ALPAKA_FN_ACC auto test(TAcc const& acc, bool* success, T operandOrig) -> void
     {
-        // left operand is half of the right
-        T const value = static_cast<T>(operandOrig / static_cast<T>(2));
-        testAtomicCall<THierarchy, TOp>(acc, success, operandOrig, value);
-    }
-    {
-        // left operand is twice as large as the right
-        T const value = static_cast<T>(operandOrig * static_cast<T>(2));
-        testAtomicCall<THierarchy, TOp>(acc, success, operandOrig, value);
-    }
-    {
-        // left operand is larger by one
-        T const value = static_cast<T>(operandOrig + static_cast<T>(1));
-        testAtomicCall<THierarchy, TOp>(acc, success, operandOrig, value);
-    }
-    {
-        // left operand is smaller by one
-        T const value = static_cast<T>(operandOrig - static_cast<T>(1));
-        testAtomicCall<THierarchy, TOp>(acc, success, operandOrig, value);
-    }
-    {
-        // both operands are equal
-        T const value = operandOrig;
-        testAtomicCall<THierarchy, TOp>(acc, success, operandOrig, value);
-    }
-}
+        {
+            // left operand is half of the right
+            T const value = static_cast<T>(operandOrig / static_cast<T>(2));
+            testAtomicCall<THierarchy, TOp>(acc, success, operandOrig, value);
+        }
 
-ALPAKA_NO_HOST_ACC_WARNING
-template<typename THierarchy, typename TAcc, typename T>
-ALPAKA_FN_ACC auto testAtomicCas(TAcc const& acc, bool* success, T operandOrig) -> void
+        ::alpaka::syncBlockThreads(acc);
+        {
+            // left operand is twice as large as the right
+            T const value = static_cast<T>(operandOrig * static_cast<T>(2));
+            testAtomicCall<THierarchy, TOp>(acc, success, operandOrig, value);
+        }
+
+        ::alpaka::syncBlockThreads(acc);
+        {
+            // left operand is larger by one
+            T const value = static_cast<T>(operandOrig + static_cast<T>(1));
+            testAtomicCall<THierarchy, TOp>(acc, success, operandOrig, value);
+        }
+
+        ::alpaka::syncBlockThreads(acc);
+        {
+            // left operand is smaller by one
+            T const value = static_cast<T>(operandOrig - static_cast<T>(1));
+            testAtomicCall<THierarchy, TOp>(acc, success, operandOrig, value);
+        }
+        ::alpaka::syncBlockThreads(acc);
+        {
+            // both operands are equal
+            T const value = operandOrig;
+            testAtomicCall<THierarchy, TOp>(acc, success, operandOrig, value);
+        }
+
+    }
+};
+
+template<>
+class TestAtomicOp<Cas>
 {
-    T const value = static_cast<T>(4);
-
-    auto& operand = alpaka::declareSharedVar<T, __COUNTER__>(acc);
-
-    // with match
+public:
+    ALPAKA_NO_HOST_ACC_WARNING
+    template<typename THierarchy, typename TAcc, typename T>
+    static ALPAKA_FN_ACC auto test(TAcc const& acc, bool* success, T operandOrig) -> void
     {
-        T const compare = operandOrig;
-        T const reference = value;
+        T const value = static_cast<T>(4);
+
+        auto& operand = alpaka::declareSharedVar<T, __COUNTER__>(acc);
+
+        // with match
         {
-            operand = operandOrig;
-            T const ret = alpaka::atomicOp<alpaka::AtomicCas>(acc, &operand, compare, value, THierarchy{});
-            ALPAKA_CHECK(*success, equals(operandOrig, ret));
-            ALPAKA_CHECK(*success, equals(operand, reference));
+            T const compare = operandOrig;
+            T const reference = value;
+            {
+                operand = operandOrig;
+                T const ret = alpaka::atomicOp<alpaka::AtomicCas>(acc, &operand, compare, value, THierarchy{});
+                ALPAKA_CHECK(*success, equals(operandOrig, ret));
+                ALPAKA_CHECK(*success, equals(operand, reference));
+            }
+            {
+                operand = operandOrig;
+                T const ret = alpaka::atomicCas(acc, &operand, compare, value, THierarchy{});
+                ALPAKA_CHECK(*success, equals(operandOrig, ret));
+                ALPAKA_CHECK(*success, equals(operand, reference));
+            }
         }
+
+        // without match
         {
-            operand = operandOrig;
-            T const ret = alpaka::atomicCas(acc, &operand, compare, value, THierarchy{});
-            ALPAKA_CHECK(*success, equals(operandOrig, ret));
-            ALPAKA_CHECK(*success, equals(operand, reference));
+            T const compare = static_cast<T>(operandOrig + static_cast<T>(1));
+            T const reference = operandOrig;
+            {
+                operand = operandOrig;
+                T const ret = alpaka::atomicOp<alpaka::AtomicCas>(acc, &operand, compare, value, THierarchy{});
+                ALPAKA_CHECK(*success, equals(operandOrig, ret));
+                ALPAKA_CHECK(*success, equals(operand, reference));
+            }
+            {
+                operand = operandOrig;
+                T const ret = alpaka::atomicCas(acc, &operand, compare, value, THierarchy{});
+                ALPAKA_CHECK(*success, equals(operandOrig, ret));
+                ALPAKA_CHECK(*success, equals(operand, reference));
+            }
         }
     }
+};
 
-    // without match
-    {
-        T const compare = static_cast<T>(operandOrig + static_cast<T>(1));
-        T const reference = operandOrig;
-        {
-            operand = operandOrig;
-            T const ret = alpaka::atomicOp<alpaka::AtomicCas>(acc, &operand, compare, value, THierarchy{});
-            ALPAKA_CHECK(*success, equals(operandOrig, ret));
-            ALPAKA_CHECK(*success, equals(operand, reference));
-        }
-        {
-            operand = operandOrig;
-            T const ret = alpaka::atomicCas(acc, &operand, compare, value, THierarchy{});
-            ALPAKA_CHECK(*success, equals(operandOrig, ret));
-            ALPAKA_CHECK(*success, equals(operand, reference));
-        }
-    }
-}
-
-template<typename THierarchy, typename TAcc, typename T, typename Sfinae = void>
+template<typename TOp, typename TAcc, typename T, typename Sfinae = void>
 class AtomicTestKernel
 {
 public:
     ALPAKA_NO_HOST_ACC_WARNING
     ALPAKA_FN_ACC auto operator()(TAcc const& acc, bool* success, T operandOrig) const -> void
     {
-        testAtomicCombinations<THierarchy, Add>(acc, success, operandOrig);
-        testAtomicCombinations<THierarchy, Sub>(acc, success, operandOrig);
-        testAtomicCombinations<THierarchy, Exch>(acc, success, operandOrig);
-        testAtomicCombinations<THierarchy, Min>(acc, success, operandOrig);
-        testAtomicCombinations<THierarchy, Max>(acc, success, operandOrig);
-
-        testAtomicCombinations<THierarchy, And>(acc, success, operandOrig);
-        testAtomicCombinations<THierarchy, Or>(acc, success, operandOrig);
-        testAtomicCombinations<THierarchy, Xor>(acc, success, operandOrig);
-
-        testAtomicCombinations<THierarchy, Inc>(acc, success, operandOrig);
-        testAtomicCombinations<THierarchy, Dec>(acc, success, operandOrig);
-
-        testAtomicCas<THierarchy>(acc, success, operandOrig);
+        TestAtomicOp<TOp>::template test<alpaka::hierarchy::Threads>(acc, success, operandOrig);
+        TestAtomicOp<TOp>::template test<alpaka::hierarchy::Blocks>(acc, success, operandOrig);
+        TestAtomicOp<TOp>::template test<alpaka::hierarchy::Grids>(acc, success, operandOrig);
     }
 };
 
 
-template<typename THierarchy, typename TAcc, typename T>
-class AtomicTestKernel<THierarchy, TAcc, T, std::enable_if_t<std::is_floating_point_v<T>>>
+template<typename TOp, typename TAcc, typename T>
+class AtomicTestKernel<
+    TOp,
+    TAcc,
+    T,
+    std::enable_if_t<std::is_floating_point_v<T> && !alpaka::meta::Contains<std::tuple<Inc, Dec, Or, And, Cas>, T>::value>>
 {
 public:
     ALPAKA_NO_HOST_ACC_WARNING
-    ALPAKA_FN_ACC auto operator()(TAcc const& acc, bool* success, T operandOrig) const -> void
+    ALPAKA_FN_ACC auto operator()(TAcc const&, bool* success, T) const -> void
     {
-        testAtomicCombinations<THierarchy, Add>(acc, success, operandOrig);
-        testAtomicCombinations<THierarchy, Sub>(acc, success, operandOrig);
-        testAtomicCombinations<THierarchy, Exch>(acc, success, operandOrig);
-        testAtomicCombinations<THierarchy, Min>(acc, success, operandOrig);
-        testAtomicCombinations<THierarchy, Max>(acc, success, operandOrig);
-
-        // Inc, Dec, Or, And, Xor are not supported on float/double types
-
-        testAtomicCas<THierarchy>(acc, success, operandOrig);
+        // Not supported for floating point types
+        ALPAKA_CHECK(*success, true);
     }
 };
 
 
 #if(defined(ALPAKA_ACC_GPU_CUDA_ENABLED) && BOOST_LANG_CUDA) || (defined(ALPAKA_ACC_GPU_HIP_ENABLED) && BOOST_LANG_HIP)
 
-template<typename THierarchy, typename TApi, typename TDim, typename TIdx, typename T>
+template<typename TOp, typename TApi, typename TDim, typename TIdx, typename T>
 class AtomicTestKernel<
-    THierarchy,
+    TOp,
     alpaka::AccGpuUniformCudaHipRt<TApi, TDim, TIdx>,
     T,
     std::enable_if_t<sizeof(T) != 4u && sizeof(T) != 8u>>
@@ -221,12 +225,8 @@ public:
 
 #if defined(ALPAKA_ACC_ANY_BT_OACC_ENABLED)
 
-template<typename THierarchy, typename TDim, typename TIdx, typename T>
-class AtomicTestKernel<
-    THierarchy,
-    alpaka::AccOacc<TDim, TIdx>,
-    T,
-    std::enable_if_t<sizeof(T) != 4u && sizeof(T) != 8u>>
+template<typename TOp, typename TDim, typename TIdx, typename T>
+class AtomicTestKernel<TOp, alpaka::AccOacc<TDim, TIdx>, T, std::enable_if_t<sizeof(T) != 4u && sizeof(T) != 8u>>
 {
 public:
     ALPAKA_NO_HOST_ACC_WARNING
@@ -251,15 +251,42 @@ struct TestAtomicOperations
         alpaka::test::KernelExecutionFixture<TAcc> fixture(alpaka::Vec<Dim, Idx>::ones());
 
         T value = static_cast<T>(32);
-#if 0
-        AtomicTestKernel<alpaka::hierarchy::Threads, TAcc, T> kernelAtomicThreads;
-        REQUIRE(fixture(kernelAtomicThreads, value));
 
-        AtomicTestKernel<alpaka::hierarchy::Blocks, TAcc, T> kernelAtomicBlocks;
-        REQUIRE(fixture(kernelAtomicBlocks, value));
+        AtomicTestKernel<Add, TAcc, T> kernelAtomicAdd;
+        REQUIRE(fixture(kernelAtomicAdd, value));
+#if 0
+        AtomicTestKernel<Sub, TAcc, T> kernelAtomicSub;
+        REQUIRE(fixture(kernelAtomicSub, value));
+
+        AtomicTestKernel<Exch, TAcc, T> kernelAtomicExch;
+        REQUIRE(fixture(kernelAtomicExch, value));
+
+        AtomicTestKernel<Min, TAcc, T> kernelAtomicMin;
+        REQUIRE(fixture(kernelAtomicMin, value));
+
+        AtomicTestKernel<Max, TAcc, T> kernelAtomicMax;
+        REQUIRE(fixture(kernelAtomicMax, value));
+
+        AtomicTestKernel<Inc, TAcc, T> kernelAtomicInc;
+        REQUIRE(fixture(kernelAtomicInc, value));
+
+        AtomicTestKernel<Dec, TAcc, T> kernelAtomicDec;
+        REQUIRE(fixture(kernelAtomicDec, value));
+
+        AtomicTestKernel<And, TAcc, T> kernelAtomicAnd;
+        REQUIRE(fixture(kernelAtomicAnd, value));
+
+        AtomicTestKernel<Or, TAcc, T> kernelAtomicOr;
+        REQUIRE(fixture(kernelAtomicOr, value));
+
+        AtomicTestKernel<Xor, TAcc, T> kernelAtomicXor;
+        REQUIRE(fixture(kernelAtomicXor, value));
 #endif
-        AtomicTestKernel<alpaka::hierarchy::Grids, TAcc, T> kernelAtomicGrids;
-        REQUIRE(fixture(kernelAtomicGrids, value));
+        AtomicTestKernel<Cas, TAcc, T> kernelAtomicCas;
+        REQUIRE(fixture(kernelAtomicCas, value));
+
+
+
     }
 };
 
@@ -269,19 +296,19 @@ TEMPLATE_LIST_TEST_CASE("atomicOperationsWorking", "[atomic]", TestAccs)
 {
     using Acc = TestType;
 
-    // TestAtomicOperations<Acc, unsigned char>::testAtomicOperations();
-    // TestAtomicOperations<Acc, char>::testAtomicOperations();
-    // TestAtomicOperations<Acc, unsigned short>::testAtomicOperations();
-    // TestAtomicOperations<Acc, short>::testAtomicOperations();
+    TestAtomicOperations<Acc, unsigned char>::testAtomicOperations();
+    TestAtomicOperations<Acc, char>::testAtomicOperations();
+    TestAtomicOperations<Acc, unsigned short>::testAtomicOperations();
+    TestAtomicOperations<Acc, short>::testAtomicOperations();
 
     TestAtomicOperations<Acc, unsigned int>::testAtomicOperations();
     TestAtomicOperations<Acc, int>::testAtomicOperations();
 
-    // TestAtomicOperations<Acc, unsigned long>::testAtomicOperations();
-    // TestAtomicOperations<Acc, long>::testAtomicOperations();
-    // TestAtomicOperations<Acc, unsigned long long>::testAtomicOperations();
-    // TestAtomicOperations<Acc, long long>::testAtomicOperations();
+    TestAtomicOperations<Acc, unsigned long>::testAtomicOperations();
+    TestAtomicOperations<Acc, long>::testAtomicOperations();
+    TestAtomicOperations<Acc, unsigned long long>::testAtomicOperations();
+    TestAtomicOperations<Acc, long long>::testAtomicOperations();
 
-    // TestAtomicOperations<Acc, float>::testAtomicOperations();
-    // TestAtomicOperations<Acc, double>::testAtomicOperations();
+    TestAtomicOperations<Acc, float>::testAtomicOperations();
+    TestAtomicOperations<Acc, double>::testAtomicOperations();
 }
