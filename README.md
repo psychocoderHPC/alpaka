@@ -1,6 +1,7 @@
 **alpaka** - Abstraction Library for Parallel Kernel Acceleration
 =================================================================
 
+This is a CI test only.
 
 [![Continuous Integration](https://github.com/alpaka-group/alpaka/workflows/Continuous%20Integration/badge.svg)](https://github.com/alpaka-group/alpaka/actions?query=workflow%3A%22Continuous+Integration%22)
 [![Documentation Status](https://readthedocs.org/projects/alpaka/badge/?version=latest)](https://alpaka.readthedocs.io)
