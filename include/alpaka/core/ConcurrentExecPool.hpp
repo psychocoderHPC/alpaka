@@ -285,29 +285,6 @@ namespace alpaka::core
                 return m_numActiveTasks == 0u;
             }
 
-            void detach(std::shared_ptr<ConcurrentExecPool>&& self)
-            {
-                m_self = std::move(self);
-                if constexpr(TisYielding)
-                    m_bDetachedFlag = true;
-                else
-                {
-                    std::lock_guard<TMutex> lock(this->m_mtxWakeup);
-                    m_bDetachedFlag = true;
-                    // we need to notify during the lock, because setting m_bDetachedFlag to true, allows another
-                    // thread to delete this and thus destroy m_cvWakeup.
-                    this->m_cvWakeup.notify_one();
-                }
-            }
-
-            auto takeDetachHandle() -> std::shared_ptr<ConcurrentExecPool>
-            {
-                if(m_bDetachedFlag.exchange(false))
-                    return std::move(m_self);
-                else
-                    return nullptr;
-            }
-
         private:
             //! The function the concurrent executors are executing.
             void concurrentExecFn()
@@ -320,11 +297,7 @@ namespace alpaka::core
                         if(auto task = popTask())
                             task->runTask();
                         else
-                        {
-                            if(takeDetachHandle())
-                                return; // Pool was detached and is idle, stop and delete
                             TYield::yield();
-                        }
                     }
                     else
                     {
@@ -334,22 +307,11 @@ namespace alpaka::core
                         std::unique_lock<TMutex> lock(this->m_mtxWakeup);
                         if(m_qTasks.empty())
                         {
-                            auto self = takeDetachHandle();
-                            if(self)
-                            {
-                                // Pool was detached and is idle, stop and delete
-                                lock.unlock(); // TODO(bgruber): I guess we unlock here so the mutex is not locked when
-                                               // the dtor of self runs, which also tries to lock?
-                                return;
-                            }
-
                             // If the shutdown flag has been set since the last check, return now.
                             if(m_bShutdownFlag)
                                 return;
 
-                            this->m_cvWakeup.wait(
-                                lock,
-                                [this] { return !m_qTasks.empty() || m_bShutdownFlag || m_bDetachedFlag; });
+                            this->m_cvWakeup.wait(lock, [this] { return !m_qTasks.empty() || m_bShutdownFlag; });
                         }
                     }
                 }
@@ -382,8 +344,6 @@ namespace alpaka::core
             ThreadSafeQueue<std::shared_ptr<ITaskPkg>> m_qTasks;
             std::atomic<std::uint32_t> m_numActiveTasks = 0u;
             std::atomic<bool> m_bShutdownFlag = false;
-            std::atomic<bool> m_bDetachedFlag = false;
-            std::shared_ptr<ConcurrentExecPool> m_self = nullptr;
         };
     } // namespace detail
 } // namespace alpaka::core
