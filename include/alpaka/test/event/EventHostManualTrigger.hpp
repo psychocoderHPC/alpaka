@@ -176,7 +176,7 @@ namespace alpaka::trait
             auto const enqueueCount = spEventImpl->m_enqueueCount;
 
             // Enqueue a task that only resets the events flag if it is completed.
-            queue.m_spQueueImpl->m_workerThread->enqueueTask(
+            queue.m_spQueueImpl->m_workerThread.submit(
                 [spEventImpl, enqueueCount]()
                 {
                     std::unique_lock<std::mutex> lk2(spEventImpl->m_mutex);
