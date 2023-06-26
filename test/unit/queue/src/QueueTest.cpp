@@ -112,6 +112,8 @@ TEMPLATE_LIST_TEST_CASE(
         alpaka::wait(f.m_queue);
     }
 
+    // without this call thread sanitizer checks will show errors
+    alpaka::empty(f.m_queue);
     CHECK(callbackFinished.load() == true);
     LOOPED_CHECK(30, 100, alpaka::empty(f.m_queue));
 }

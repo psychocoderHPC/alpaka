@@ -62,7 +62,6 @@ namespace alpaka
             ALPAKA_FN_HOST ~QueueUniformCudaHipRtImpl()
             {
                 ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
-
                 // Make sure all pending async work is finished before destroying the stream to guarantee determinism.
                 // This would not be necessary for plain CUDA/HIP operations, but we can have host functions in the
                 // stream, which reference this queue instance and its CallbackThread. Make sure they are done.
@@ -108,7 +107,7 @@ namespace alpaka
             {
                 return m_spQueueImpl->getNativeHandle();
             }
-            auto getCallbackThread() -> core::CallbackThread&
+            auto getCallbackThread() const -> core::CallbackThread&
             {
                 return m_spQueueImpl->m_callbackThread;
             }
@@ -146,7 +145,8 @@ namespace alpaka
                 ALPAKA_UNIFORM_CUDA_HIP_RT_CHECK_IGNORE(
                     ret = TApi::streamQuery(queue.getNativeHandle()),
                     TApi::errorNotReady);
-                return (ret == TApi::success);
+                // queue check is only needed as workaround to silent thread sanitizer checks
+                return (ret == TApi::success && queue.m_spQueueImpl->m_callbackThread.empty());
             }
         };
 
@@ -161,7 +161,6 @@ namespace alpaka
                 uniform_cuda_hip::detail::QueueUniformCudaHipRt<TApi, TBlocking> const& queue) -> void
             {
                 ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
-
                 // Sync is allowed even for queues on non current device.
                 ALPAKA_UNIFORM_CUDA_HIP_RT_CHECK(TApi::streamSynchronize(queue.getNativeHandle()));
             }
@@ -189,37 +188,39 @@ namespace alpaka
 
             struct HostFuncData
             {
-                QueueImpl& q; // We don't need to keep the queue alive, because in it's dtor it will synchronize with
-                              // the CUDA/HIP stream and wait until all host functions and the CallbackThread are done.
-                              // It's actually an error to copy the queue into the host function. Destroying it here
-                              // would call CUDA/HIP APIs from the host function. Passing it further to the Callback
-                              // thread, would make the Callback thread hold a task containing the queue with the
-                              // CallbackThread itself. Destroying the task if no other queue instance exists will
-                              // make the CallbackThread join itself and crash.
+                // We don't need to keep the queue alive, because in it's dtor it will synchronize with
+                // the CUDA/HIP stream and wait until all host functions and the CallbackThread are done.
+                // It's actually an error to copy the queue into the host function. Destroying it here
+                // would call CUDA/HIP APIs from the host function. Passing it further to the Callback
+                // thread, would make the Callback thread hold a task containing the queue with the
+                // CallbackThread itself. Destroying the task if no other queue instance exists will
+                // make the CallbackThread join itself and crash.
+                std::shared_ptr<QueueImpl> queue;
                 TTask t;
+
+                ALPAKA_FN_HOST static void uniformCudaHipRtHostFunc(void* arg)
+                {
+                    ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
+                    auto data = std::unique_ptr<HostFuncData>(reinterpret_cast<HostFuncData*>(arg));
+                    auto f = data->queue->m_callbackThread.submit(
+                        [data = std::move(data)]() mutable
+                        {
+                            data->t();
+                            data.reset(); // destroy the task
+                        });
+                    f.wait();
+                } // destroys the future `f`, destroying the packaged task and the above lambda
             };
 
-            ALPAKA_FN_HOST static void uniformCudaHipRtHostFunc(void* arg)
-            {
-                auto data = std::unique_ptr<HostFuncData>(reinterpret_cast<HostFuncData*>(arg));
-                auto& queue = data->q;
-                auto f = queue.m_callbackThread.submit(
-                    [data = std::move(data)]() mutable
-                    {
-                        data->t();
-                        data.reset(); // destroy the task
-                    });
-                f.wait();
-            } // destroys the future `f`, destroying the packaged task and the above lambda
 
             ALPAKA_FN_HOST static auto enqueue(
                 uniform_cuda_hip::detail::QueueUniformCudaHipRt<TApi, TBlocking>& queue,
                 TTask const& task) -> void
             {
-                ALPAKA_UNIFORM_CUDA_HIP_RT_CHECK(TApi::launchHostFunc(
-                    queue.getNativeHandle(),
-                    uniformCudaHipRtHostFunc,
-                    new HostFuncData{*queue.m_spQueueImpl, task}));
+                ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
+                auto* data = new HostFuncData{queue.m_spQueueImpl, task};
+                ALPAKA_UNIFORM_CUDA_HIP_RT_CHECK(
+                    TApi::launchHostFunc(queue.getNativeHandle(), data->uniformCudaHipRtHostFunc, (void*) data));
                 if constexpr(TBlocking)
                     ALPAKA_UNIFORM_CUDA_HIP_RT_CHECK(TApi::streamSynchronize(queue.getNativeHandle()));
             }
