@@ -12,6 +12,7 @@
 #include "alpaka/core/OmpSchedule.hpp"
 #include "alpaka/dim/Traits.hpp"
 #include "alpaka/idx/Traits.hpp"
+#include "alpaka/kernel/Kernel.hpp"
 #include "alpaka/queue/Traits.hpp"
 #include "alpaka/vec/Vec.hpp"
 #include "alpaka/workdiv/Traits.hpp"
@@ -26,11 +27,9 @@ namespace alpaka
     {
         //! The kernel execution task creation trait.
         template<
-            typename TAcc,
             typename TWorkDiv,
-            typename TKernelFnObj,
-            typename... TArgs/*,
-            typename TSfinae = void*/>
+            typename TKernel,
+            typename TSfinae = void>
         struct CreateTaskKernel;
 
         //! The trait for getting the size of the block shared dynamic memory of a kernel.
@@ -284,10 +283,10 @@ namespace alpaka
         std::cout << __func__ << " workDiv: " << workDiv << ", kernelFnObj: " << core::demangled<decltype(kernelFnObj)>
                   << std::endl;
 #endif
-        return trait::CreateTaskKernel<TAcc, TWorkDiv, TKernelFnObj, TArgs...>::createTaskKernel(
+        auto kernel = makeKernel<TAcc>(kernelFnObj, std::forward<TArgs>(args)...);
+        return trait::CreateTaskKernel<TWorkDiv, decltype(kernel)>::createTaskKernel(
             workDiv,
-            kernelFnObj,
-            std::forward<TArgs>(args)...);
+            kernel);
     }
 
 #if BOOST_COMP_CLANG

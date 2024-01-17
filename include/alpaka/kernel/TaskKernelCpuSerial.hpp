@@ -10,6 +10,8 @@
 #include "alpaka/dim/Traits.hpp"
 #include "alpaka/idx/Traits.hpp"
 #include "alpaka/platform/Traits.hpp"
+#include "alpaka/workdiv/Traits.hpp"
+#include "alpaka/workdiv/WorkDivMembers.hpp"
 
 // Implementation details.
 #include "alpaka/acc/AccCpuSerial.hpp"
@@ -32,15 +34,14 @@
 namespace alpaka
 {
     //! The CPU serial execution task implementation.
-    template<typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
+    template<typename TDim, typename TIdx, typename TKernel>
     class TaskKernelCpuSerial final : public WorkDivMembers<TDim, TIdx>
     {
     public:
         template<typename TWorkDiv>
-        ALPAKA_FN_HOST TaskKernelCpuSerial(TWorkDiv&& workDiv, TKernelFnObj kernelFnObj, TArgs&&... args)
-            : WorkDivMembers<TDim, TIdx>(std::forward<TWorkDiv>(workDiv))
-            , m_kernelFnObj(std::move(kernelFnObj))
-            , m_args(std::forward<TArgs>(args)...)
+        ALPAKA_FN_HOST TaskKernelCpuSerial(TWorkDiv const& workDiv, TKernel const & kernel)
+            : WorkDivMembers<TDim, TIdx>(workDiv)
+            , m_kernel(kernel)
         {
             static_assert(
                 Dim<std::decay_t<TWorkDiv>>::value == TDim::value,
@@ -58,15 +59,15 @@ namespace alpaka
 
             // Get the size of the block shared dynamic memory.
             auto const blockSharedMemDynSizeBytes = std::apply(
-                [&](std::decay_t<TArgs> const&... args)
+                [&](auto const&... args)
                 {
                     return getBlockSharedMemDynSizeBytes<AccCpuSerial<TDim, TIdx>>(
-                        m_kernelFnObj,
+                        m_kernel.m_kernelFn,
                         blockThreadExtent,
                         threadElemExtent,
                         args...);
                 },
-                m_args);
+                m_kernel.m_args);
 
 #    if ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL
             std::cout << __func__ << " blockSharedMemDynSizeBytes: " << blockSharedMemDynSizeBytes << " B"
@@ -89,7 +90,7 @@ namespace alpaka
                 {
                     acc.m_gridBlockIdx = blockThreadIdx;
 
-                    std::apply(m_kernelFnObj, std::tuple_cat(std::tie(acc), m_args));
+                    std::apply(m_kernel.m_kernelFn, std::tuple_cat(std::tie(acc), m_kernel.m_args));
 
                     // After a block has been processed, the shared memory has to be deleted.
                     freeSharedVars(acc);
@@ -97,43 +98,51 @@ namespace alpaka
         }
 
     private:
-        TKernelFnObj m_kernelFnObj;
-        std::tuple<std::decay_t<TArgs>...> m_args;
+        TKernel m_kernel;
     };
+
+    template<typename TWorkDiv, typename TKernel>
+    inline auto makeTaskKernelCpuSerial(TWorkDiv const& workDiv, TKernel const& kernel)
+    {
+        return TaskKernelCpuSerial<
+            typename trait::DimType<TWorkDiv>::type,
+            typename trait::IdxType<TWorkDiv>::type,
+            TKernel>(workDiv, kernel);
+    }
 
     namespace trait
     {
         //! The CPU serial execution task accelerator type trait specialization.
-        template<typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
-        struct AccType<TaskKernelCpuSerial<TDim, TIdx, TKernelFnObj, TArgs...>>
+        template<typename TDim, typename TIdx, typename TKernel>
+        struct AccType<TaskKernelCpuSerial<TDim, TIdx, TKernel>>
         {
             using type = AccCpuSerial<TDim, TIdx>;
         };
 
         //! The CPU serial execution task device type trait specialization.
-        template<typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
-        struct DevType<TaskKernelCpuSerial<TDim, TIdx, TKernelFnObj, TArgs...>>
+        template<typename TDim, typename TIdx, typename TKernel>
+        struct DevType<TaskKernelCpuSerial<TDim, TIdx, TKernel>>
         {
             using type = DevCpu;
         };
 
         //! The CPU serial execution task dimension getter trait specialization.
-        template<typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
-        struct DimType<TaskKernelCpuSerial<TDim, TIdx, TKernelFnObj, TArgs...>>
+        template<typename TDim, typename TIdx, typename TKernel>
+        struct DimType<TaskKernelCpuSerial<TDim, TIdx, TKernel>>
         {
             using type = TDim;
         };
 
         //! The CPU serial execution task platform type trait specialization.
-        template<typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
-        struct PlatformType<TaskKernelCpuSerial<TDim, TIdx, TKernelFnObj, TArgs...>>
+        template<typename TDim, typename TIdx, typename TKernel>
+        struct PlatformType<TaskKernelCpuSerial<TDim, TIdx, TKernel>>
         {
             using type = PlatformCpu;
         };
 
         //! The CPU serial execution task idx type trait specialization.
-        template<typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
-        struct IdxType<TaskKernelCpuSerial<TDim, TIdx, TKernelFnObj, TArgs...>>
+        template<typename TDim, typename TIdx, typename TKernel>
+        struct IdxType<TaskKernelCpuSerial<TDim, TIdx, TKernel>>
         {
             using type = TIdx;
         };

@@ -5,6 +5,7 @@
 #pragma once
 
 // Base classes.
+#include "alpaka/acc/Tag.hpp"
 #include "alpaka/atomic/AtomicCpu.hpp"
 #include "alpaka/atomic/AtomicHierarchy.hpp"
 #include "alpaka/atomic/AtomicNoOp.hpp"
@@ -41,7 +42,7 @@
 
 namespace alpaka
 {
-    template<typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
+    template<typename TDim, typename TIdx, typename TKernel>
     class TaskKernelCpuSerial;
 
     //! The CPU serial accelerator.
@@ -159,22 +160,6 @@ namespace alpaka
             using type = TDim;
         };
 
-        //! The CPU serial accelerator execution task type trait specialization.
-        template<typename TDim, typename TIdx, typename TWorkDiv, typename TKernelFnObj, typename... TArgs>
-        struct CreateTaskKernel<AccCpuSerial<TDim, TIdx>, TWorkDiv, TKernelFnObj, TArgs...>
-        {
-            ALPAKA_FN_HOST static auto createTaskKernel(
-                TWorkDiv const& workDiv,
-                TKernelFnObj const& kernelFnObj,
-                TArgs&&... args)
-            {
-                return TaskKernelCpuSerial<TDim, TIdx, TKernelFnObj, TArgs...>(
-                    workDiv,
-                    kernelFnObj,
-                    std::forward<TArgs>(args)...);
-            }
-        };
-
         //! The CPU serial execution task platform type trait specialization.
         template<typename TDim, typename TIdx>
         struct PlatformType<AccCpuSerial<TDim, TIdx>>
@@ -199,6 +184,19 @@ namespace alpaka
         struct TagToAcc<alpaka::TagCpuSerial, TDim, TIdx>
         {
             using type = alpaka::AccCpuSerial<TDim, TIdx>;
+        };
+
+        //! The CPU serial accelerator execution task type trait specialization.
+        template<typename TWorkDiv, typename TKernel>
+        struct CreateTaskKernel<
+            TWorkDiv,
+            TKernel,
+            std::enable_if_t<accMatchesTags<typename TKernel::Acc, TagCpuSerial>>>
+        {
+            ALPAKA_FN_HOST static auto createTaskKernel(TWorkDiv const& workDiv, TKernel const& kernel)
+            {
+                return makeTaskKernelCpuSerial(workDiv, kernel);
+            }
         };
     } // namespace trait
 } // namespace alpaka
