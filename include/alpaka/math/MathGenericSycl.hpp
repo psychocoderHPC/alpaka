@@ -6,7 +6,7 @@
 
 #include "alpaka/core/Concepts.hpp"
 #include "alpaka/math/Complex.hpp"
-#include "alpaka/math/Traits.hpp"
+#include "alpaka/math/TraitsDef.hpp"
 
 #include <type_traits>
 

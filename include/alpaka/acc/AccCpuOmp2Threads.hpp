@@ -15,7 +15,6 @@
 #include "alpaka/idx/bt/IdxBtOmp.hpp"
 #include "alpaka/idx/gb/IdxGbRef.hpp"
 #include "alpaka/intrinsic/IntrinsicCpu.hpp"
-#include "alpaka/math/MathStdLib.hpp"
 #include "alpaka/mem/fence/MemFenceOmp2Threads.hpp"
 #include "alpaka/rand/RandDefault.hpp"
 #include "alpaka/rand/RandStdLib.hpp"
@@ -64,7 +63,6 @@ namespace alpaka
               AtomicCpu, // grid atomics
               AtomicOmpBuiltIn, // block atomics
               AtomicOmpBuiltIn> // thread atomics
-        , public math::MathStdLib
         , public BlockSharedMemDynMember<>
         , public BlockSharedMemStMemberMasterSync<>
         , public BlockSyncBarrierOmp

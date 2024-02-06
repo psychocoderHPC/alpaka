@@ -49,7 +49,7 @@ struct specialized_Kernel
     ALPAKA_FN_INLINE ALPAKA_FN_ACC TData operator()(TAcc const& acc, TData const input)
     {
         printf("generic kernel\n");
-        return alpaka::math::min(acc, 0, input);
+        return alpaka::math::min(0, input);
     }
 };
 
@@ -62,7 +62,7 @@ struct specialized_Kernel<
     ALPAKA_FN_INLINE ALPAKA_FN_ACC TData operator()(TAcc const& acc, TData const input)
     {
         printf("OpenMP kernel\n");
-        return alpaka::math::min(acc, 1, input);
+        return alpaka::math::min(1, input);
     }
 };
 

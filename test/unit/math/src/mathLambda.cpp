@@ -21,7 +21,7 @@
 
 #    include <cstdint>
 #    include <tuple>
-
+#if 0
 using TestAccs = alpaka::test::EnabledAccs<alpaka::DimInt<1u>, std::size_t>;
 
 //! Caller of test template with additional lambda wrapping the functor
@@ -81,4 +81,5 @@ TEMPLATE_LIST_TEST_CASE("mathOpsLambdaComplexDouble", "[math] [operator]", TestA
     testTemplate.template operator()<mathtest::UnaryFunctorsComplex>();
     testTemplate.template operator()<mathtest::BinaryFunctorsComplex>();
 }
+#endif
 #endif

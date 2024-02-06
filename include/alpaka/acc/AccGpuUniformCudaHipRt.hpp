@@ -14,7 +14,6 @@
 #include "alpaka/idx/bt/IdxBtUniformCudaHipBuiltIn.hpp"
 #include "alpaka/idx/gb/IdxGbUniformCudaHipBuiltIn.hpp"
 #include "alpaka/intrinsic/IntrinsicUniformCudaHipBuiltIn.hpp"
-#include "alpaka/math/MathUniformCudaHipBuiltIn.hpp"
 #include "alpaka/mem/fence/MemFenceUniformCudaHipBuiltIn.hpp"
 #include "alpaka/rand/RandDefault.hpp"
 #include "alpaka/rand/RandUniformCudaHipRand.hpp"
@@ -55,7 +54,6 @@ namespace alpaka
               AtomicUniformCudaHipBuiltIn, // grid atomics
               AtomicUniformCudaHipBuiltIn, // block atomics
               AtomicUniformCudaHipBuiltIn> // thread atomics
-        , public math::MathUniformCudaHipBuiltIn
         , public BlockSharedMemDynUniformCudaHipBuiltIn
         , public BlockSharedMemStUniformCudaHipBuiltIn
         , public BlockSyncUniformCudaHipBuiltIn

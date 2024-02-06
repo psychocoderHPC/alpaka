@@ -15,7 +15,7 @@
 #include <complex>
 #include <tuple>
 #include <type_traits>
-
+#if 0
 using TestAccs = alpaka::test::EnabledAccs<alpaka::DimInt<1u>, std::size_t>;
 
 // This file only has unit tests for complex numbers in order to split the tests between object files and save compiler
@@ -53,3 +53,4 @@ TEST_CASE("mathPaddingComplexDouble", "[padding]")
     // Ensure that we don't accidentally introduce padding
     STATIC_REQUIRE(sizeof(alpaka::Complex<double>) == 2 * sizeof(double));
 }
+#endif

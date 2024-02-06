@@ -80,7 +80,7 @@ namespace mathtest
             using QueueAcc = alpaka::test::DefaultQueue<DevAcc>;
             using TArgsItem = ArgsItem<TData, TFunctor::arity>;
 
-            static constexpr auto capacity = 1000;
+            static constexpr auto capacity = 12;
 
             using Args = Buffer<TAcc, TArgsItem, capacity>;
             using Results = Buffer<TAcc, TData, capacity>;

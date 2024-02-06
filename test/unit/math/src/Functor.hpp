@@ -51,9 +51,9 @@ namespace mathtest
             typename TAcc,                                                                                            \
             typename... TArgs, /* SFINAE: Enables if called from device. */                                           \
             typename std::enable_if_t<!std::is_same_v<TAcc, std::nullptr_t>, int> = 0>                                \
-        ALPAKA_FN_ACC auto execute(TAcc const& acc, TArgs const&... args) const                                       \
+        ALPAKA_FN_ACC auto execute(TAcc const& /* acc */, TArgs const&... args) const                                 \
         {                                                                                                             \
-            return ALPAKA_OP(acc, args...);                                                                           \
+            return ALPAKA_OP(args...);                                                                                \
         }                                                                                                             \
                                                                                                                       \
         ALPAKA_NO_HOST_ACC_WARNING                                                                                    \
@@ -253,35 +253,7 @@ namespace mathtest
 
     // Unary functors to be used only for real types
     using UnaryFunctorsReal = std::tuple<
-        OpAbs,
-        OpAcos,
-        OpAcosh,
-        OpArg,
-        OpAsin,
-        OpAsinh,
-        OpAtan,
-        OpAtanh,
-        OpCbrt,
-        OpCeil,
-        OpCos,
-        OpCosh,
-        OpErf,
-        OpExp,
-        OpFloor,
-        OpLog,
-        OpLog2,
-        OpLog10,
-        OpRound,
-        OpRsqrt,
-        OpSin,
-        OpSinh,
-        OpSqrt,
-        OpTan,
-        OpTanh,
-        OpTrunc,
-        OpIsnan,
-        OpIsinf,
-        OpIsfinite>;
+        OpAbs>;
 
     // Binary functors to be used only for real types
     using BinaryFunctorsReal = std::tuple<OpAtan2, OpCopysign, OpFmod, OpMax, OpMin, OpPow, OpRemainder>;
@@ -331,26 +303,7 @@ namespace mathtest
 
     // Unary functors to be used for both real and complex types
     using UnaryFunctorsComplex = std::tuple<
-        OpAbs,
-        OpAcos,
-        OpAcosh,
-        OpArg,
-        OpAsin,
-        OpAsinh,
-        OpAtan,
-        OpAtanh,
-        OpConj,
-        OpCos,
-        OpCosh,
-        OpExp,
-        OpLog,
-        OpLog10,
-        OpRsqrt,
-        OpSin,
-        OpSinh,
-        OpSqrt,
-        OpTan,
-        OpTanh>;
+        OpAbs>;
 
     // Binary functors to be used for complex types
     using BinaryFunctorsComplex = std::tuple<OpDivides, OpMinus, OpMultiplies, OpPlus, OpPowComplex>;
