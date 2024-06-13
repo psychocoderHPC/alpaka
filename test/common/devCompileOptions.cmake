@@ -44,6 +44,8 @@ if(MSVC)
     # Flags added in Visual Studio 2015
     list(APPEND alpaka_DEV_COMPILE_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:SHELL:/permissive->"
                                            "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler /permissive->")
+    list(APPEND alpaka_DEV_COMPILE_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:SHELL:-D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR>")
+    list(APPEND alpaka_DEV_COMPILE_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:SHELL:/EHsc>")
 endif()
 
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
