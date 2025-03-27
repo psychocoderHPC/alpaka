@@ -49,8 +49,8 @@ then
     # To speed up installing boost we use the tar ball, downloading the source via a shallow git clone took ~4 minutes, with wget ~20 seconds.
     BOOST_BASE_NAME=$(echo -n ${ALPAKA_CI_BOOST_BRANCH} | tr "." "_" | tr "-" "_")
     BOOST_BASE_VERSION=$(echo -n ${ALPAKA_CI_BOOST_BRANCH} | sed 's/boost-//')
-    BOOST_TAR_FILE_NAME="${BOOST_BASE_NAME}.tar.gz"
-    BOOST_DOWNLOAD_LINK="https://boostorg.jfrog.io/artifactory/main/release/${BOOST_BASE_VERSION}/source/${BOOST_TAR_FILE_NAME}"
+    BOOST_TAR_FILE_NAME="${BOOST_BASE_NAME}-b2-nodocs.tar.gz"
+    BOOST_DOWNLOAD_LINK="https://github.com/boostorg/boost/releases/download/${BOOST_BASE_VERSION}/${BOOST_TAR_FILE_NAME}"
     rm -rf ${BOOST_ROOT}
     travis_retry wget -q ${BOOST_DOWNLOAD_LINK}
     tar -xf "$BOOST_TAR_FILE_NAME"
