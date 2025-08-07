@@ -51,12 +51,14 @@ auto example(TAccTag const&) -> int
 
     // simulation defines
     // {Y, X}
-    constexpr alpaka::Vec<Dim, Idx> numNodes{64, 64};
+    constexpr int problemSize = 1024 * 8;
+
+    constexpr alpaka::Vec<Dim, Idx> numNodes{problemSize, problemSize};
     constexpr alpaka::Vec<Dim, Idx> haloSize{2, 2};
     constexpr alpaka::Vec<Dim, Idx> extent = numNodes + haloSize;
 
     constexpr uint32_t numTimeSteps = 4000;
-    constexpr double tMax = 0.1;
+    constexpr double tMax = 0.00001;
 
     // x, y in [0, 1], t in [0, tMax]
     constexpr double dx = 1.0 / static_cast<double>(extent[1] - 1);
@@ -83,67 +85,48 @@ auto example(TAccTag const&) -> int
     auto const pitchCurrAcc{alpaka::getPitchesInBytes(uCurrBufAcc)};
     auto const pitchNextAcc{alpaka::getPitchesInBytes(uNextBufAcc)};
 
-    // Set buffer to initial conditions
-    initalizeBuffer(uBufHost, dx, dy);
-
     // Select queue
     using QueueProperty = alpaka::NonBlocking;
     using QueueAcc = alpaka::Queue<Acc, QueueProperty>;
     QueueAcc dumpQueue{devAcc};
     QueueAcc computeQueue{devAcc};
 
-    // Copy host -> device
-    alpaka::memcpy(computeQueue, uCurrBufAcc, uBufHost);
-    alpaka::wait(computeQueue);
-
-    // Define a workdiv for the given problem
-    constexpr alpaka::Vec<Dim, Idx> elemPerThread{1, 1};
-
-    // Appropriate chunk size to split your problem for your Acc
-    constexpr Idx xSize = 16u;
-    constexpr Idx ySize = 16u;
-    constexpr Idx halo = 2u;
-    constexpr alpaka::Vec<Dim, Idx> chunkSize{ySize, xSize};
-    constexpr auto sharedMemSize = (ySize + halo) * (xSize + halo);
-
-    constexpr alpaka::Vec<Dim, Idx> numChunks{
-        alpaka::core::divCeil(numNodes[0], chunkSize[0]),
-        alpaka::core::divCeil(numNodes[1], chunkSize[1]),
-    };
-
-    assert(
-        numNodes[0] % chunkSize[0] == 0 && numNodes[1] % chunkSize[1] == 0
-        && "Domain must be divisible by chunk size");
-
-    StencilKernel<sharedMemSize> stencilKernel;
-    BoundaryKernel boundaryKernel;
-
-    // Get max threads that can be run in a block for this kernel
-    auto const kernelFunctionAttributes = alpaka::getFunctionAttributes<Acc>(
-        devAcc,
-        stencilKernel,
-        uCurrBufAcc.data(),
-        uNextBufAcc.data(),
-        chunkSize,
-        pitchCurrAcc,
-        pitchNextAcc,
-        dx,
-        dy,
-        dt);
-    auto const maxThreadsPerBlock = kernelFunctionAttributes.maxThreadsPerBlock;
-
-    auto const threadsPerBlock
-        = maxThreadsPerBlock < chunkSize.prod() ? alpaka::Vec<Dim, Idx>{maxThreadsPerBlock, 1} : chunkSize;
-
-    alpaka::WorkDivMembers<Dim, Idx> workDiv_manual{numChunks, threadsPerBlock, elemPerThread};
-
-    // Simulate
-    for(uint32_t step = 1; step <= numTimeSteps; ++step)
+    constexpr uint32_t numRounds = 1;
+    double elapsedTime = 0;
+    for(uint32_t rounds = 0; rounds < numRounds; ++rounds)
     {
-        // Compute next values
-        alpaka::exec<Acc>(
-            computeQueue,
-            workDiv_manual,
+        // Set buffer to initial conditions
+        initalizeBuffer(uBufHost, dx, dy);
+
+        // Copy host -> device
+        alpaka::memcpy(computeQueue, uCurrBufAcc, uBufHost);
+        alpaka::wait(computeQueue);
+
+        // Define a workdiv for the given problem
+        constexpr alpaka::Vec<Dim, Idx> elemPerThread{1, 1};
+
+        // Appropriate chunk size to split your problem for your Acc
+        constexpr Idx xSize = 16u;
+        constexpr Idx ySize = 16u;
+        constexpr Idx halo = 2u;
+        constexpr alpaka::Vec<Dim, Idx> chunkSize{ySize, xSize};
+        constexpr auto sharedMemSize = (ySize + halo) * (xSize + halo);
+
+        constexpr alpaka::Vec<Dim, Idx> numChunks{
+            alpaka::core::divCeil(numNodes[0], chunkSize[0]),
+            alpaka::core::divCeil(numNodes[1], chunkSize[1]),
+        };
+
+        assert(
+            numNodes[0] % chunkSize[0] == 0 && numNodes[1] % chunkSize[1] == 0
+            && "Domain must be divisible by chunk size");
+
+        StencilKernel<sharedMemSize> stencilKernel;
+        BoundaryKernel boundaryKernel;
+
+        // Get max threads that can be run in a block for this kernel
+        auto const kernelFunctionAttributes = alpaka::getFunctionAttributes<Acc>(
+            devAcc,
             stencilKernel,
             uCurrBufAcc.data(),
             uNextBufAcc.data(),
@@ -153,33 +136,66 @@ auto example(TAccTag const&) -> int
             dx,
             dy,
             dt);
+        auto const maxThreadsPerBlock = kernelFunctionAttributes.maxThreadsPerBlock;
 
-        // Apply boundaries
-        alpaka::exec<Acc>(
-            computeQueue,
-            workDiv_manual,
-            boundaryKernel,
-            uNextBufAcc.data(),
-            chunkSize,
-            pitchNextAcc,
-            step,
-            dx,
-            dy,
-            dt);
+        auto const threadsPerBlock
+            = maxThreadsPerBlock < chunkSize.prod() ? alpaka::Vec<Dim, Idx>{maxThreadsPerBlock, 1} : chunkSize;
+
+        alpaka::WorkDivMembers<Dim, Idx> workDiv_manual{numChunks, threadsPerBlock, elemPerThread};
+
+        auto startTime = std::chrono::high_resolution_clock::now();
+        // Simulate
+        for(uint32_t step = 1; step <= numTimeSteps; ++step)
+        {
+            // Compute next values
+            alpaka::exec<Acc>(
+                computeQueue,
+                workDiv_manual,
+                stencilKernel,
+                uCurrBufAcc.data(),
+                uNextBufAcc.data(),
+                chunkSize,
+                pitchCurrAcc,
+                pitchNextAcc,
+                dx,
+                dy,
+                dt);
+
+            // Apply boundaries
+            alpaka::exec<Acc>(
+                computeQueue,
+                workDiv_manual,
+                boundaryKernel,
+                uNextBufAcc.data(),
+                chunkSize,
+                pitchNextAcc,
+                step,
+                dx,
+                dy,
+                dt);
 
 #ifdef PNGWRITER_ENABLED
-        if((step - 1) % 100 == 0)
-        {
-            alpaka::wait(computeQueue);
-            alpaka::memcpy(dumpQueue, uBufHost, uCurrBufAcc);
-            alpaka::wait(dumpQueue);
-            writeImage(step - 1, uBufHost);
-        }
+            if((step - 1) % 100 == 0)
+            {
+                alpaka::wait(computeQueue);
+                alpaka::memcpy(dumpQueue, uBufHost, uCurrBufAcc);
+                alpaka::wait(dumpQueue);
+                writeImage(step - 1, uBufHost);
+            }
 #endif
 
-        // So we just swap next and curr (shallow copy)
-        std::swap(uNextBufAcc, uCurrBufAcc);
+            // So we just swap next and curr (shallow copy)
+            std::swap(uNextBufAcc, uCurrBufAcc);
+        }
+
+        alpaka::wait(computeQueue);
+        auto endTime = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> foo = (endTime - startTime);
+        elapsedTime += foo.count();
     }
+
+
+    std::cout << "Simulation took " << elapsedTime / numRounds << " seconds." << std::endl;
 
     // Copy device -> host
     alpaka::wait(computeQueue);
@@ -217,5 +233,6 @@ auto main() -> int
     //   TagCpuSerial, TagGpuHipRt, TagGpuCudaRt, TagCpuOmp2Blocks, TagCpuTbbBlocks,
     //   TagCpuOmp2Threads, TagCpuSycl, TagCpuTbbBlocks, TagCpuThreads,
     //   TagFpgaSyclIntel, TagGenericSycl, TagGpuSyclIntel
-    return alpaka::executeForEachAccTag([=](auto const& tag) { return example(tag); });
+    // return alpaka::executeForEachAccTag([=](auto const& tag) { return example(tag); });
+    return example(alpaka::TagCpuOmp2Blocks{});
 }
