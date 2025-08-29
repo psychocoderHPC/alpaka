@@ -4,11 +4,13 @@
  */
 
 #include <alpaka/alpaka.hpp>
+#include <alpaka/core/DemangleTypeNames.hpp>
 #include <alpaka/example/ExecuteForEachAccTag.hpp>
 
 #include <chrono>
 #include <iostream>
 #include <random>
+#include <tuple>
 #include <typeinfo>
 
 //! A vector addition kernel.
@@ -49,16 +51,22 @@ public:
 // selected accelerator only. If you use the example as the starting point for your project, you can rename the
 // example() function to main() and move the accelerator tag to the function body.
 template<alpaka::concepts::Tag TAccTag>
-auto example(TAccTag const&) -> int
+auto example(TAccTag const&, size_t numElements) -> int
 {
     // Define the index domain
     // Set the number of dimensions as an integral constant. Set to 1 for 1D.
     using Dim = alpaka::DimInt<1u>;
     using Idx = std::size_t;
 
+    // Define the buffer element type
+    using Data = std::uint32_t;
+
     // Define the accelerator
     using Acc = alpaka::TagToAcc<TAccTag, Dim, Idx>;
     using DevAcc = alpaka::Dev<Acc>;
+
+    std::cout << "Number of elements: " << numElements << std::endl;
+    std::cout << "Element type: " << std::string(alpaka::core::demangled<Data>) << std::endl;
     std::cout << "Using alpaka accelerator: " << alpaka::getAccName<Acc>() << std::endl;
 
     // Defines the synchronization behavior of a queue
@@ -75,12 +83,9 @@ auto example(TAccTag const&) -> int
     QueueAcc queue(devAcc);
 
     // Define the work division
-    Idx const numElements(123456);
     Idx const elementsPerThread(8u);
     alpaka::Vec<Dim, Idx> const extent(numElements);
 
-    // Define the buffer element type
-    using Data = std::uint32_t;
 
     // Get the host device for allocating memory on the host.
     using DevHost = alpaka::DevCpu;
@@ -140,43 +145,53 @@ auto example(TAccTag const&) -> int
         std::data(bufAccC),
         numElements);
 
-    // Enqueue the kernel execution task
-    {
-        // wait in case we are using an asynchronous queue to time actual kernel runtime
-        alpaka::wait(queue);
-        auto const beginT = std::chrono::high_resolution_clock::now();
-        alpaka::enqueue(queue, taskKernel);
-        // wait in case we are using an asynchronous queue to time actual kernel runtime
-        alpaka::wait(queue);
-        auto const endT = std::chrono::high_resolution_clock::now();
-        std::cout << "Time for kernel execution: " << std::chrono::duration<double>(endT - beginT).count() << 's'
-                  << std::endl;
-    }
-
-    // Copy back the result
-    {
-        auto beginT = std::chrono::high_resolution_clock::now();
-        alpaka::memcpy(queue, bufHostC, bufAccC);
-        alpaka::wait(queue);
-        auto const endT = std::chrono::high_resolution_clock::now();
-        std::cout << "Time for HtoD copy: " << std::chrono::duration<double>(endT - beginT).count() << 's'
-                  << std::endl;
-    }
-
-    int falseResults = 0;
     static constexpr int MAX_PRINT_FALSE_RESULTS = 20;
-    for(Idx i(0u); i < numElements; ++i)
+    int falseResults = 0;
+
+    constexpr uint32_t numRounds = 10;
+    double elapsedTime = 0;
+    for(uint32_t rounds = 0; rounds < numRounds; ++rounds)
     {
-        Data const& val(bufHostC[i]);
-        Data const correctResult(bufHostA[i] + bufHostB[i]);
-        if(val != correctResult)
+        // Enqueue the kernel execution task
         {
-            if(falseResults < MAX_PRINT_FALSE_RESULTS)
-                std::cerr << "C[" << i << "] == " << val << " != " << correctResult << std::endl;
-            ++falseResults;
+            // wait in case we are using an asynchronous queue to time actual kernel runtime
+            alpaka::wait(queue);
+            auto const beginT = std::chrono::high_resolution_clock::now();
+            alpaka::enqueue(queue, taskKernel);
+            // wait in case we are using an asynchronous queue to time actual kernel runtime
+            alpaka::wait(queue);
+            auto const endT = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> foo = (endT - beginT);
+            elapsedTime += foo.count();
+        }
+
+        if(rounds == 0)
+        {
+            // Copy back the result
+            {
+                auto beginT = std::chrono::high_resolution_clock::now();
+                alpaka::memcpy(queue, bufHostC, bufAccC);
+                alpaka::wait(queue);
+                auto const endT = std::chrono::high_resolution_clock::now();
+                std::cout << "Time for HtoD copy: " << std::chrono::duration<double>(endT - beginT).count() << 's'
+                          << std::endl;
+            }
+
+            for(Idx i(0u); i < numElements; ++i)
+            {
+                Data const& val(bufHostC[i]);
+                Data const correctResult(bufHostA[i] + bufHostB[i]);
+                if(val != correctResult)
+                {
+                    if(falseResults < MAX_PRINT_FALSE_RESULTS)
+                        std::cerr << "C[" << i << "] == " << val << " != " << correctResult << std::endl;
+                    ++falseResults;
+                }
+            }
         }
     }
-
+    std::cout << "runtime " << elapsedTime << " seconds." << std::endl;
+    std::cout << "benchmark:" << numElements << "," << elapsedTime << std::endl;
     if(falseResults == 0)
     {
         std::cout << "Execution results correct!" << std::endl;
@@ -191,10 +206,45 @@ auto example(TAccTag const&) -> int
     }
 }
 
-auto main() -> int
+void help(char* argv[])
 {
-    std::cout << "Check enabled accelerator tags:" << std::endl;
-    alpaka::printTagNames<alpaka::EnabledAccTags>();
+    std::cerr << argv[0] << " [-n  numElements] [-h]" << std::endl;
+}
+
+auto main(int argc, char* argv[]) -> int
+{
+    size_t numElements = 123456;
+
+    int opt;
+    while((opt = getopt(argc, argv, "hn:")) != -1)
+    {
+        switch(opt)
+        {
+        case 'n':
+            try
+            {
+                numElements = std::stoul(optarg, nullptr, 0);
+            }
+            catch(std::invalid_argument const& e)
+            {
+                std::cerr << "Error: invalid argument '" << optarg << "'.\n";
+                return EXIT_FAILURE;
+            }
+            catch(std::out_of_range const& e)
+            {
+                std::cerr << "Error: value '" << optarg << "' out of range for size_t.\n";
+                return EXIT_FAILURE;
+            }
+            break;
+        case 'h':
+            help(argv);
+            exit(EXIT_SUCCESS);
+        default:
+            help(argv);
+            exit(EXIT_FAILURE);
+        }
+    }
+
     // Execute the example once for each enabled accelerator.
     // If you would like to execute it for a single accelerator only you can use the following code.
     //  \code{.cpp}
@@ -206,5 +256,9 @@ auto main() -> int
     //   TagCpuSerial, TagGpuHipRt, TagGpuCudaRt, TagCpuOmp2Blocks, TagCpuTbbBlocks,
     //   TagCpuOmp2Threads, TagCpuSycl, TagCpuTbbBlocks, TagCpuThreads,
     //   TagFpgaSyclIntel, TagGenericSycl, TagGpuSyclIntel
-    return alpaka::executeForEachAccTag([=](auto const& tag) { return example(tag); });
+    constexpr uint32_t numAccs = std::tuple_size_v<decltype(alpaka::EnabledAccTags{})>;
+    if constexpr(numAccs == 1)
+        return alpaka::executeForEachAccTag([=](auto const& tag) { return example(tag, numElements); });
+    else
+        return example(std::get < numAccs == 1 ? 0 : 1 > (alpaka::EnabledAccTags{}), numElements);
 }
