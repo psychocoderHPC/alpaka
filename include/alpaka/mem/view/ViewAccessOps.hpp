@@ -5,7 +5,6 @@
 #pragma once
 
 #include "alpaka/acc/Tag.hpp"
-#include "alpaka/dev/DevGenericSycl.hpp"
 #include "alpaka/extent/Traits.hpp"
 #include "alpaka/mem/view/Traits.hpp"
 
@@ -112,7 +111,7 @@ namespace alpaka::internal
             return getExtents(*static_cast<TView const*>(this))[dim];
         }
 
-        ALPAKA_FN_HOST auto extents() const -> Vec<Dim, Idx>;
+        ALPAKA_FN_HOST auto extents() const -> VecOld<Dim, Idx>;
 
 #if ALPAKA_COMP_CLANG
 #    pragma clang diagnostic push
@@ -188,7 +187,7 @@ namespace alpaka::internal
 
     private:
         template<typename TIdx>
-        [[nodiscard]] ALPAKA_FN_HOST auto ptr_at([[maybe_unused]] Vec<Dim, TIdx> index) const -> const_pointer
+        [[nodiscard]] ALPAKA_FN_HOST auto ptr_at([[maybe_unused]] VecOld<Dim, TIdx> index) const -> const_pointer
         {
             static_assert(
                 std::is_convertible_v<TIdx, Idx>,
@@ -205,19 +204,19 @@ namespace alpaka::internal
 
     public:
         template<typename TIdx>
-        ALPAKA_FN_HOST auto operator[](Vec<Dim, TIdx> index) -> reference
+        ALPAKA_FN_HOST auto operator[](VecOld<Dim, TIdx> index) -> reference
         {
             return *const_cast<pointer>(ptr_at(index));
         }
 
         template<typename TIdx>
-        ALPAKA_FN_HOST auto operator[](Vec<Dim, TIdx> index) const -> const_reference
+        ALPAKA_FN_HOST auto operator[](VecOld<Dim, TIdx> index) const -> const_reference
         {
             return *ptr_at(index);
         }
 
         template<typename TIdx>
-        ALPAKA_FN_HOST auto at(Vec<Dim, TIdx> index) -> reference
+        ALPAKA_FN_HOST auto at(VecOld<Dim, TIdx> index) -> reference
         {
             auto extent = getExtents(*static_cast<TView*>(this));
             if(!(index < extent).all())
@@ -230,7 +229,7 @@ namespace alpaka::internal
         }
 
         template<typename TIdx>
-        [[nodiscard]] ALPAKA_FN_HOST auto at(Vec<Dim, TIdx> index) const -> const_reference
+        [[nodiscard]] ALPAKA_FN_HOST auto at(VecOld<Dim, TIdx> index) const -> const_reference
         {
             auto extent = getExtents(*static_cast<TView const*>(this));
             if(!(index < extent).all())

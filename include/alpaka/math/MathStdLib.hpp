@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "alpaka/core/Decay.hpp"
+#include "alpaka/core/decay.hpp"
 #include "alpaka/math/Traits.hpp"
 
 #include <bit>

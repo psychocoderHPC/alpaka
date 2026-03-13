@@ -11,7 +11,6 @@
 #include "alpaka/meta/Concatenate.hpp"
 #include "alpaka/meta/TypeListOps.hpp"
 #include "alpaka/offset/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
 
 #include <tuple>
 
@@ -168,7 +167,7 @@ namespace alpaka
         {
             ALPAKA_NO_HOST_ACC_WARNING
             ALPAKA_FN_HOST_ACC auto operator()(TCudaHipBuiltin const& value) const
-                -> Vec<Dim<TCudaHipBuiltin>, Idx<TCudaHipBuiltin>>
+                -> VecOld<Dim<TCudaHipBuiltin>, Idx<TCudaHipBuiltin>>
             {
                 constexpr auto dim = Dim<TCudaHipBuiltin>::value;
                 if constexpr(dim == 1)

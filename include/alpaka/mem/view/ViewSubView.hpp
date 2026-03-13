@@ -14,7 +14,6 @@
 #include "alpaka/mem/view/ViewAccessOps.hpp"
 #include "alpaka/mem/view/ViewPlainPtr.hpp"
 #include "alpaka/offset/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
 
 #include <type_traits>
 #include <utility>
@@ -77,14 +76,14 @@ namespace alpaka
 
         //! \param view The view this view is a sub-view of.
         template<typename TView>
-        explicit ViewSubView(TView const& view) : ViewSubView(view, getExtents(view), Vec<TDim, TIdx>::zeros())
+        explicit ViewSubView(TView const& view) : ViewSubView(view, getExtents(view), VecOld<TDim, TIdx>::zeros())
         {
             ALPAKA_DEBUG_FULL_LOG_SCOPE;
         }
 
         //! \param view The view this view is a sub-view of.
         template<typename TView>
-        explicit ViewSubView(TView& view) : ViewSubView(view, getExtents(view), Vec<TDim, TIdx>::zeros())
+        explicit ViewSubView(TView& view) : ViewSubView(view, getExtents(view), VecOld<TDim, TIdx>::zeros())
         {
             ALPAKA_DEBUG_FULL_LOG_SCOPE;
         }
@@ -99,8 +98,8 @@ namespace alpaka
         }
 
         ViewPlainPtr<Dev, TElem, TDim, TIdx> m_viewParentView; // This wraps the parent view.
-        Vec<TDim, TIdx> m_extentElements; // The extent of this view.
-        Vec<TDim, TIdx> m_offsetsElements; // The offset relative to the parent view.
+        VecOld<TDim, TIdx> m_extentElements; // The extent of this view.
+        VecOld<TDim, TIdx> m_offsetsElements; // The offset relative to the parent view.
         TElem* m_nativePtr;
     };
 

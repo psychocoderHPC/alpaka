@@ -11,7 +11,7 @@
 #include "alpaka/core/Interface.hpp"
 #include "alpaka/core/Positioning.hpp"
 #include "alpaka/idx/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
+
 
 #if defined(ALPAKA_ACC_GPU_CUDA_ENABLED) || defined(ALPAKA_ACC_GPU_HIP_ENABLED)
 
@@ -53,12 +53,12 @@ namespace alpaka
             //! \return The index of the current block in the grid.
             template<typename TWorkDiv>
             __device__ static auto getIdx(gb::IdxGbUniformCudaHipBuiltIn<TDim, TIdx> const& /* idx */, TWorkDiv const&)
-                -> Vec<TDim, TIdx>
+                -> VecOld<TDim, TIdx>
             {
 #        if defined(ALPAKA_ACC_GPU_CUDA_ENABLED)
                 return castVec<TIdx>(getOffsetVecEnd<TDim>(blockIdx));
 #        else
-                return getOffsetVecEnd<TDim>(Vec<std::integral_constant<typename TDim::value_type, 3>, TIdx>(
+                return getOffsetVecEnd<TDim>(VecOld<std::integral_constant<typename TDim::value_type, 3>, TIdx>(
                     static_cast<TIdx>(hipBlockIdx_z),
                     static_cast<TIdx>(hipBlockIdx_y),
                     static_cast<TIdx>(hipBlockIdx_x)));

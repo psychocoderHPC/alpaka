@@ -32,7 +32,8 @@ namespace alpaka::rand::engine
 
         /// Distribution container type
         template<typename TDistributionResultScalar>
-        using ResultContainer = typename alpaka::Vec<alpaka::DimInt<TParams::counterSize>, TDistributionResultScalar>;
+        using ResultContainer =
+            typename alpaka::VecOld<alpaka::DimInt<TParams::counterSize>, TDistributionResultScalar>;
 
     protected:
         /** Advance the \a counter to the next state

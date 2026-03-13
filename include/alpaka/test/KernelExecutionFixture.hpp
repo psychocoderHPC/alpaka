@@ -70,10 +70,10 @@ namespace alpaka::test
             memset(m_queue, bufAccResult, static_cast<std::uint8_t>(true));
 
 
-            alpaka::KernelCfg<Acc> const kernelCfg = {m_extent, Vec<Dim, Idx>::ones()};
+            alpaka::KernelCfg<Acc> const kernelCfg = {m_extent, VecOld<Dim, Idx>::ones()};
 
             // set workdiv if it is not before
-            if(m_workDiv == WorkDiv{Vec<Dim, Idx>::all(0), Vec<Dim, Idx>::all(0), Vec<Dim, Idx>::all(0)})
+            if(m_workDiv == WorkDiv{VecOld<Dim, Idx>::all(0), VecOld<Dim, Idx>::all(0), VecOld<Dim, Idx>::all(0)})
                 m_workDiv = alpaka::getValidWorkDiv(
                     kernelCfg,
                     m_device,
@@ -99,8 +99,8 @@ namespace alpaka::test
         Platform m_platform{};
         Device m_device{getDevByIdx(m_platform, 0)};
         Queue m_queue;
-        WorkDiv m_workDiv{Vec<Dim, Idx>::all(0), Vec<Dim, Idx>::all(0), Vec<Dim, Idx>::all(0)};
-        Vec<Dim, Idx> m_extent;
+        WorkDiv m_workDiv{VecOld<Dim, Idx>::all(0), VecOld<Dim, Idx>::all(0), VecOld<Dim, Idx>::all(0)};
+        VecOld<Dim, Idx> m_extent;
     };
 
 } // namespace alpaka::test

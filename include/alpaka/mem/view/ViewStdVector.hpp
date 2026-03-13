@@ -51,7 +51,7 @@ namespace alpaka::trait
     struct GetExtents<std::vector<TElem, TAllocator>>
     {
         ALPAKA_FN_HOST constexpr auto operator()(std::vector<TElem, TAllocator> const& a)
-            -> Vec<DimInt<1>, Idx<std::vector<TElem, TAllocator>>>
+            -> VecOld<DimInt<1>, Idx<std::vector<TElem, TAllocator>>>
         {
             return {std::size(a)};
         }
@@ -77,7 +77,7 @@ namespace alpaka::trait
     struct GetOffsets<std::vector<TElem, TAllocator>>
     {
         ALPAKA_FN_HOST auto operator()(std::vector<TElem, TAllocator> const&) const
-            -> Vec<DimInt<1>, Idx<std::vector<TElem, TAllocator>>>
+            -> VecOld<DimInt<1>, Idx<std::vector<TElem, TAllocator>>>
         {
             return {0};
         }

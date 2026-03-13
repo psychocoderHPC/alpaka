@@ -13,11 +13,11 @@
 
 // Implementation details.
 #include "alpaka/acc/AccCpuSerial.hpp"
-#include "alpaka/core/Decay.hpp"
+#include "alpaka/core/decay.hpp"
 #include "alpaka/dev/DevCpu.hpp"
 #include "alpaka/kernel/KernelFunctionAttributes.hpp"
 #include "alpaka/kernel/Traits.hpp"
-#include "alpaka/meta/NdLoop.hpp"
+#include "alpaka/meta/NdLoopOld.hpp"
 #include "alpaka/platform/PlatformCpu.hpp"
 #include "alpaka/workdiv/WorkDivMembers.hpp"
 
@@ -79,10 +79,12 @@ namespace alpaka
                 *static_cast<WorkDivMembers<TDim, TIdx> const*>(this),
                 blockSharedMemDynSizeBytes);
 
+            std::cout << "................... old serial" << std::endl;
+
             // Execute the blocks serially.
-            meta::ndLoopIncIdx(
+            metaOld::ndLoopIncIdx(
                 gridBlockExtent,
-                [&](Vec<TDim, TIdx> const& blockThreadIdx)
+                [&](VecOld<TDim, TIdx> const& blockThreadIdx)
                 {
                     acc.m_gridBlockIdx = blockThreadIdx;
 

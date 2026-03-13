@@ -7,7 +7,6 @@
 #include "alpaka/core/Unroll.hpp"
 #include "alpaka/rand/Philox/MultiplyAndSplit64to32.hpp"
 #include "alpaka/rand/Philox/PhiloxConstants.hpp"
-#include "alpaka/vec/Vec.hpp"
 
 #include <utility>
 
@@ -60,8 +59,8 @@ namespace alpaka::rand::engine
         static_assert(numberWidth() == 32, "Philox implemented only for 32 bit numbers.");
 
     public:
-        using Counter = alpaka::Vec<alpaka::DimInt<TParams::counterSize>, std::uint32_t>;
-        using Key = alpaka::Vec<alpaka::DimInt<TParams::counterSize / 2>, std::uint32_t>;
+        using Counter = alpaka::VecOld<alpaka::DimInt<TParams::counterSize>, std::uint32_t>;
+        using Key = alpaka::VecOld<alpaka::DimInt<TParams::counterSize / 2>, std::uint32_t>;
         using Constants = PhiloxConstants<TParams>;
 
     protected:

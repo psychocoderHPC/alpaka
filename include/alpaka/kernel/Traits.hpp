@@ -16,7 +16,6 @@
 #include "alpaka/idx/Traits.hpp"
 #include "alpaka/kernel/KernelFunctionAttributes.hpp"
 #include "alpaka/queue/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
 #include "alpaka/workdiv/Traits.hpp"
 
 #include <type_traits>
@@ -64,8 +63,8 @@ namespace alpaka
             template<typename TDim, typename... TArgs>
             ALPAKA_FN_HOST_ACC static auto getBlockSharedMemDynSizeBytes(
                 [[maybe_unused]] TKernelFnObj const& kernelFnObj,
-                [[maybe_unused]] Vec<TDim, Idx<TAcc>> const& blockThreadExtent,
-                [[maybe_unused]] Vec<TDim, Idx<TAcc>> const& threadElemExtent,
+                [[maybe_unused]] VecOld<TDim, Idx<TAcc>> const& blockThreadExtent,
+                [[maybe_unused]] VecOld<TDim, Idx<TAcc>> const& threadElemExtent,
                 [[maybe_unused]] TArgs const&... args) -> std::size_t
             {
                 return 0u;
@@ -154,8 +153,8 @@ namespace alpaka
             template<typename TDim, typename... TArgs>
             ALPAKA_FN_HOST static auto getOmpSchedule(
                 [[maybe_unused]] TKernelFnObj const& kernelFnObj,
-                [[maybe_unused]] Vec<TDim, Idx<TAcc>> const& blockThreadExtent,
-                [[maybe_unused]] Vec<TDim, Idx<TAcc>> const& threadElemExtent,
+                [[maybe_unused]] VecOld<TDim, Idx<TAcc>> const& blockThreadExtent,
+                [[maybe_unused]] VecOld<TDim, Idx<TAcc>> const& threadElemExtent,
                 [[maybe_unused]] TArgs const&... args) -> TraitNotSpecialized
             {
                 return TraitNotSpecialized{};
@@ -182,8 +181,8 @@ namespace alpaka
     template<typename TAcc, typename TKernelFnObj, typename TDim, typename... TArgs>
     ALPAKA_FN_HOST_ACC auto getBlockSharedMemDynSizeBytes(
         TKernelFnObj const& kernelFnObj,
-        Vec<TDim, Idx<TAcc>> const& blockThreadExtent,
-        Vec<TDim, Idx<TAcc>> const& threadElemExtent,
+        VecOld<TDim, Idx<TAcc>> const& blockThreadExtent,
+        VecOld<TDim, Idx<TAcc>> const& threadElemExtent,
         TArgs const&... args) -> std::size_t
     {
         return trait::BlockSharedMemDynSizeBytes<TKernelFnObj, TAcc>::getBlockSharedMemDynSizeBytes(
@@ -230,8 +229,8 @@ namespace alpaka
     template<typename TAcc, typename TKernelFnObj, typename TDim, typename... TArgs>
     ALPAKA_FN_HOST auto getOmpSchedule(
         TKernelFnObj const& kernelFnObj,
-        Vec<TDim, Idx<TAcc>> const& blockThreadExtent,
-        Vec<TDim, Idx<TAcc>> const& threadElemExtent,
+        VecOld<TDim, Idx<TAcc>> const& blockThreadExtent,
+        VecOld<TDim, Idx<TAcc>> const& threadElemExtent,
         TArgs const&... args)
     {
         return trait::OmpSchedule<TKernelFnObj, TAcc>::getOmpSchedule(
@@ -377,8 +376,11 @@ namespace alpaka
 #    pragma clang diagnostic pop
 #endif
     template<concepts::Acc TAcc, typename TQueue, typename TWorkDiv, typename TKernelFnObj, typename... TArgs>
-    ALPAKA_FN_HOST auto exec(TQueue& queue, TWorkDiv const& workDiv, TKernelFnObj const& kernelFnObj, TArgs&&... args)
-        -> void
+    ALPAKA_FN_HOST auto execOld(
+        TQueue& queue,
+        TWorkDiv const& workDiv,
+        TKernelFnObj const& kernelFnObj,
+        TArgs&&... args) -> void
     {
         enqueue(queue, createTaskKernel<TAcc>(workDiv, kernelFnObj, std::forward<TArgs>(args)...));
     }
@@ -399,8 +401,11 @@ namespace alpaka
 #    pragma clang diagnostic pop
 #endif
     template<concepts::Tag TTag, typename TQueue, typename TWorkDiv, typename TKernelFnObj, typename... TArgs>
-    ALPAKA_FN_HOST auto exec(TQueue& queue, TWorkDiv const& workDiv, TKernelFnObj const& kernelFnObj, TArgs&&... args)
-        -> void
+    ALPAKA_FN_HOST auto execOld(
+        TQueue& queue,
+        TWorkDiv const& workDiv,
+        TKernelFnObj const& kernelFnObj,
+        TArgs&&... args) -> void
     {
         enqueue(
             queue,

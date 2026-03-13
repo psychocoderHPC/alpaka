@@ -49,7 +49,7 @@ namespace alpaka::trait
     template<typename TElem>
     struct GetExtents<std::span<TElem>>
     {
-        ALPAKA_FN_HOST constexpr auto operator()(std::span<TElem> const& a) -> Vec<DimInt<1>, Idx<std::span<TElem>>>
+        ALPAKA_FN_HOST constexpr auto operator()(std::span<TElem> const& a) -> VecOld<DimInt<1>, Idx<std::span<TElem>>>
         {
             return {std::size(a)};
         }
@@ -74,7 +74,7 @@ namespace alpaka::trait
     template<typename TElem>
     struct GetOffsets<std::span<TElem>>
     {
-        ALPAKA_FN_HOST auto operator()(std::span<TElem> const&) -> Vec<DimInt<1>, Idx<std::span<TElem>>>
+        ALPAKA_FN_HOST auto operator()(std::span<TElem> const&) -> VecOld<DimInt<1>, Idx<std::span<TElem>>>
         {
             return {0};
         }

@@ -16,7 +16,6 @@
 #include "alpaka/offset/Traits.hpp"
 #include "alpaka/queue/Traits.hpp"
 #include "alpaka/vec/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
 
 #include <array>
 #include <cassert>
@@ -88,9 +87,9 @@ namespace alpaka
     {
         //! Calculate the pitches purely from the extents.
         template<typename TElem, typename TDim, typename TIdx>
-        ALPAKA_FN_HOST_ACC inline constexpr auto calculatePitchesFromExtents(Vec<TDim, TIdx> const& extent)
+        ALPAKA_FN_HOST_ACC inline constexpr auto calculatePitchesFromExtents(VecOld<TDim, TIdx> const& extent)
         {
-            Vec<TDim, TIdx> pitchBytes{};
+            VecOld<TDim, TIdx> pitchBytes{};
             constexpr auto dim = TIdx{TDim::value};
             if constexpr(dim > 0)
                 pitchBytes.back() = static_cast<TIdx>(sizeof(TElem));
@@ -103,10 +102,10 @@ namespace alpaka
         //! Calculate the pitches from the extents and the one-dimensional pitch.
         template<typename TElem, typename TDim, typename TIdx>
         ALPAKA_FN_HOST_ACC inline constexpr auto calculatePitchesFromExtentsAndPitch(
-            Vec<TDim, TIdx> const& extent,
+            VecOld<TDim, TIdx> const& extent,
             std::size_t pitch)
         {
-            Vec<TDim, TIdx> pitchBytes{};
+            VecOld<TDim, TIdx> pitchBytes{};
             constexpr auto dim = TIdx{TDim::value};
             if constexpr(dim > 0)
                 pitchBytes.back() = static_cast<TIdx>(sizeof(TElem));
@@ -276,7 +275,7 @@ namespace alpaka
     //! bytes to jump from one element to the neighboring element on the next slice.
     //! E.g. a 3D view of floats without padding and the extents {42, 10, 2}, would have a pitch vector of {80, 8, 4}.
     template<typename TView>
-    ALPAKA_FN_HOST auto getPitchesInBytes(TView const& view) -> Vec<Dim<TView>, Idx<TView>>
+    ALPAKA_FN_HOST auto getPitchesInBytes(TView const& view) -> VecOld<Dim<TView>, Idx<TView>>
     {
         return trait::GetPitchesInBytes<TView>{}(view);
     }
@@ -426,7 +425,7 @@ namespace alpaka
             ALPAKA_FN_HOST static auto print(
                 TView const& view,
                 Elem<TView> const* const ptr,
-                Vec<Dim<TView>, Idx<TView>> const& extent,
+                VecOld<Dim<TView>, Idx<TView>> const& extent,
                 std::ostream& os,
                 std::string const& elementSeparator,
                 std::string const& rowSeparator,
@@ -466,7 +465,7 @@ namespace alpaka
             ALPAKA_FN_HOST static auto print(
                 TView const& /* view */,
                 Elem<TView> const* const ptr,
-                Vec<Dim<TView>, Idx<TView>> const& extent,
+                VecOld<Dim<TView>, Idx<TView>> const& extent,
                 std::ostream& os,
                 std::string const& elementSeparator,
                 std::string const& /* rowSeparator */,
@@ -519,14 +518,14 @@ namespace alpaka
     //! \return The pitch vector.
     template<typename TView>
     [[deprecated("Use getPitchesInBytes instead")]] auto getPitchBytesVec(TView const& view)
-        -> Vec<Dim<TView>, Idx<TView>>
+        -> VecOld<Dim<TView>, Idx<TView>>
     {
         return getPitchesInBytes(view);
     }
 
     //! \return The pitch but only the last N elements.
     template<typename TDim, typename TView>
-    ALPAKA_FN_HOST auto getPitchBytesVecEnd(TView const& view = TView()) -> Vec<TDim, Idx<TView>>
+    ALPAKA_FN_HOST auto getPitchBytesVecEnd(TView const& view = TView()) -> VecOld<TDim, Idx<TView>>
     {
         return subVecEnd<TDim>(getPitchesInBytes(view));
     }
@@ -544,7 +543,7 @@ namespace alpaka
     {
         using Dim = alpaka::Dim<TExtent>;
         using Idx = alpaka::Idx<TExtent>;
-        auto const extentVec = Vec<Dim, Idx>(extent);
+        auto const extentVec = VecOld<Dim, Idx>(extent);
         return trait::CreateViewPlainPtr<TDev>::createViewPlainPtr(
             dev,
             pMem,

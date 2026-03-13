@@ -8,7 +8,6 @@
 #include "alpaka/core/Interface.hpp"
 #include "alpaka/core/Positioning.hpp"
 #include "alpaka/idx/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
 
 #include <type_traits>
 #include <utility>
@@ -30,7 +29,7 @@ namespace alpaka
     //! Get the extent requested.
     ALPAKA_NO_HOST_ACC_WARNING
     template<typename TOrigin, typename TUnit, typename TWorkDiv>
-    ALPAKA_FN_HOST_ACC auto getWorkDiv(TWorkDiv const& workDiv) -> Vec<Dim<TWorkDiv>, Idx<TWorkDiv>>
+    ALPAKA_FN_HOST_ACC auto getWorkDiv(TWorkDiv const& workDiv) -> VecOld<Dim<TWorkDiv>, Idx<TWorkDiv>>
     {
         using ImplementationBase = interface::ImplementationBase<ConceptWorkDiv, TWorkDiv>;
         return trait::GetWorkDiv<ImplementationBase, TOrigin, TUnit>::getWorkDiv(workDiv);

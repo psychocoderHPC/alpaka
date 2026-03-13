@@ -8,7 +8,6 @@
 #include "alpaka/core/Positioning.hpp"
 #include "alpaka/dim/Traits.hpp"
 #include "alpaka/idx/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
 
 namespace alpaka
 {
@@ -19,11 +18,11 @@ namespace alpaka
         class IdxGbRef : public interface::Implements<ConceptIdxGb, IdxGbRef<TDim, TIdx>>
         {
         public:
-            IdxGbRef(Vec<TDim, TIdx> const& gridBlockIdx) : m_gridBlockIdx(gridBlockIdx)
+            IdxGbRef(VecOld<TDim, TIdx> const& gridBlockIdx) : m_gridBlockIdx(gridBlockIdx)
             {
             }
 
-            Vec<TDim, TIdx> const& m_gridBlockIdx;
+            VecOld<TDim, TIdx> const& m_gridBlockIdx;
         };
     } // namespace gb
 
@@ -43,7 +42,7 @@ namespace alpaka
             //! \return The index of the current block in the grid.
             template<typename TWorkDiv>
             ALPAKA_FN_HOST static auto getIdx(gb::IdxGbRef<TDim, TIdx> const& idx, TWorkDiv const& /* workDiv */)
-                -> Vec<TDim, TIdx>
+                -> VecOld<TDim, TIdx>
             {
                 return idx.m_gridBlockIdx;
             }

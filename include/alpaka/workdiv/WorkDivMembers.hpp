@@ -7,7 +7,6 @@
 #include "alpaka/core/Common.hpp"
 #include "alpaka/extent/Traits.hpp"
 #include "alpaka/idx/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
 #include "alpaka/workdiv/Traits.hpp"
 
 #include <iosfwd>
@@ -37,9 +36,9 @@ namespace alpaka
         //! \brief Accepts single specific type and is called without explicit template parameters.
         ALPAKA_NO_HOST_ACC_WARNING
         ALPAKA_FN_HOST_ACC WorkDivMembers(
-            alpaka::Vec<TDim, TIdx> const& gridBlockExtent,
-            alpaka::Vec<TDim, TIdx> const& blockThreadExtent,
-            alpaka::Vec<TDim, TIdx> const& elemExtent)
+            alpaka::VecOld<TDim, TIdx> const& gridBlockExtent,
+            alpaka::VecOld<TDim, TIdx> const& blockThreadExtent,
+            alpaka::VecOld<TDim, TIdx> const& elemExtent)
             : m_gridBlockExtent(gridBlockExtent)
             , m_blockThreadExtent(blockThreadExtent)
             , m_threadElemExtent(elemExtent)
@@ -91,18 +90,18 @@ namespace alpaka
         }
 
     public:
-        Vec<TDim, TIdx> m_gridBlockExtent;
-        Vec<TDim, TIdx> m_blockThreadExtent;
-        Vec<TDim, TIdx> m_threadElemExtent;
+        VecOld<TDim, TIdx> m_gridBlockExtent;
+        VecOld<TDim, TIdx> m_blockThreadExtent;
+        VecOld<TDim, TIdx> m_threadElemExtent;
     };
 
     //! Deduction guide for the constructor which can be called without explicit template type parameters
     ALPAKA_NO_HOST_ACC_WARNING
     template<typename TDim, typename TIdx>
     ALPAKA_FN_HOST_ACC WorkDivMembers(
-        alpaka::Vec<TDim, TIdx> const& gridBlockExtent,
-        alpaka::Vec<TDim, TIdx> const& blockThreadExtent,
-        alpaka::Vec<TDim, TIdx> const& elemExtent) -> WorkDivMembers<TDim, TIdx>;
+        alpaka::VecOld<TDim, TIdx> const& gridBlockExtent,
+        alpaka::VecOld<TDim, TIdx> const& blockThreadExtent,
+        alpaka::VecOld<TDim, TIdx> const& elemExtent) -> WorkDivMembers<TDim, TIdx>;
 
     namespace trait
     {
@@ -126,7 +125,7 @@ namespace alpaka
         {
             //! \return The number of blocks in each dimension of the grid.
             ALPAKA_NO_HOST_ACC_WARNING
-            ALPAKA_FN_HOST_ACC static auto getWorkDiv(WorkDivMembers<TDim, TIdx> const& workDiv) -> Vec<TDim, TIdx>
+            ALPAKA_FN_HOST_ACC static auto getWorkDiv(WorkDivMembers<TDim, TIdx> const& workDiv) -> VecOld<TDim, TIdx>
             {
                 return workDiv.m_gridBlockExtent;
             }
@@ -138,7 +137,7 @@ namespace alpaka
         {
             //! \return The number of threads in each dimension of a block.
             ALPAKA_NO_HOST_ACC_WARNING
-            ALPAKA_FN_HOST_ACC static auto getWorkDiv(WorkDivMembers<TDim, TIdx> const& workDiv) -> Vec<TDim, TIdx>
+            ALPAKA_FN_HOST_ACC static auto getWorkDiv(WorkDivMembers<TDim, TIdx> const& workDiv) -> VecOld<TDim, TIdx>
             {
                 return workDiv.m_blockThreadExtent;
             }
@@ -150,7 +149,7 @@ namespace alpaka
         {
             //! \return The number of elements in each dimension of a thread.
             ALPAKA_NO_HOST_ACC_WARNING
-            ALPAKA_FN_HOST_ACC static auto getWorkDiv(WorkDivMembers<TDim, TIdx> const& workDiv) -> Vec<TDim, TIdx>
+            ALPAKA_FN_HOST_ACC static auto getWorkDiv(WorkDivMembers<TDim, TIdx> const& workDiv) -> VecOld<TDim, TIdx>
             {
                 return workDiv.m_threadElemExtent;
             }

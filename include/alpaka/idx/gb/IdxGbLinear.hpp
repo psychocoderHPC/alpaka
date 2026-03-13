@@ -8,7 +8,6 @@
 #include "alpaka/core/Positioning.hpp"
 #include "alpaka/idx/MapIdx.hpp"
 #include "alpaka/idx/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
 #include "alpaka/workdiv/Traits.hpp"
 
 namespace alpaka
@@ -43,11 +42,11 @@ namespace alpaka
         {
             //! \return The index of the current block in the grid.
             template<typename TWorkDiv>
-            static auto getIdx(gb::IdxGbLinear<TDim, TIdx> const& idx, TWorkDiv const& workDiv) -> Vec<TDim, TIdx>
+            static auto getIdx(gb::IdxGbLinear<TDim, TIdx> const& idx, TWorkDiv const& workDiv) -> VecOld<TDim, TIdx>
             {
                 // \TODO: Would it be faster to precompute the index and cache it inside an array?
                 return mapIdx<TDim::value>(
-                    Vec<DimInt<1u>, TIdx>(idx.m_gridBlockIdx),
+                    VecOld<DimInt<1u>, TIdx>(idx.m_gridBlockIdx),
                     getWorkDiv<Grid, Blocks>(workDiv));
             }
         };
@@ -57,7 +56,8 @@ namespace alpaka
         {
             //! \return The index of the current block in the grid.
             template<typename TWorkDiv>
-            static auto getIdx(gb::IdxGbLinear<DimInt<1u>, TIdx> const& idx, TWorkDiv const&) -> Vec<DimInt<1u>, TIdx>
+            static auto getIdx(gb::IdxGbLinear<DimInt<1u>, TIdx> const& idx, TWorkDiv const&)
+                -> VecOld<DimInt<1u>, TIdx>
             {
                 return idx.m_gridBlockIdx;
             }

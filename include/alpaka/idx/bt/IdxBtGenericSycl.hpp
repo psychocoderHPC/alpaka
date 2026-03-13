@@ -8,7 +8,7 @@
 #include "alpaka/core/Positioning.hpp"
 #include "alpaka/core/Sycl.hpp"
 #include "alpaka/idx/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
+
 
 #ifdef ALPAKA_ACC_SYCL_ENABLED
 
@@ -46,19 +46,19 @@ namespace alpaka::trait
     {
         //! \return The index of the current thread in the block.
         template<typename TWorkDiv>
-        static auto getIdx(bt::IdxBtGenericSycl<TDim, TIdx> const& idx, TWorkDiv const&) -> Vec<TDim, TIdx>
+        static auto getIdx(bt::IdxBtGenericSycl<TDim, TIdx> const& idx, TWorkDiv const&) -> VecOld<TDim, TIdx>
         {
             if constexpr(TDim::value == 1)
-                return Vec<TDim, TIdx>{static_cast<TIdx>(idx.m_item_bt.get_local_id(0))};
+                return VecOld<TDim, TIdx>{static_cast<TIdx>(idx.m_item_bt.get_local_id(0))};
             else if constexpr(TDim::value == 2)
             {
-                return Vec<TDim, TIdx>{
+                return VecOld<TDim, TIdx>{
                     static_cast<TIdx>(idx.m_item_bt.get_local_id(0)),
                     static_cast<TIdx>(idx.m_item_bt.get_local_id(1))};
             }
             else
             {
-                return Vec<TDim, TIdx>{
+                return VecOld<TDim, TIdx>{
                     static_cast<TIdx>(idx.m_item_bt.get_local_id(0)),
                     static_cast<TIdx>(idx.m_item_bt.get_local_id(1)),
                     static_cast<TIdx>(idx.m_item_bt.get_local_id(2))};

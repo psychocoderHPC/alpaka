@@ -20,8 +20,8 @@ namespace alpaka::test
     ALPAKA_FN_HOST auto testViewImmutable(
         TView const& view,
         TDev const& dev,
-        Vec<TDim, TIdx> const& extent,
-        Vec<TDim, TIdx> const& offset) -> void
+        VecOld<TDim, TIdx> const& extent,
+        VecOld<TDim, TIdx> const& offset) -> void
     {
         // trait::DevType
         {
@@ -135,7 +135,7 @@ namespace alpaka::test
         using Dim = Dim<TView>;
         using Idx = Idx<TView>;
 
-        KernelExecutionFixture<TAcc> fixture(Vec<Dim, Idx>::ones());
+        KernelExecutionFixture<TAcc> fixture(VecOld<Dim, Idx>::ones());
 
         VerifyBytesSetKernel verifyBytesSet;
 
@@ -185,7 +185,7 @@ namespace alpaka::test
         using IdxB = Idx<TViewB>;
         static_assert(std::is_same_v<IdxA, IdxB>, "viewA and viewB are required to have identical Idx");
 
-        test::KernelExecutionFixture<TAcc> fixture(Vec<DimA, IdxA>::ones());
+        test::KernelExecutionFixture<TAcc> fixture(VecOld<DimA, IdxA>::ones());
 
         VerifyViewsEqualKernel verifyViewsEqualKernel;
 

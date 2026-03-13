@@ -2,6 +2,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+#include "alpaka/acc/TagAccIsEnabled.hpp"
 #include "alpaka/alpaka.hpp"
 
 #include <functional>

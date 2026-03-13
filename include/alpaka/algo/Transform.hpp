@@ -14,7 +14,6 @@
 #include "alpaka/idx/Traits.hpp"
 #include "alpaka/kernel/Traits.hpp"
 #include "alpaka/mem/view/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
 #include "alpaka/workdiv/WorkDivHelpers.hpp"
 
 #include <iterator>
@@ -64,16 +63,16 @@ namespace alpaka
             ALPAKA_FN_ACC void operator()(
                 TAcc const& acc,
                 T const* in_ptr,
-                alpaka::Vec<alpaka::Dim<TAcc>, alpaka::Idx<TAcc>> in_pithces,
+                alpaka::VecOld<alpaka::Dim<TAcc>, alpaka::Idx<TAcc>> in_pithces,
                 T* out_ptr,
-                alpaka::Vec<alpaka::Dim<TAcc>, alpaka::Idx<TAcc>> out_pitches,
-                alpaka::Vec<alpaka::Dim<TAcc>, alpaka::Idx<TAcc>> in_size) const
+                alpaka::VecOld<alpaka::Dim<TAcc>, alpaka::Idx<TAcc>> out_pitches,
+                alpaka::VecOld<alpaka::Dim<TAcc>, alpaka::Idx<TAcc>> in_size) const
             {
                 static_assert(std::is_invocable_r_v<T, TFn, T> or std::is_invocable_r_v<T, TFn, TAcc const&, T>);
 
                 using Dim = alpaka::Dim<TAcc>;
                 using Idx = alpaka::Idx<TAcc>;
-                using Vec = alpaka::Vec<Dim, Idx>;
+                using Vec = alpaka::VecOld<Dim, Idx>;
 
                 for(Vec idx : alpaka::uniformElementsND(acc, in_size))
                 {
@@ -122,7 +121,7 @@ namespace alpaka
         auto const grid = alpaka::getValidWorkDiv(config, alpaka::getDev(queue), kernel, in, out_begin, size);
 
         // Apply the fn function to all elements of the input range.
-        alpaka::exec<Acc1D>(queue, grid, kernel, in, out_begin, size);
+        alpaka::execOld<Acc1D>(queue, grid, kernel, in, out_begin, size);
     }
 
     /*
@@ -144,7 +143,7 @@ namespace alpaka
             "The input and output buffers must have the same dimension.");
         using In = std::remove_const_t<alpaka::Elem<TConstBuf>>;
         using Out = alpaka::Elem<TBuf>;
-        using Vec = alpaka::Vec<Dim, Idx>;
+        using Vec = alpaka::VecOld<Dim, Idx>;
         using Acc = alpaka::TagToAcc<TTag, Dim, Idx>;
 
         static_assert(
@@ -179,7 +178,7 @@ namespace alpaka
             size);
 
         // Apply the fn function to all elements of the input buffer.
-        alpaka::exec<Acc>(
+        alpaka::execOld<Acc>(
             queue,
             grid,
             kernel,

@@ -53,7 +53,7 @@ namespace alpaka::trait
     struct GetExtents<std::array<TElem, Tsize>>
     {
         ALPAKA_FN_HOST constexpr auto operator()(std::array<TElem, Tsize> const& a)
-            -> Vec<DimInt<1>, Idx<std::array<TElem, Tsize>>>
+            -> VecOld<DimInt<1>, Idx<std::array<TElem, Tsize>>>
         {
             return {std::size(a)};
         }
@@ -79,7 +79,7 @@ namespace alpaka::trait
     struct GetOffsets<std::array<TElem, Tsize>>
     {
         ALPAKA_FN_HOST auto operator()(std::array<TElem, Tsize> const&)
-            -> Vec<DimInt<1>, Idx<std::array<TElem, Tsize>>>
+            -> VecOld<DimInt<1>, Idx<std::array<TElem, Tsize>>>
         {
             return {0};
         }

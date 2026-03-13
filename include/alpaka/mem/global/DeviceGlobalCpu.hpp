@@ -17,33 +17,9 @@ namespace alpaka
     namespace detail
     {
         template<typename T>
-        struct DevGlobalTrait<TagCpuOmp2Blocks, T>
-        {
-            using Type = detail::DevGlobalImplGeneric<TagCpuOmp2Blocks, T>;
-        };
-
-        template<typename T>
-        struct DevGlobalTrait<TagCpuOmp2Threads, T>
-        {
-            using Type = detail::DevGlobalImplGeneric<TagCpuOmp2Threads, T>;
-        };
-
-        template<typename T>
         struct DevGlobalTrait<TagCpuSerial, T>
         {
             using Type = detail::DevGlobalImplGeneric<TagCpuSerial, T>;
-        };
-
-        template<typename T>
-        struct DevGlobalTrait<TagCpuTbbBlocks, T>
-        {
-            using Type = detail::DevGlobalImplGeneric<TagCpuTbbBlocks, T>;
-        };
-
-        template<typename T>
-        struct DevGlobalTrait<TagCpuThreads, T>
-        {
-            using Type = detail::DevGlobalImplGeneric<TagCpuThreads, T>;
         };
     } // namespace detail
 
@@ -52,12 +28,7 @@ namespace alpaka
         typename TViewSrc,
         typename TTypeDst,
         typename TQueue,
-        typename std::enable_if_t<
-            std::is_same_v<TTag, TagCpuOmp2Blocks> || std::is_same_v<TTag, TagCpuOmp2Threads>
-                || std::is_same_v<TTag, TagCpuSerial> || std::is_same_v<TTag, TagCpuTbbBlocks>
-                || std::is_same_v<TTag, TagCpuThreads>,
-            int>
-        = 0>
+        typename std::enable_if_t<std::is_same_v<TTag, TagCpuSerial>, int> = 0>
     ALPAKA_FN_HOST auto memcpy(
         TQueue& queue,
         alpaka::detail::DevGlobalImplGeneric<TTag, TTypeDst>& viewDst,
@@ -77,12 +48,7 @@ namespace alpaka
         typename TTypeSrc,
         typename TViewDstFwd,
         typename TQueue,
-        typename std::enable_if_t<
-            std::is_same_v<TTag, TagCpuOmp2Blocks> || std::is_same_v<TTag, TagCpuOmp2Threads>
-                || std::is_same_v<TTag, TagCpuSerial> || std::is_same_v<TTag, TagCpuTbbBlocks>
-                || std::is_same_v<TTag, TagCpuThreads>,
-            int>
-        = 0>
+        typename std::enable_if_t<std::is_same_v<TTag, TagCpuSerial>, int> = 0>
     ALPAKA_FN_HOST auto memcpy(
         TQueue& queue,
         TViewDstFwd&& viewDst,
@@ -103,12 +69,7 @@ namespace alpaka
         typename TViewSrc,
         typename TTypeDst,
         typename TQueue,
-        typename std::enable_if_t<
-            std::is_same_v<TTag, TagCpuOmp2Blocks> || std::is_same_v<TTag, TagCpuOmp2Threads>
-                || std::is_same_v<TTag, TagCpuSerial> || std::is_same_v<TTag, TagCpuTbbBlocks>
-                || std::is_same_v<TTag, TagCpuThreads>,
-            int>
-        = 0>
+        typename std::enable_if_t<std::is_same_v<TTag, TagCpuSerial>, int> = 0>
     ALPAKA_FN_HOST auto memcpy(
         TQueue& queue,
         alpaka::detail::DevGlobalImplGeneric<TTag, TTypeDst>& viewDst,
@@ -129,12 +90,7 @@ namespace alpaka
         typename TTypeSrc,
         typename TViewDstFwd,
         typename TQueue,
-        typename std::enable_if_t<
-            std::is_same_v<TTag, TagCpuOmp2Blocks> || std::is_same_v<TTag, TagCpuOmp2Threads>
-                || std::is_same_v<TTag, TagCpuSerial> || std::is_same_v<TTag, TagCpuTbbBlocks>
-                || std::is_same_v<TTag, TagCpuThreads>,
-            int>
-        = 0>
+        typename std::enable_if_t<std::is_same_v<TTag, TagCpuSerial>, int> = 0>
     ALPAKA_FN_HOST auto memcpy(
         TQueue& queue,
         TViewDstFwd&& viewDst,

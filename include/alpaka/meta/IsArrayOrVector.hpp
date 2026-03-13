@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "alpaka/vec/Vec.hpp"
 
 #include <functional>
 #include <numeric>
@@ -58,7 +57,7 @@ namespace alpaka::meta
      * @tparam N size of the array
      */
     template<typename T, typename N>
-    struct IsArrayOrVector<alpaka::Vec<N, T>> : std::true_type
+    struct IsArrayOrVector<alpaka::VecOld<N, T>> : std::true_type
     {
     };
 

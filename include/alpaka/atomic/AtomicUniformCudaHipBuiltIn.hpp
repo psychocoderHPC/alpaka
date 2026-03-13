@@ -8,8 +8,8 @@
 #include "alpaka/atomic/Op.hpp"
 #include "alpaka/atomic/Traits.hpp"
 #include "alpaka/core/Config.hpp"
-#include "alpaka/core/Decay.hpp"
 #include "alpaka/core/Unreachable.hpp"
+#include "alpaka/core/decay.hpp"
 
 #include <limits>
 #include <type_traits>

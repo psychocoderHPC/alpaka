@@ -353,7 +353,7 @@ namespace alpaka
         public:
             using Dim = alpaka::Dim<TAcc>;
             using Idx = alpaka::Idx<TAcc>;
-            using Vec = alpaka::Vec<Dim, Idx>;
+            using Vec = alpaka::VecOld<Dim, Idx>;
 
             ALPAKA_FN_ACC inline UniformElementsND(TAcc const& acc)
                 : elements_{alpaka::getWorkDiv<alpaka::Thread, alpaka::Elems>(acc)}
@@ -585,7 +585,7 @@ namespace alpaka
     requires(alpaka::Dim<TAcc>::value > 0)
     ALPAKA_FN_ACC inline auto uniformElementsND(
         TAcc const& acc,
-        alpaka::Vec<alpaka::Dim<TAcc>, alpaka::Idx<TAcc>> extent)
+        alpaka::VecOld<alpaka::Dim<TAcc>, alpaka::Idx<TAcc>> extent)
     {
         return detail::UniformElementsND<TAcc>(acc, extent);
     }

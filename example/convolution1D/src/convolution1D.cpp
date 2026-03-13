@@ -126,7 +126,7 @@ auto example(TAccTag const&) -> int
     alpaka::memcpy(queue, filterDeviceMemory, hostFilterMemory, filterSize);
     // Make sure memcpy finished.
     alpaka::wait(queue);
-    using Vec = alpaka::Vec<Dim, Idx>;
+    using Vec = alpaka::VecOld<Dim, Idx>;
 
     auto const elementsPerThread = Vec::all(static_cast<Idx>(1));
     // Grid size
@@ -154,7 +154,7 @@ auto example(TAccTag const&) -> int
         filterSize);
 
     // Run the kernel
-    alpaka::exec<DevAcc>(
+    alpaka::execOld<DevAcc>(
         queue,
         workDiv,
         convolutionKernel,

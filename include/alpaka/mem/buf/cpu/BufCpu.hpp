@@ -9,7 +9,6 @@
 #include "alpaka/mem/buf/cpu/BufCpuImpl.hpp"
 #include "alpaka/mem/buf/cpu/ConstBufCpu.hpp"
 #include "alpaka/mem/view/ViewAccessOps.hpp"
-#include "alpaka/vec/Vec.hpp"
 
 #include <functional>
 #include <memory>

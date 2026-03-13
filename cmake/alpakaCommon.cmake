@@ -145,6 +145,8 @@ endif()
 
 checkCompilerCXXSupport(CXX ${alpaka_MIN_CXX_STANDARD})
 
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../thirdParty/alpaka3" "${CMAKE_BINARY_DIR}/alpaka3")
+
 if(NOT TARGET alpaka)
     add_library(alpaka INTERFACE)
 

@@ -7,7 +7,6 @@
 #include "alpaka/core/Common.hpp"
 #include "alpaka/dev/DevCpu.hpp"
 #include "alpaka/mem/buf/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
 
 #include <functional>
 #include <memory>
@@ -67,7 +66,7 @@ namespace alpaka::detail
         DevCpu const m_dev;
         TElem* const m_pMem;
         std::function<void(TElem*)> m_deleter;
-        Vec<TDim, TIdx> const m_extentElements;
+        VecOld<TDim, TIdx> const m_extentElements;
 
         // friend declarations to allow usage of these pointers in the respective trait implementations
         template<typename TBuf, typename TSfinae>

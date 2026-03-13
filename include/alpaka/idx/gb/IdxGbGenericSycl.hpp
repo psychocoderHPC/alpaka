@@ -8,7 +8,7 @@
 #include "alpaka/core/Positioning.hpp"
 #include "alpaka/core/Sycl.hpp"
 #include "alpaka/idx/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
+
 
 #ifdef ALPAKA_ACC_SYCL_ENABLED
 
@@ -49,16 +49,16 @@ namespace alpaka::trait
         static auto getIdx(gb::IdxGbGenericSycl<TDim, TIdx> const& idx, TWorkDiv const&)
         {
             if constexpr(TDim::value == 1)
-                return Vec<TDim, TIdx>(static_cast<TIdx>(idx.m_item_gb.get_group(0)));
+                return VecOld<TDim, TIdx>(static_cast<TIdx>(idx.m_item_gb.get_group(0)));
             else if constexpr(TDim::value == 2)
             {
-                return Vec<TDim, TIdx>(
+                return VecOld<TDim, TIdx>(
                     static_cast<TIdx>(idx.m_item_gb.get_group(0)),
                     static_cast<TIdx>(idx.m_item_gb.get_group(1)));
             }
             else
             {
-                return Vec<TDim, TIdx>(
+                return VecOld<TDim, TIdx>(
                     static_cast<TIdx>(idx.m_item_gb.get_group(0)),
                     static_cast<TIdx>(idx.m_item_gb.get_group(1)),
                     static_cast<TIdx>(idx.m_item_gb.get_group(2)));

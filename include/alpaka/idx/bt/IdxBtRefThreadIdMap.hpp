@@ -8,7 +8,6 @@
 #include "alpaka/core/Interface.hpp"
 #include "alpaka/core/Positioning.hpp"
 #include "alpaka/idx/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
 
 #include <map>
 #include <thread>
@@ -24,7 +23,7 @@ namespace alpaka
         class IdxBtRefThreadIdMap : public interface::Implements<ConceptIdxBt, IdxBtRefThreadIdMap<TDim, TIdx>>
         {
         public:
-            using ThreadIdToIdxMap = std::map<std::thread::id, Vec<TDim, TIdx>>;
+            using ThreadIdToIdxMap = std::map<std::thread::id, VecOld<TDim, TIdx>>;
 
             ALPAKA_FN_HOST IdxBtRefThreadIdMap(ThreadIdToIdxMap const& mThreadToIndices)
                 : m_threadToIndexMap(mThreadToIndices)
@@ -56,7 +55,7 @@ namespace alpaka
             template<typename TWorkDiv>
             ALPAKA_FN_HOST static auto getIdx(
                 bt::IdxBtRefThreadIdMap<TDim, TIdx> const& idx,
-                TWorkDiv const& /* workDiv */) -> Vec<TDim, TIdx>
+                TWorkDiv const& /* workDiv */) -> VecOld<TDim, TIdx>
             {
                 auto const threadId = std::this_thread::get_id();
                 auto const threadEntry = idx.m_threadToIndexMap.find(threadId);

@@ -7,7 +7,6 @@
 #include "alpaka/core/Common.hpp"
 #include "alpaka/dim/DimIntegralConst.hpp"
 #include "alpaka/idx/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
 
 #include <type_traits>
 
@@ -52,7 +51,7 @@ namespace alpaka
     //! \return The extents of the given object.
     ALPAKA_NO_HOST_ACC_WARNING
     template<typename T>
-    ALPAKA_FN_HOST_ACC auto getOffsets(T const& object) -> Vec<Dim<T>, Idx<T>>
+    ALPAKA_FN_HOST_ACC auto getOffsets(T const& object) -> VecOld<Dim<T>, Idx<T>>
     {
         return trait::GetOffsets<T>{}(object);
     }
@@ -61,7 +60,7 @@ namespace alpaka
     //! \return The offset vector.
     ALPAKA_NO_HOST_ACC_WARNING
     template<typename T>
-    ALPAKA_FN_HOST_ACC constexpr auto getOffsetVec(T const& object = {}) -> Vec<Dim<T>, Idx<T>>
+    ALPAKA_FN_HOST_ACC constexpr auto getOffsetVec(T const& object = {}) -> VecOld<Dim<T>, Idx<T>>
     {
         return getOffsets(object);
     }
@@ -70,12 +69,12 @@ namespace alpaka
     //! \return The offset vector but only the last TDim elements.
     ALPAKA_NO_HOST_ACC_WARNING
     template<typename TDim, typename T>
-    ALPAKA_FN_HOST_ACC constexpr auto getOffsetVecEnd(T const& object = {}) -> Vec<TDim, Idx<T>>
+    ALPAKA_FN_HOST_ACC constexpr auto getOffsetVecEnd(T const& object = {}) -> VecOld<TDim, Idx<T>>
     {
         static_assert(TDim::value <= Dim<T>::value, "Cannot get more items than the offsets hold");
 
         auto const o = getOffsets(object);
-        Vec<TDim, Idx<T>> v;
+        VecOld<TDim, Idx<T>> v;
         for(unsigned i = 0; i < TDim::value; i++)
             v[i] = o[(Dim<T>::value - TDim::value) + i];
         return v;
@@ -109,10 +108,10 @@ namespace alpaka
     {
         //! The Vec offset get trait specialization.
         template<typename TDim, typename TVal>
-        struct GetOffsets<Vec<TDim, TVal>>
+        struct GetOffsets<VecOld<TDim, TVal>>
         {
             ALPAKA_NO_HOST_ACC_WARNING
-            ALPAKA_FN_HOST_ACC constexpr auto operator()(Vec<TDim, TVal> const& offsets) const -> Vec<TDim, TVal>
+            ALPAKA_FN_HOST_ACC constexpr auto operator()(VecOld<TDim, TVal> const& offsets) const -> VecOld<TDim, TVal>
             {
                 return offsets;
             }
@@ -125,7 +124,7 @@ namespace alpaka
             ALPAKA_NO_HOST_ACC_WARNING
             ALPAKA_FN_HOST_ACC constexpr auto operator()(TIntegral const& i) const
             {
-                return Vec{i};
+                return VecOld{i};
             }
         };
     } // namespace trait

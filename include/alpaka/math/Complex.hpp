@@ -5,7 +5,7 @@
 #pragma once
 
 #include "alpaka/core/Common.hpp"
-#include "alpaka/core/Decay.hpp"
+#include "alpaka/core/decay.hpp"
 #include "alpaka/math/FloatEqualExact.hpp"
 #include "alpaka/math/Traits.hpp"
 

@@ -17,7 +17,6 @@
 #include "alpaka/mem/view/ViewAccessOps.hpp"
 #include "alpaka/meta/DependentFalseType.hpp"
 #include "alpaka/platform/PlatformCpu.hpp"
-#include "alpaka/vec/Vec.hpp"
 
 #include <functional>
 #include <memory>

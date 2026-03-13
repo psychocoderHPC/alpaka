@@ -7,7 +7,6 @@
 #include "alpaka/core/Interface.hpp"
 #include "alpaka/core/Positioning.hpp"
 #include "alpaka/idx/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
 
 namespace alpaka
 {
@@ -37,9 +36,9 @@ namespace alpaka
             template<typename TWorkDiv>
             ALPAKA_FN_HOST static auto getIdx(
                 bt::IdxBtZero<TDim, TIdx> const& /* idx */,
-                TWorkDiv const& /* workDiv */) -> Vec<TDim, TIdx>
+                TWorkDiv const& /* workDiv */) -> VecOld<TDim, TIdx>
             {
-                return Vec<TDim, TIdx>::zeros();
+                return VecOld<TDim, TIdx>::zeros();
             }
         };
 

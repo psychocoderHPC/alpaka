@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "alpaka/Vec.hpp"
 #include "alpaka/core/Align.hpp"
 #include "alpaka/core/Assert.hpp"
 #include "alpaka/core/Common.hpp"
@@ -30,11 +31,11 @@
 namespace alpaka
 {
     template<typename TDim, typename TVal>
-    class Vec;
+    class VecOld;
 
     //! A n-dimensional vector.
     template<typename TDim, typename TVal>
-    class Vec final
+    class VecOld final
     {
     public:
         static_assert(TDim::value >= 0u, "Invalid dimensionality");
@@ -49,18 +50,28 @@ namespace alpaka
         using IdxSequence = std::make_integer_sequence<std::size_t, TDim::value>;
 
     public:
-        ALPAKA_FN_HOST_ACC constexpr Vec() : m_data{}
+        auto getAlpaka3() const
+        {
+            return m_data;
+        }
+
+        ALPAKA_FN_HOST_ACC constexpr explicit VecOld(alpaka::Vec<TVal, TDim::value> const& baseVec) : m_data{baseVec}
+        {
+        }
+
+        ALPAKA_FN_HOST_ACC constexpr VecOld() : m_data{}
         {
         }
 
         //! Value constructor.
         //! This constructor is only available if the number of parameters matches the vector idx.
         ALPAKA_NO_HOST_ACC_WARNING
+
         template<
             typename... TArgs,
             typename = std::enable_if_t<
                 sizeof...(TArgs) == TDim::value && (std::is_convertible_v<std::decay_t<TArgs>, TVal> && ...)>>
-        ALPAKA_FN_HOST_ACC constexpr Vec(TArgs&&... args) : m_data{static_cast<TVal>(std::forward<TArgs>(args))...}
+        ALPAKA_FN_HOST_ACC constexpr VecOld(TArgs&&... args) : m_data{static_cast<TVal>(std::forward<TArgs>(args))...}
         {
         }
 
@@ -68,14 +79,14 @@ namespace alpaka
         //! Initializes the vector with the values returned from generator(IC) in order, where IC::value runs from 0 to
         //! TDim - 1 (inclusive).
         template<typename F, std::enable_if_t<std::is_invocable_v<F, std::integral_constant<std::size_t, 0>>, int> = 0>
-        ALPAKA_FN_HOST_ACC constexpr explicit Vec(F&& generator)
-            : Vec(std::forward<F>(generator), std::make_index_sequence<TDim::value>{})
+        ALPAKA_FN_HOST_ACC constexpr explicit VecOld(F&& generator)
+            : VecOld(std::forward<F>(generator), std::make_index_sequence<TDim::value>{})
         {
         }
 
     private:
         template<typename F, std::size_t... Is>
-        ALPAKA_FN_HOST_ACC constexpr explicit Vec(F&& generator, std::index_sequence<Is...>)
+        ALPAKA_FN_HOST_ACC constexpr explicit VecOld(F&& generator, std::index_sequence<Is...>)
             : m_data{generator(std::integral_constant<std::size_t, Is>{})...}
         {
         }
@@ -86,9 +97,9 @@ namespace alpaka
         //! Creates a vector with all values set to val.
         //! \param val The initial value.
         ALPAKA_NO_HOST_ACC_WARNING
-        ALPAKA_FN_HOST_ACC static constexpr auto all(TVal const& val) -> Vec<TDim, TVal>
+        ALPAKA_FN_HOST_ACC static constexpr auto all(TVal const& val) -> VecOld<TDim, TVal>
         {
-            Vec<TDim, TVal> v;
+            VecOld<TDim, TVal> v;
             for(auto& e : v)
                 e = val;
             return v;
@@ -96,36 +107,36 @@ namespace alpaka
 
         //! Zero value constructor.
         ALPAKA_NO_HOST_ACC_WARNING
-        ALPAKA_FN_HOST_ACC static constexpr auto zeros() -> Vec<TDim, TVal>
+        ALPAKA_FN_HOST_ACC static constexpr auto zeros() -> VecOld<TDim, TVal>
         {
             return all(static_cast<TVal>(0));
         }
 
         //! One value constructor.
         ALPAKA_NO_HOST_ACC_WARNING
-        ALPAKA_FN_HOST_ACC static constexpr auto ones() -> Vec<TDim, TVal>
+        ALPAKA_FN_HOST_ACC static constexpr auto ones() -> VecOld<TDim, TVal>
         {
             return all(static_cast<TVal>(1));
         }
 
         ALPAKA_FN_HOST_ACC constexpr auto begin() noexcept -> TVal*
         {
-            return m_data;
+            return &m_data[0];
         }
 
         ALPAKA_FN_HOST_ACC constexpr auto begin() const noexcept -> TVal const*
         {
-            return m_data;
+            return &m_data[0];
         }
 
         ALPAKA_FN_HOST_ACC constexpr auto end() noexcept -> TVal*
         {
-            return m_data + TDim::value;
+            return begin() + TDim::value;
         }
 
         ALPAKA_FN_HOST_ACC constexpr auto end() const noexcept -> TVal const*
         {
-            return m_data + TDim::value;
+            return begin() + TDim::value;
         }
 
         ALPAKA_FN_HOST_ACC constexpr auto front() -> TVal&
@@ -205,6 +216,7 @@ namespace alpaka
         //! Value reference accessor at the given non-unsigned integer index.
         //! \return A reference to the value at the given index.
         ALPAKA_NO_HOST_ACC_WARNING
+
         template<typename TIdx, typename = std::enable_if_t<std::is_integral_v<TIdx>>>
         ALPAKA_FN_HOST_ACC constexpr auto operator[](TIdx const iIdx) -> TVal&
         {
@@ -217,6 +229,7 @@ namespace alpaka
         //! Value accessor at the given non-unsigned integer index.
         //! \return The value at the given index.
         ALPAKA_NO_HOST_ACC_WARNING
+
         template<typename TIdx, typename = std::enable_if_t<std::is_integral_v<TIdx>>>
         ALPAKA_FN_HOST_ACC constexpr auto operator[](TIdx const iIdx) const -> TVal
         {
@@ -227,6 +240,7 @@ namespace alpaka
         }
 
         ALPAKA_NO_HOST_ACC_WARNING
+
         template<typename TFnObj, std::size_t... TIndices>
         [[nodiscard]] ALPAKA_FN_HOST_ACC constexpr auto foldrByIndices(
             TFnObj const& f,
@@ -236,6 +250,7 @@ namespace alpaka
         }
 
         ALPAKA_NO_HOST_ACC_WARNING
+
         template<typename TFnObj, std::size_t... TIndices>
         [[nodiscard]] ALPAKA_FN_HOST_ACC constexpr auto foldrByIndices(
             TFnObj const& f,
@@ -246,6 +261,7 @@ namespace alpaka
         }
 
         ALPAKA_NO_HOST_ACC_WARNING
+
         template<typename TFnObj>
         [[nodiscard]] ALPAKA_FN_HOST_ACC constexpr auto foldrAll(TFnObj const& f) const
         {
@@ -253,19 +269,21 @@ namespace alpaka
         }
 
         ALPAKA_NO_HOST_ACC_WARNING
+
         template<typename TFnObj>
         [[nodiscard]] ALPAKA_FN_HOST_ACC constexpr auto foldrAll(TFnObj const& f, TVal initial) const
         {
             return foldrByIndices(f, IdxSequence(), initial);
         }
 
-// suppress strange warning produced by nvcc+MSVC in release mode
+        // suppress strange warning produced by nvcc+MSVC in release mode
 #if ALPAKA_COMP_MSVC
 #    pragma warning(push)
 #    pragma warning(disable : 4702) // unreachable code
 #endif
         //! \return The product of all values.
         ALPAKA_NO_HOST_ACC_WARNING
+
         [[nodiscard]] ALPAKA_FN_HOST_ACC constexpr auto prod() const -> TVal
         {
             return foldrAll(std::multiplies<TVal>{}, TVal{1});
@@ -275,6 +293,7 @@ namespace alpaka
 #endif
         //! \return The sum of all values.
         ALPAKA_NO_HOST_ACC_WARNING
+
         [[nodiscard]] ALPAKA_FN_HOST_ACC constexpr auto sum() const -> TVal
         {
             return foldrAll(std::plus<TVal>{}, TVal{0});
@@ -282,6 +301,7 @@ namespace alpaka
 
         //! \return The min of all values.
         ALPAKA_NO_HOST_ACC_WARNING
+
         [[nodiscard]] ALPAKA_FN_HOST_ACC constexpr auto min() const -> TVal
         {
             return foldrAll(meta::min<TVal>{}, std::numeric_limits<TVal>::max());
@@ -289,6 +309,7 @@ namespace alpaka
 
         //! \return The max of all values.
         ALPAKA_NO_HOST_ACC_WARNING
+
         [[nodiscard]] ALPAKA_FN_HOST_ACC constexpr auto max() const -> TVal
         {
             return foldrAll(meta::max<TVal>{}, std::numeric_limits<TVal>::min());
@@ -296,6 +317,7 @@ namespace alpaka
 
         //! \return True if all values are true, i.e., the "logical and" of all values.
         ALPAKA_NO_HOST_ACC_WARNING
+
         [[nodiscard]] ALPAKA_FN_HOST_ACC constexpr auto all() const -> bool
         {
             return foldrAll(std::logical_and<TVal>{}, true);
@@ -303,6 +325,7 @@ namespace alpaka
 
         //! \return True if any value is true, i.e., the "logical or" of all values.
         ALPAKA_NO_HOST_ACC_WARNING
+
         [[nodiscard]] ALPAKA_FN_HOST_ACC constexpr auto any() const -> bool
         {
             return foldrAll(std::logical_or<TVal>{}, false);
@@ -310,6 +333,7 @@ namespace alpaka
 
         //! \return True if none of the values are true
         ALPAKA_NO_HOST_ACC_WARNING
+
         [[nodiscard]] ALPAKA_FN_HOST_ACC constexpr auto none() const -> bool
         {
             return !foldrAll(std::logical_or<TVal>{}, false);
@@ -318,15 +342,13 @@ namespace alpaka
         //! \return The index of the minimal element.
         [[nodiscard]] ALPAKA_FN_HOST constexpr auto minElem() const -> typename TDim::value_type
         {
-            return static_cast<typename TDim::value_type>(
-                std::distance(std::begin(m_data), std::min_element(std::begin(m_data), std::end(m_data))));
+            return static_cast<typename TDim::value_type>(std::distance(begin(), std::min_element(begin(), end())));
         }
 
         //! \return The index of the maximal element.
         [[nodiscard]] ALPAKA_FN_HOST constexpr auto maxElem() const -> typename TDim::value_type
         {
-            return static_cast<typename TDim::value_type>(
-                std::distance(std::begin(m_data), std::max_element(std::begin(m_data), std::end(m_data))));
+            return static_cast<typename TDim::value_type>(std::distance(begin(), std::max_element(begin(), end())));
         }
 
         template<size_t I>
@@ -349,9 +371,9 @@ namespace alpaka
 
         //! \return The element-wise sum of two vectors.
         ALPAKA_NO_HOST_ACC_WARNING
-        ALPAKA_FN_HOST_ACC friend constexpr auto operator+(Vec const& p, Vec const& q) -> Vec
+        ALPAKA_FN_HOST_ACC friend constexpr auto operator+(VecOld const& p, VecOld const& q) -> VecOld
         {
-            Vec r;
+            VecOld r;
             if constexpr(TDim::value > 0)
             {
                 for(typename TDim::value_type i = 0; i < TDim::value; ++i)
@@ -362,9 +384,9 @@ namespace alpaka
 
         //! \return The element-wise difference of two vectors.
         ALPAKA_NO_HOST_ACC_WARNING
-        ALPAKA_FN_HOST_ACC friend constexpr auto operator-(Vec const& p, Vec const& q) -> Vec
+        ALPAKA_FN_HOST_ACC friend constexpr auto operator-(VecOld const& p, VecOld const& q) -> VecOld
         {
-            Vec r;
+            VecOld r;
             if constexpr(TDim::value > 0)
             {
                 for(typename TDim::value_type i = 0; i < TDim::value; ++i)
@@ -375,9 +397,9 @@ namespace alpaka
 
         //! \return The element-wise product of two vectors.
         ALPAKA_NO_HOST_ACC_WARNING
-        ALPAKA_FN_HOST_ACC friend constexpr auto operator*(Vec const& p, Vec const& q) -> Vec
+        ALPAKA_FN_HOST_ACC friend constexpr auto operator*(VecOld const& p, VecOld const& q) -> VecOld
         {
-            Vec r;
+            VecOld r;
             if constexpr(TDim::value > 0)
             {
                 for(typename TDim::value_type i = 0; i < TDim::value; ++i)
@@ -388,9 +410,9 @@ namespace alpaka
 
         //! \return The element-wise product of a vector times a scalar.
         ALPAKA_NO_HOST_ACC_WARNING
-        ALPAKA_FN_HOST_ACC friend constexpr auto operator*(Vec const& p, TVal const& q) -> Vec
+        ALPAKA_FN_HOST_ACC friend constexpr auto operator*(VecOld const& p, TVal const& q) -> VecOld
         {
-            Vec r;
+            VecOld r;
             if constexpr(TDim::value > 0)
             {
                 for(typename TDim::value_type i = 0; i < TDim::value; ++i)
@@ -400,7 +422,7 @@ namespace alpaka
         }
 
         ALPAKA_NO_HOST_ACC_WARNING
-        ALPAKA_FN_HOST_ACC friend constexpr auto operator==(Vec const& a, Vec const& b) -> bool
+        ALPAKA_FN_HOST_ACC friend constexpr auto operator==(VecOld const& a, VecOld const& b) -> bool
         {
             if constexpr(TDim::value > 0)
             {
@@ -414,16 +436,16 @@ namespace alpaka
         }
 
         ALPAKA_NO_HOST_ACC_WARNING
-        ALPAKA_FN_HOST_ACC friend constexpr auto operator!=(Vec const& a, Vec const& b) -> bool
+        ALPAKA_FN_HOST_ACC friend constexpr auto operator!=(VecOld const& a, VecOld const& b) -> bool
         {
             return !(a == b);
         }
 
         //! \return The element-wise less than relation of two vectors.
         ALPAKA_NO_HOST_ACC_WARNING
-        ALPAKA_FN_HOST_ACC friend constexpr auto operator<(Vec const& p, Vec const& q) -> Vec<TDim, bool>
+        ALPAKA_FN_HOST_ACC friend constexpr auto operator<(VecOld const& p, VecOld const& q) -> VecOld<TDim, bool>
         {
-            Vec<TDim, bool> r;
+            VecOld<TDim, bool> r;
             if constexpr(TDim::value > 0)
             {
                 for(typename TDim::value_type i = 0; i < TDim::value; ++i)
@@ -434,9 +456,9 @@ namespace alpaka
 
         //! \return The element-wise less than relation of two vectors.
         ALPAKA_NO_HOST_ACC_WARNING
-        ALPAKA_FN_HOST_ACC friend constexpr auto operator<=(Vec const& p, Vec const& q) -> Vec<TDim, bool>
+        ALPAKA_FN_HOST_ACC friend constexpr auto operator<=(VecOld const& p, VecOld const& q) -> VecOld<TDim, bool>
         {
-            Vec<TDim, bool> r;
+            VecOld<TDim, bool> r;
             if constexpr(TDim::value > 0)
             {
                 for(typename TDim::value_type i = 0; i < TDim::value; ++i)
@@ -447,9 +469,9 @@ namespace alpaka
 
         //! \return The element-wise greater than relation of two vectors.
         ALPAKA_NO_HOST_ACC_WARNING
-        ALPAKA_FN_HOST_ACC friend constexpr auto operator>(Vec const& p, Vec const& q) -> Vec<TDim, bool>
+        ALPAKA_FN_HOST_ACC friend constexpr auto operator>(VecOld const& p, VecOld const& q) -> VecOld<TDim, bool>
         {
-            Vec<TDim, bool> r;
+            VecOld<TDim, bool> r;
             if constexpr(TDim::value > 0)
             {
                 for(typename TDim::value_type i = 0; i < TDim::value; ++i)
@@ -460,9 +482,9 @@ namespace alpaka
 
         //! \return The element-wise greater equal than relation of two vectors.
         ALPAKA_NO_HOST_ACC_WARNING
-        ALPAKA_FN_HOST_ACC friend constexpr auto operator>=(Vec const& p, Vec const& q) -> Vec<TDim, bool>
+        ALPAKA_FN_HOST_ACC friend constexpr auto operator>=(VecOld const& p, VecOld const& q) -> VecOld<TDim, bool>
         {
-            Vec<TDim, bool> r;
+            VecOld<TDim, bool> r;
             if constexpr(TDim::value > 0)
             {
                 for(typename TDim::value_type i = 0; i < TDim::value; ++i)
@@ -473,9 +495,9 @@ namespace alpaka
 
         //! \return The element-wise logical and relation of two vectors.
         ALPAKA_NO_HOST_ACC_WARNING
-        ALPAKA_FN_HOST_ACC friend constexpr auto operator&&(Vec const& p, Vec const& q) -> Vec<TDim, bool>
+        ALPAKA_FN_HOST_ACC friend constexpr auto operator&&(VecOld const& p, VecOld const& q) -> VecOld<TDim, bool>
         {
-            Vec<TDim, bool> r;
+            VecOld<TDim, bool> r;
             if constexpr(TDim::value > 0)
             {
                 for(typename TDim::value_type i = 0; i < TDim::value; ++i)
@@ -486,9 +508,9 @@ namespace alpaka
 
         //! \return The element-wise logical or relation of two vectors.
         ALPAKA_NO_HOST_ACC_WARNING
-        ALPAKA_FN_HOST_ACC friend constexpr auto operator||(Vec const& p, Vec const& q) -> Vec<TDim, bool>
+        ALPAKA_FN_HOST_ACC friend constexpr auto operator||(VecOld const& p, VecOld const& q) -> VecOld<TDim, bool>
         {
-            Vec<TDim, bool> r;
+            VecOld<TDim, bool> r;
             if constexpr(TDim::value > 0)
             {
                 for(typename TDim::value_type i = 0; i < TDim::value; ++i)
@@ -497,7 +519,7 @@ namespace alpaka
             return r;
         }
 
-        ALPAKA_FN_HOST friend constexpr auto operator<<(std::ostream& os, Vec const& v) -> std::ostream&
+        ALPAKA_FN_HOST friend constexpr auto operator<<(std::ostream& os, VecOld const& v) -> std::ostream&
         {
             os << "(";
             if constexpr(TDim::value > 0)
@@ -518,22 +540,23 @@ namespace alpaka
 
     private:
         // Zero sized arrays are not allowed, therefore zero-dimensional vectors have one member.
-        TVal m_data[TDim::value == 0u ? 1u : TDim::value];
+        // TVal m_data[TDim::value == 0u ? 1u : TDim::value];
+        alpaka::Vec<TVal, TDim::value> m_data;
     };
 
     template<typename TFirstIndex, typename... TRestIndices>
-    ALPAKA_FN_HOST_ACC Vec(TFirstIndex&&, TRestIndices&&...)
-        -> Vec<DimInt<1 + sizeof...(TRestIndices)>, std::decay_t<TFirstIndex>>;
+    ALPAKA_FN_HOST_ACC VecOld(TFirstIndex&&, TRestIndices&&...)
+        -> VecOld<DimInt<1 + sizeof...(TRestIndices)>, std::decay_t<TFirstIndex>>;
 
     template<typename T>
-    inline constexpr bool isVec = false;
+    inline constexpr bool isVecOld = false;
 
     template<typename TDim, typename TVal>
-    inline constexpr bool isVec<Vec<TDim, TVal>> = true;
+    inline constexpr bool isVecOld<VecOld<TDim, TVal>> = true;
 
-    //! Converts a Vec to a std::array
+    //! Converts a VecOld to a std::array
     template<typename TDim, typename TVal>
-    ALPAKA_FN_HOST_ACC constexpr auto toArray(Vec<TDim, TVal> const& v) -> std::array<TVal, TDim::value>
+    ALPAKA_FN_HOST_ACC constexpr auto toArray(VecOld<TDim, TVal> const& v) -> std::array<TVal, TDim::value>
     {
         std::array<TVal, TDim::value> a{};
         if constexpr(TDim::value > 0)
@@ -546,14 +569,16 @@ namespace alpaka
 
     //! \return The element-wise minimum of one or more vectors.
     ALPAKA_NO_HOST_ACC_WARNING
+
     template<
         typename TDim,
         typename TVal,
         typename... Vecs,
-        typename = std::enable_if_t<(std::is_same_v<Vec<TDim, TVal>, Vecs> && ...)>>
-    ALPAKA_FN_HOST_ACC constexpr auto elementwise_min(Vec<TDim, TVal> const& p, Vecs const&... qs) -> Vec<TDim, TVal>
+        typename = std::enable_if_t<(std::is_same_v<VecOld<TDim, TVal>, Vecs> && ...)>>
+    ALPAKA_FN_HOST_ACC constexpr auto elementwise_min(VecOld<TDim, TVal> const& p, Vecs const&... qs)
+        -> VecOld<TDim, TVal>
     {
-        Vec<TDim, TVal> r;
+        VecOld<TDim, TVal> r;
         if constexpr(TDim::value > 0)
         {
             for(typename TDim::value_type i = 0; i < TDim::value; ++i)
@@ -564,14 +589,16 @@ namespace alpaka
 
     //! \return The element-wise maximum of one or more vectors.
     ALPAKA_NO_HOST_ACC_WARNING
+
     template<
         typename TDim,
         typename TVal,
         typename... Vecs,
-        typename = std::enable_if_t<(std::is_same_v<Vec<TDim, TVal>, Vecs> && ...)>>
-    ALPAKA_FN_HOST_ACC constexpr auto elementwise_max(Vec<TDim, TVal> const& p, Vecs const&... qs) -> Vec<TDim, TVal>
+        typename = std::enable_if_t<(std::is_same_v<VecOld<TDim, TVal>, Vecs> && ...)>>
+    ALPAKA_FN_HOST_ACC constexpr auto elementwise_max(VecOld<TDim, TVal> const& p, Vecs const&... qs)
+        -> VecOld<TDim, TVal>
     {
-        Vec<TDim, TVal> r;
+        VecOld<TDim, TVal> r;
         if constexpr(TDim::value > 0)
         {
             for(typename TDim::value_type i = 0; i < TDim::value; ++i)
@@ -582,26 +609,26 @@ namespace alpaka
 
     namespace trait
     {
-        //! The Vec dimension get trait specialization.
+        //! The VecOld dimension get trait specialization.
         template<typename TDim, typename TVal>
-        struct DimType<Vec<TDim, TVal>>
+        struct DimType<VecOld<TDim, TVal>>
         {
             using type = TDim;
         };
 
-        //! The Vec idx type trait specialization.
+        //! The VecOld idx type trait specialization.
         template<typename TDim, typename TVal>
-        struct IdxType<Vec<TDim, TVal>>
+        struct IdxType<VecOld<TDim, TVal>>
         {
             using type = TVal;
         };
 
         //! Specialization for selecting a sub-vector.
         template<typename TDim, typename TVal, std::size_t... TIndices>
-        struct SubVecFromIndices<Vec<TDim, TVal>, std::index_sequence<TIndices...>>
+        struct SubVecFromIndices<VecOld<TDim, TVal>, std::index_sequence<TIndices...>>
         {
             ALPAKA_NO_HOST_ACC_WARNING ALPAKA_FN_HOST_ACC static constexpr auto subVecFromIndices(
-                Vec<TDim, TVal> const& vec) -> Vec<DimInt<sizeof...(TIndices)>, TVal>
+                VecOld<TDim, TVal> const& vec) -> VecOld<DimInt<sizeof...(TIndices)>, TVal>
             {
                 if constexpr(std::is_same_v<std::index_sequence<TIndices...>, std::make_index_sequence<TDim::value>>)
                 {
@@ -620,10 +647,10 @@ namespace alpaka
         };
 
         template<typename TValNew, typename TDim, typename TVal>
-        struct CastVec<TValNew, Vec<TDim, TVal>>
+        struct CastVec<TValNew, VecOld<TDim, TVal>>
         {
             ALPAKA_NO_HOST_ACC_WARNING
-            ALPAKA_FN_HOST_ACC static constexpr auto castVec(Vec<TDim, TVal> const& vec) -> Vec<TDim, TValNew>
+            ALPAKA_FN_HOST_ACC static constexpr auto castVec(VecOld<TDim, TVal> const& vec) -> VecOld<TDim, TValNew>
             {
                 if constexpr(std::is_same_v<TValNew, TVal>)
                 {
@@ -631,7 +658,7 @@ namespace alpaka
                 }
                 else
                 {
-                    Vec<TDim, TValNew> r;
+                    VecOld<TDim, TValNew> r;
                     if constexpr(TDim::value > 0)
                     {
                         for(typename TDim::value_type i = 0; i < TDim::value; ++i)
@@ -645,10 +672,10 @@ namespace alpaka
 
         //! ReverseVec specialization for Vec.
         template<typename TDim, typename TVal>
-        struct ReverseVec<Vec<TDim, TVal>>
+        struct ReverseVec<VecOld<TDim, TVal>>
         {
             ALPAKA_NO_HOST_ACC_WARNING
-            ALPAKA_FN_HOST_ACC static constexpr auto reverseVec(Vec<TDim, TVal> const& vec) -> Vec<TDim, TVal>
+            ALPAKA_FN_HOST_ACC static constexpr auto reverseVec(VecOld<TDim, TVal> const& vec) -> VecOld<TDim, TVal>
             {
                 if constexpr(TDim::value <= 1)
                 {
@@ -656,7 +683,7 @@ namespace alpaka
                 }
                 else
                 {
-                    Vec<TDim, TVal> r;
+                    VecOld<TDim, TVal> r;
                     for(typename TDim::value_type i = 0; i < TDim::value; ++i)
                         r[i] = vec[TDim::value - 1u - i];
                     return r;
@@ -667,14 +694,14 @@ namespace alpaka
 
         //! Concatenation specialization for Vec.
         template<typename TDimL, typename TDimR, typename TVal>
-        struct ConcatVec<Vec<TDimL, TVal>, Vec<TDimR, TVal>>
+        struct ConcatVec<VecOld<TDimL, TVal>, VecOld<TDimR, TVal>>
         {
             ALPAKA_NO_HOST_ACC_WARNING
             ALPAKA_FN_HOST_ACC static constexpr auto concatVec(
-                Vec<TDimL, TVal> const& vecL,
-                Vec<TDimR, TVal> const& vecR) -> Vec<DimInt<TDimL::value + TDimR::value>, TVal>
+                VecOld<TDimL, TVal> const& vecL,
+                VecOld<TDimR, TVal> const& vecR) -> VecOld<DimInt<TDimL::value + TDimR::value>, TVal>
             {
-                Vec<DimInt<TDimL::value + TDimR::value>, TVal> r;
+                VecOld<DimInt<TDimL::value + TDimR::value>, TVal> r;
                 if constexpr(TDimL::value > 0)
                 {
                     for(typename TDimL::value_type i = 0; i < TDimL::value; ++i)
@@ -698,12 +725,12 @@ namespace alpaka
 namespace std
 {
     template<typename TDim, typename TVal>
-    struct tuple_size<alpaka::Vec<TDim, TVal>> : integral_constant<size_t, TDim::value>
+    struct tuple_size<alpaka::VecOld<TDim, TVal>> : integral_constant<size_t, TDim::value>
     {
     };
 
     template<size_t I, typename TDim, typename TVal>
-    struct tuple_element<I, alpaka::Vec<TDim, TVal>>
+    struct tuple_element<I, alpaka::VecOld<TDim, TVal>>
     {
         using type = TVal;
     };

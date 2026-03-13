@@ -92,9 +92,9 @@ namespace alpaka::trait
     template<typename TElem, typename TDim, typename TIdx>
     struct GetOffsets<ConstBufCpu<TElem, TDim, TIdx>>
     {
-        ALPAKA_FN_HOST auto operator()(ConstBufCpu<TElem, TDim, TIdx> const&) const -> Vec<TDim, TIdx>
+        ALPAKA_FN_HOST auto operator()(ConstBufCpu<TElem, TDim, TIdx> const&) const -> VecOld<TDim, TIdx>
         {
-            return Vec<TDim, TIdx>::zeros();
+            return VecOld<TDim, TIdx>::zeros();
         }
     };
 

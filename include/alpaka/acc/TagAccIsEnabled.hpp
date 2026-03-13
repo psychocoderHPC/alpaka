@@ -6,15 +6,7 @@
 
 // include all Acc's because of the struct AccIsEnabled
 // if an acc is not include, it will be not enabled independent of the compiler flags
-#include "alpaka/acc/AccCpuOmp2Blocks.hpp"
-#include "alpaka/acc/AccCpuOmp2Threads.hpp"
-#include "alpaka/acc/AccCpuSerial.hpp"
-#include "alpaka/acc/AccCpuSycl.hpp"
-#include "alpaka/acc/AccCpuTbbBlocks.hpp"
-#include "alpaka/acc/AccCpuThreads.hpp"
-#include "alpaka/acc/AccFpgaSyclIntel.hpp"
-#include "alpaka/acc/AccGpuCudaRt.hpp"
-#include "alpaka/acc/AccGpuHipRt.hpp"
+#include "alpaka/acc/AccAlpaka3Cpu.hpp"
 #include "alpaka/acc/Tag.hpp"
 #include "alpaka/dim/DimIntegralConst.hpp"
 #include "alpaka/meta/Filter.hpp"

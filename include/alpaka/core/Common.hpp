@@ -130,7 +130,7 @@
 //!  }
 //!
 //! void initFoo() {
-//!     auto extent = alpaka::Vec<alpaka::DimInt<1u>, size_t>{1};
+//!     auto extent = alpaka::VecOld<alpaka::DimInt<1u>, size_t>{1};
 //!     int initialValue = 42;
 //!     alpaka::ViewPlainPtr<DevHost, int, alpaka::DimInt<1u>, size_t> bufHost(&initialValue, devHost, extent);
 //!     alpaka::memcpy(queue, foo<Acc>, bufHost, extent);
@@ -185,7 +185,7 @@
 //!  }
 //!
 //! void initFoo() {
-//!     auto extent = alpaka::Vec<alpaka::DimInt<1u>, size_t>{1};
+//!     auto extent = alpaka::VecOld<alpaka::DimInt<1u>, size_t>{1};
 //!     int initialValue = 42;
 //!     alpaka::ViewPlainPtr<DevHost, int, alpaka::DimInt<1u>, size_t> bufHost(&initialValue, devHost, extent);
 //!     alpaka::memcpy(queue, foo<Acc>, bufHost, extent);

@@ -95,13 +95,13 @@ namespace alpaka
             , gb::IdxGbRef<TDim, TIdx>(m_gridBlockIdx)
             , BlockSharedMemDynMember<>(blockSharedMemDynSizeBytes)
             , BlockSharedMemStMember<>(staticMemBegin(), staticMemCapacity())
-            , m_gridBlockIdx(Vec<TDim, TIdx>::zeros())
+            , m_gridBlockIdx(VecOld<TDim, TIdx>::zeros())
         {
         }
 
     private:
         // getIdx
-        Vec<TDim, TIdx> mutable m_gridBlockIdx; //!< The index of the currently executed block.
+        VecOld<TDim, TIdx> mutable m_gridBlockIdx; //!< The index of the currently executed block.
     };
 
     namespace trait
@@ -134,15 +134,15 @@ namespace alpaka
                 return {// m_multiProcessorCount
                         static_cast<TIdx>(1),
                         // m_gridBlockExtentMax
-                        Vec<TDim, TIdx>::all(std::numeric_limits<TIdx>::max()),
+                        VecOld<TDim, TIdx>::all(std::numeric_limits<TIdx>::max()),
                         // m_gridBlockCountMax
                         std::numeric_limits<TIdx>::max(),
                         // m_blockThreadExtentMax
-                        Vec<TDim, TIdx>::ones(),
+                        VecOld<TDim, TIdx>::ones(),
                         // m_blockThreadCountMax
                         static_cast<TIdx>(1),
                         // m_threadElemExtentMax
-                        Vec<TDim, TIdx>::all(std::numeric_limits<TIdx>::max()),
+                        VecOld<TDim, TIdx>::all(std::numeric_limits<TIdx>::max()),
                         // m_threadElemCountMax
                         std::numeric_limits<TIdx>::max(),
                         // m_sharedMemSizeBytes

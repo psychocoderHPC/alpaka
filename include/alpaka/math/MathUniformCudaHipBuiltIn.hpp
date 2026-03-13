@@ -7,10 +7,10 @@
 
 #include "alpaka/core/Config.hpp"
 #include "alpaka/core/CudaHipCommon.hpp"
-#include "alpaka/core/Decay.hpp"
 #include "alpaka/core/Interface.hpp"
 #include "alpaka/core/UniformCudaHip.hpp"
 #include "alpaka/core/Unreachable.hpp"
+#include "alpaka/core/decay.hpp"
 #include "alpaka/math/Complex.hpp"
 #include "alpaka/math/Traits.hpp"
 

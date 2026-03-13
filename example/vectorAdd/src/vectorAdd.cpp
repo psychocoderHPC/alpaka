@@ -77,7 +77,7 @@ auto example(TAccTag const&) -> int
     // Define the work division
     Idx const numElements(123456);
     Idx const elementsPerThread(8u);
-    alpaka::Vec<Dim, Idx> const extent(numElements);
+    alpaka::VecOld<Dim, Idx> const extent(numElements);
 
     // Define the buffer element type
     using Data = std::uint32_t;

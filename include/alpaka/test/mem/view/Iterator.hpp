@@ -82,8 +82,8 @@ namespace alpaka::test
                     return *m_nativePtr;
                 else
                 {
-                    Vec<Dim, Idx> const currentIdxDimx
-                        = mapIdx<Dim::value>(Vec<DimInt<1>, Idx>{m_currentIdx}, m_extents);
+                    VecOld<Dim, Idx> const currentIdxDimx
+                        = mapIdx<Dim::value>(VecOld<DimInt<1>, Idx>{m_currentIdx}, m_extents);
                     auto const offsetInBytes = (currentIdxDimx * m_pitchBytes).sum();
                     using QualifiedByte = MimicConst<std::byte, Elem>;
                     return *reinterpret_cast<Elem*>(__builtin_assume_aligned(
@@ -96,8 +96,8 @@ namespace alpaka::test
         private:
             Elem* m_nativePtr;
             Idx m_currentIdx;
-            Vec<Dim, Idx> m_extents;
-            Vec<Dim, Idx> m_pitchBytes;
+            VecOld<Dim, Idx> m_extents;
+            VecOld<Dim, Idx> m_pitchBytes;
         };
 
         template<typename TView, typename TSfinae = void>

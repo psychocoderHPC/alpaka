@@ -7,7 +7,6 @@
 #include "alpaka/core/Common.hpp"
 #include "alpaka/core/Unreachable.hpp"
 #include "alpaka/vec/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
 
 #include <type_traits>
 
@@ -23,11 +22,12 @@ namespace alpaka
         std::size_t TDimIn,
         std::size_t TDimExtents,
         typename TElem>
-    ALPAKA_FN_HOST_ACC auto mapIdx(Vec<DimInt<TDimIn>, TElem> const& in, Vec<DimInt<TDimExtents>, TElem> const& extent)
-        -> Vec<DimInt<TDimOut>, TElem>
+    ALPAKA_FN_HOST_ACC auto mapIdx(
+        VecOld<DimInt<TDimIn>, TElem> const& in,
+        VecOld<DimInt<TDimExtents>, TElem> const& extent) -> VecOld<DimInt<TDimOut>, TElem>
     {
         if constexpr(TDimOut == 0 || TDimIn == 0)
-            return Vec<DimInt<TDimOut>, TElem>::zeros();
+            return VecOld<DimInt<TDimOut>, TElem>::zeros();
         else if constexpr(TDimOut == TDimIn)
             return in;
         else if constexpr(TDimOut == 1)
@@ -40,7 +40,7 @@ namespace alpaka
         else if constexpr(TDimIn == 1)
         {
             auto flat = in.front();
-            Vec<DimInt<TDimOut>, TElem> out;
+            VecOld<DimInt<TDimOut>, TElem> out;
             for(std::size_t d = TDimOut - 1u; d > 0; d--)
             {
                 out[d] = static_cast<TElem>(flat % extent[d]);
@@ -64,11 +64,11 @@ namespace alpaka
     ALPAKA_NO_HOST_ACC_WARNING
     template<std::size_t TDimOut, std::size_t TDimIn, std::size_t TidxDimPitch, typename TElem>
     ALPAKA_FN_HOST_ACC auto mapIdxPitchBytes(
-        Vec<DimInt<TDimIn>, TElem> const& in,
-        Vec<DimInt<TidxDimPitch>, TElem> const& pitches) -> Vec<DimInt<TDimOut>, TElem>
+        VecOld<DimInt<TDimIn>, TElem> const& in,
+        VecOld<DimInt<TidxDimPitch>, TElem> const& pitches) -> VecOld<DimInt<TDimOut>, TElem>
     {
         if constexpr(TDimOut == 0 || TDimIn == 0)
-            return Vec<DimInt<TDimOut>, TElem>::zeros();
+            return VecOld<DimInt<TDimOut>, TElem>::zeros();
         else if constexpr(TDimOut == TDimIn)
             return in;
         else if constexpr(TDimOut == 1)
@@ -78,7 +78,7 @@ namespace alpaka
         }
         else if constexpr(TDimIn == 1)
         {
-            auto result = Vec<DimInt<TDimOut>, TElem>::zeros();
+            auto result = VecOld<DimInt<TDimOut>, TElem>::zeros();
 
             TElem out = in.front();
             for(std::size_t d = 0; d < TDimOut - 1u; ++d)

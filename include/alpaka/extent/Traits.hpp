@@ -56,7 +56,7 @@ namespace alpaka
     //! \return The extents of the given object.
     ALPAKA_NO_HOST_ACC_WARNING
     template<typename T>
-    ALPAKA_FN_HOST_ACC auto getExtents(T const& object) -> Vec<Dim<T>, Idx<T>>
+    ALPAKA_FN_HOST_ACC auto getExtents(T const& object) -> VecOld<Dim<T>, Idx<T>>
     {
         return trait::GetExtents<T>{}(object);
     }
@@ -66,7 +66,7 @@ namespace alpaka
     ALPAKA_NO_HOST_ACC_WARNING
     template<typename T>
     [[deprecated("use getExtents() instead")]] ALPAKA_FN_HOST_ACC constexpr auto getExtentVec(T const& object = {})
-        -> Vec<Dim<T>, Idx<T>>
+        -> VecOld<Dim<T>, Idx<T>>
     {
         return getExtents(object);
     }
@@ -75,12 +75,12 @@ namespace alpaka
     //! \return The extent but only the last TDim elements.
     ALPAKA_NO_HOST_ACC_WARNING
     template<typename TDim, typename T>
-    ALPAKA_FN_HOST_ACC constexpr auto getExtentVecEnd(T const& object = {}) -> Vec<TDim, Idx<T>>
+    ALPAKA_FN_HOST_ACC constexpr auto getExtentVecEnd(T const& object = {}) -> VecOld<TDim, Idx<T>>
     {
         static_assert(TDim::value <= Dim<T>::value, "Cannot get more items than the extent holds");
 
         [[maybe_unused]] auto const e = getExtents(object);
-        Vec<TDim, Idx<T>> v{};
+        VecOld<TDim, Idx<T>> v{};
         if constexpr(TDim::value > 0)
         {
             for(unsigned i = 0; i < TDim::value; i++)
@@ -140,10 +140,10 @@ namespace alpaka
     {
         //! The Vec extent get trait specialization.
         template<typename TDim, typename TVal>
-        struct GetExtents<Vec<TDim, TVal>>
+        struct GetExtents<VecOld<TDim, TVal>>
         {
             ALPAKA_NO_HOST_ACC_WARNING
-            ALPAKA_FN_HOST_ACC constexpr auto operator()(Vec<TDim, TVal> const& extent) const -> Vec<TDim, TVal>
+            ALPAKA_FN_HOST_ACC constexpr auto operator()(VecOld<TDim, TVal> const& extent) const -> VecOld<TDim, TVal>
             {
                 return extent;
             }
@@ -155,7 +155,7 @@ namespace alpaka
             ALPAKA_NO_HOST_ACC_WARNING
             ALPAKA_FN_HOST_ACC auto operator()(Integral i) const
             {
-                return Vec{i};
+                return VecOld{i};
             }
         };
     } // namespace trait

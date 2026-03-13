@@ -6,12 +6,9 @@
 #pragma once
 
 #include "alpaka/dev/DevCpu.hpp"
-#include "alpaka/dev/DevGenericSycl.hpp"
-#include "alpaka/dev/DevUniformCudaHipRt.hpp"
 #include "alpaka/mem/view/Traits.hpp"
 #include "alpaka/mem/view/ViewAccessOps.hpp"
 #include "alpaka/meta/DependentFalseType.hpp"
-#include "alpaka/vec/Vec.hpp"
 
 #include <type_traits>
 #include <utility>
@@ -35,14 +32,14 @@ namespace alpaka
             : m_pMem(pMem)
             , m_dev(std::move(dev))
             , m_extentElements(extent)
-            , m_pitchBytes(static_cast<Vec<TDim, TIdx>>(pitchBytes))
+            , m_pitchBytes(static_cast<VecOld<TDim, TIdx>>(pitchBytes))
         {
         }
 
         TElem* m_pMem;
         TDev m_dev;
-        Vec<TDim, TIdx> m_extentElements;
-        Vec<TDim, TIdx> m_pitchBytes;
+        VecOld<TDim, TIdx> m_extentElements;
+        VecOld<TDim, TIdx> m_pitchBytes;
     };
 
     // Trait specializations for ViewPlainPtr.
@@ -176,9 +173,9 @@ namespace alpaka
         template<typename TDev, typename TElem, typename TDim, typename TIdx>
         struct GetOffsets<ViewPlainPtr<TDev, TElem, TDim, TIdx>>
         {
-            ALPAKA_FN_HOST auto operator()(ViewPlainPtr<TDev, TElem, TDim, TIdx> const&) const -> Vec<TDim, TIdx>
+            ALPAKA_FN_HOST auto operator()(ViewPlainPtr<TDev, TElem, TDim, TIdx> const&) const -> VecOld<TDim, TIdx>
             {
-                return Vec<TDim, TIdx>::zeros();
+                return VecOld<TDim, TIdx>::zeros();
             }
         };
 

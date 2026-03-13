@@ -9,7 +9,6 @@
 #include "alpaka/idx/Traits.hpp"
 #include "alpaka/meta/IntegerSequence.hpp"
 #include "alpaka/offset/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
 
 #include <array>
 #include <cstddef>

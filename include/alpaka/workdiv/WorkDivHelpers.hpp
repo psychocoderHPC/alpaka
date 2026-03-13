@@ -12,7 +12,6 @@
 #include "alpaka/extent/Traits.hpp"
 #include "alpaka/kernel/KernelFunctionAttributes.hpp"
 #include "alpaka/kernel/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
 #include "alpaka/workdiv/WorkDivMembers.hpp"
 
 #include <algorithm>
@@ -133,15 +132,15 @@ namespace alpaka
     //! \param gridBlockExtentSubDivRestrictions The grid block extent subdivision restrictions.
     template<typename TDim, typename TIdx>
     ALPAKA_FN_HOST auto subDivideGridElems(
-        Vec<TDim, TIdx> const& gridElemExtent,
-        Vec<TDim, TIdx> const& threadElemExtent,
+        VecOld<TDim, TIdx> const& gridElemExtent,
+        VecOld<TDim, TIdx> const& threadElemExtent,
         AccDevProps<TDim, TIdx> const& accDevProps,
         TIdx kernelBlockThreadCountMax = static_cast<TIdx>(0u),
         bool blockThreadMustDivideGridThreadExtent = true,
         GridBlockExtentSubDivRestrictions gridBlockExtentSubDivRestrictions
         = GridBlockExtentSubDivRestrictions::Unrestricted) -> WorkDivMembers<TDim, TIdx>
     {
-        using Vec = Vec<TDim, TIdx>;
+        using Vec = VecOld<TDim, TIdx>;
         using DimLoopInd = typename TDim::value_type;
 
         for(DimLoopInd i(0); i < TDim::value; ++i)
@@ -315,14 +314,14 @@ namespace alpaka
     //! \tparam TThreadElemExtent The type of the thread element extent.
     template<
         typename TAcc,
-        typename TGridElemExtent = alpaka::Vec<Dim<TAcc>, Idx<TAcc>>,
-        typename TThreadElemExtent = alpaka::Vec<Dim<TAcc>, Idx<TAcc>>>
+        typename TGridElemExtent = alpaka::VecOld<Dim<TAcc>, Idx<TAcc>>,
+        typename TThreadElemExtent = alpaka::VecOld<Dim<TAcc>, Idx<TAcc>>>
     struct KernelCfg
     {
         //! The full extent of elements in the grid.
-        TGridElemExtent const gridElemExtent = alpaka::Vec<Dim<TAcc>, Idx<TAcc>>::ones();
+        TGridElemExtent const gridElemExtent = alpaka::VecOld<Dim<TAcc>, Idx<TAcc>>::ones();
         //! The number of elements computed per thread.
-        TThreadElemExtent const threadElemExtent = alpaka::Vec<Dim<TAcc>, Idx<TAcc>>::ones();
+        TThreadElemExtent const threadElemExtent = alpaka::VecOld<Dim<TAcc>, Idx<TAcc>>::ones();
         //! If this is true, the grid thread extent will be multiples of
         //! the corresponding block thread extent.
         //!     NOTE: If this is true and gridThreadExtent is prime (or otherwise bad chosen) in a dimension, the block
@@ -378,7 +377,7 @@ namespace alpaka
 
         if constexpr(Dim<TGridElemExtent>::value == 0)
         {
-            auto const zero = Vec<DimInt<0>, Idx<Acc>>{};
+            auto const zero = VecOld<DimInt<0>, Idx<Acc>>{};
             ALPAKA_ASSERT(kernelCfg.gridElemExtent == zero);
             ALPAKA_ASSERT(kernelCfg.threadElemExtent == zero);
             return WorkDivMembers<DimInt<0>, Idx<Acc>>{zero, zero, zero};
@@ -392,7 +391,7 @@ namespace alpaka
                 kernelCfg.blockThreadMustDivideGridThreadExtent,
                 kernelCfg.gridBlockExtentSubDivRestrictions);
 
-        using V [[maybe_unused]] = Vec<Dim<TGridElemExtent>, Idx<TGridElemExtent>>;
+        using V [[maybe_unused]] = VecOld<Dim<TGridElemExtent>, Idx<TGridElemExtent>>;
         ALPAKA_UNREACHABLE(WorkDivMembers<Dim<TGridElemExtent>, Idx<TGridElemExtent>>{V{}, V{}, V{}});
     }
 

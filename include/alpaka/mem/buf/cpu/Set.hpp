@@ -55,12 +55,12 @@ namespace alpaka
 #endif
 
             std::uint8_t const m_byte;
-            Vec<TDim, ExtentSize> const m_extent;
+            VecOld<TDim, ExtentSize> const m_extent;
             ExtentSize const m_extentWidthBytes;
 #if(!defined(NDEBUG)) || (ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL)
-            Vec<TDim, DstSize> const m_dstExtent;
+            VecOld<TDim, DstSize> const m_dstExtent;
 #endif
-            Vec<TDim, DstSize> const m_dstPitchBytes;
+            VecOld<TDim, DstSize> const m_dstPitchBytes;
             std::uint8_t* const m_dstMemNative;
         };
 
@@ -83,14 +83,15 @@ namespace alpaka
 #endif
                 // [z, y, x] -> [z, y] because all elements with the innermost x dimension are handled within one
                 // iteration.
-                Vec<DimMin1, ExtentSize> const extentWithoutInnermost = subVecBegin<DimMin1>(this->m_extent);
-                Vec<DimMin1, DstSize> const dstPitchBytesWithoutOutmost = subVecBegin<DimMin1>(this->m_dstPitchBytes);
+                VecOld<DimMin1, ExtentSize> const extentWithoutInnermost = subVecBegin<DimMin1>(this->m_extent);
+                VecOld<DimMin1, DstSize> const dstPitchBytesWithoutOutmost
+                    = subVecBegin<DimMin1>(this->m_dstPitchBytes);
 
                 if(static_cast<std::size_t>(this->m_extent.prod()) != 0u)
                 {
                     meta::ndLoopIncIdx(
                         extentWithoutInnermost,
-                        [&](Vec<DimMin1, ExtentSize> const& idx)
+                        [&](VecOld<DimMin1, ExtentSize> const& idx)
                         {
                             std::memset(
                                 this->m_dstMemNative + (castVec<DstSize>(idx) * dstPitchBytesWithoutOutmost).sum(),
@@ -129,7 +130,7 @@ namespace alpaka
         struct TaskSetCpu<DimInt<0u>, TView, TExtent>
         {
             using ExtentSize = Idx<TExtent>;
-            using Scalar = Vec<DimInt<0u>, ExtentSize>;
+            using Scalar = VecOld<DimInt<0u>, ExtentSize>;
             using DstSize = Idx<TView>;
             using Elem = alpaka::Elem<TView>;
 

@@ -64,7 +64,7 @@ namespace alpaka
                 {
                     meta::ndLoopIncIdx(
                         m_extent,
-                        [&](Vec<TDim, ExtentSize> const& idx)
+                        [&](VecOld<TDim, ExtentSize> const& idx)
                         {
                             // All elements of m_dstPitchBytes are multiples of the alignment of Elem.
                             std::uintptr_t offsetBytes = static_cast<std::uintptr_t>((idx * m_dstPitchBytes).sum());
@@ -78,11 +78,11 @@ namespace alpaka
 
         private:
             Elem const m_value;
-            Vec<TDim, ExtentSize> const m_extent;
+            VecOld<TDim, ExtentSize> const m_extent;
 #if(!defined(NDEBUG)) || (ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL)
-            Vec<TDim, DstSize> const m_dstExtent;
+            VecOld<TDim, DstSize> const m_dstExtent;
 #endif
-            Vec<TDim, DstSize> const m_dstPitchBytes;
+            VecOld<TDim, DstSize> const m_dstPitchBytes;
             Elem* const m_dstMemNative;
         };
 

@@ -9,7 +9,6 @@
 #include "alpaka/core/Hip.hpp"
 #include "alpaka/core/Interface.hpp"
 #include "alpaka/idx/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
 #include "alpaka/workdiv/Traits.hpp"
 
 #if defined(ALPAKA_ACC_GPU_CUDA_ENABLED) || defined(ALPAKA_ACC_GPU_HIP_ENABLED)
@@ -22,7 +21,7 @@ namespace alpaka
         : public interface::Implements<ConceptWorkDiv, WorkDivUniformCudaHipBuiltIn<TDim, TIdx>>
     {
     public:
-        ALPAKA_FN_HOST_ACC WorkDivUniformCudaHipBuiltIn(Vec<TDim, TIdx> const& threadElemExtent)
+        ALPAKA_FN_HOST_ACC WorkDivUniformCudaHipBuiltIn(VecOld<TDim, TIdx> const& threadElemExtent)
             : m_threadElemExtent(threadElemExtent)
         {
         }
@@ -30,7 +29,7 @@ namespace alpaka
         // \TODO: Optimize! Add WorkDivUniformCudaHipBuiltInNoElems that has no member m_threadElemExtent as well as
         // AccGpuUniformCudaHipRtNoElems. Use it instead of AccGpuUniformCudaHipRt if the thread element extent is one
         // to reduce the register usage.
-        Vec<TDim, TIdx> const& m_threadElemExtent;
+        VecOld<TDim, TIdx> const& m_threadElemExtent;
     };
 
 #    if !defined(ALPAKA_HOST_ONLY)
@@ -65,12 +64,12 @@ namespace alpaka
         {
             //! \return The number of blocks in each dimension of the grid.
             __device__ static auto getWorkDiv(WorkDivUniformCudaHipBuiltIn<TDim, TIdx> const& /* workDiv */)
-                -> Vec<TDim, TIdx>
+                -> VecOld<TDim, TIdx>
             {
 #        ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
                 return castVec<TIdx>(getExtentVecEnd<TDim>(gridDim));
 #        else
-                return getExtentVecEnd<TDim>(Vec<std::integral_constant<typename TDim::value_type, 3>, TIdx>(
+                return getExtentVecEnd<TDim>(VecOld<std::integral_constant<typename TDim::value_type, 3>, TIdx>(
                     static_cast<TIdx>(hipGridDim_z),
                     static_cast<TIdx>(hipGridDim_y),
                     static_cast<TIdx>(hipGridDim_x)));
@@ -84,12 +83,12 @@ namespace alpaka
         {
             //! \return The number of threads in each dimension of a block.
             __device__ static auto getWorkDiv(WorkDivUniformCudaHipBuiltIn<TDim, TIdx> const& /* workDiv */)
-                -> Vec<TDim, TIdx>
+                -> VecOld<TDim, TIdx>
             {
 #        ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
                 return castVec<TIdx>(getExtentVecEnd<TDim>(blockDim));
 #        else
-                return getExtentVecEnd<TDim>(Vec<std::integral_constant<typename TDim::value_type, 3>, TIdx>(
+                return getExtentVecEnd<TDim>(VecOld<std::integral_constant<typename TDim::value_type, 3>, TIdx>(
                     static_cast<TIdx>(hipBlockDim_z),
                     static_cast<TIdx>(hipBlockDim_y),
                     static_cast<TIdx>(hipBlockDim_x)));
@@ -103,7 +102,7 @@ namespace alpaka
         {
             //! \return The number of blocks in each dimension of the grid.
             __device__ static auto getWorkDiv(WorkDivUniformCudaHipBuiltIn<TDim, TIdx> const& workDiv)
-                -> Vec<TDim, TIdx>
+                -> VecOld<TDim, TIdx>
             {
                 return workDiv.m_threadElemExtent;
             }

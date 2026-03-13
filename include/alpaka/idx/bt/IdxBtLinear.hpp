@@ -8,7 +8,6 @@
 #include "alpaka/core/Positioning.hpp"
 #include "alpaka/idx/MapIdx.hpp"
 #include "alpaka/idx/Traits.hpp"
-#include "alpaka/vec/Vec.hpp"
 #include "alpaka/workdiv/Traits.hpp"
 
 namespace alpaka
@@ -43,10 +42,10 @@ namespace alpaka
         {
             //! \return The index of the current thread in the block.
             template<typename TWorkDiv>
-            static auto getIdx(bt::IdxBtLinear<TDim, TIdx> const& idx, TWorkDiv const& workDiv) -> Vec<TDim, TIdx>
+            static auto getIdx(bt::IdxBtLinear<TDim, TIdx> const& idx, TWorkDiv const& workDiv) -> VecOld<TDim, TIdx>
             {
                 return mapIdx<TDim::value>(
-                    Vec<DimInt<1u>, TIdx>(idx.m_blockThreadIdx),
+                    VecOld<DimInt<1u>, TIdx>(idx.m_blockThreadIdx),
                     getWorkDiv<Block, Threads>(workDiv));
             }
         };
@@ -56,7 +55,8 @@ namespace alpaka
         {
             //! \return The index of the current thread in the block.
             template<typename TWorkDiv>
-            static auto getIdx(bt::IdxBtLinear<DimInt<1u>, TIdx> const& idx, TWorkDiv const&) -> Vec<DimInt<1u>, TIdx>
+            static auto getIdx(bt::IdxBtLinear<DimInt<1u>, TIdx> const& idx, TWorkDiv const&)
+                -> VecOld<DimInt<1u>, TIdx>
             {
                 return idx.m_blockThreadIdx;
             }
