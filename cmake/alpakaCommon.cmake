@@ -152,7 +152,7 @@ if(NOT TARGET alpaka)
 
     target_compile_features(alpaka INTERFACE cxx_std_${alpaka_CXX_STANDARD})
 
-    add_library(alpaka::alpaka ALIAS alpaka)
+    add_library(aV2P::alpaka ALIAS alpaka)
 endif()
 
 set(alpaka_BLOCK_SHARED_DYN_MEMBER_ALLOC_KIB "47" CACHE STRING "Kibibytes (1024B) of memory to allocate for block shared memory for backends requiring static allocation (includes CPU_B_OMP2_T_SEQ, CPU_B_TBB_T_SEQ, CPU_B_SEQ_T_SEQ, SYCL)")

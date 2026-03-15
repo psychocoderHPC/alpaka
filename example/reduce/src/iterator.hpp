@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <alpaka/alpaka.hpp>
+#include <aV2P/aV2P.hpp>
 
 //! An iterator base class.
 //!
@@ -131,9 +131,9 @@ public:
         uint64_t n)
         : Iterator<T, TBuf>(
             data,
-            static_cast<uint32_t>((n * linearizedIndex) / alpaka::math::min(acc, static_cast<uint64_t>(gridSize), n)),
+            static_cast<uint32_t>((n * linearizedIndex) / aV2P::math::min(acc, static_cast<uint64_t>(gridSize), n)),
             static_cast<uint32_t>(
-                (n * (linearizedIndex + 1)) / alpaka::math::min(acc, static_cast<uint64_t>(gridSize), n)))
+                (n * (linearizedIndex + 1)) / aV2P::math::min(acc, static_cast<uint64_t>(gridSize), n)))
     {
     }
 

@@ -5,7 +5,7 @@
 
 cmake_minimum_required(VERSION 3.25)
 
-if(NOT TARGET alpaka::alpaka)
+if(NOT TARGET aV2P::alpaka)
     list(APPEND CMAKE_MODULE_PATH "${alpaka_ROOT}")
     find_package(alpaka REQUIRED)
 endif()

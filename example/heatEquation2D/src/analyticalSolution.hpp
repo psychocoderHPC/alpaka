@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <alpaka/alpaka.hpp>
+#include <aV2P/aV2P.hpp>
 
 #include <cmath>
 
@@ -16,7 +16,7 @@
 //! \param t value of t
 ALPAKA_FN_HOST_ACC auto exactSolution(double const x, double const y, double const t) -> double
 {
-    constexpr double pi = alpaka::math::constants::pi;
+    constexpr double pi = aV2P::math::constants::pi;
     return std::exp(-pi * pi * t) * (std::sin(pi * x) + std::sin(pi * y));
 }
 
@@ -59,7 +59,7 @@ auto validateSolution(
 template<typename TBuffer>
 auto initalizeBuffer(TBuffer& buffer, double const dx, double const dy) -> void
 {
-    auto extents = alpaka::getExtents(buffer);
+    auto extents = aV2P::getExtents(buffer);
     // Apply initial conditions for the test problem
     for(uint32_t j = 0; j < extents[0]; ++j)
     {

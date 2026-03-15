@@ -8,7 +8,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 project(babelstream LANGUAGES CXX)
 
-if(NOT TARGET alpaka::alpaka)
+if(NOT TARGET aV2P::alpaka)
     option(alpaka_USE_SOURCE_TREE "Use alpaka's source tree instead of an alpaka installation" OFF)
     if(alpaka_USE_SOURCE_TREE)
         # Don't build the benchmarks recursively

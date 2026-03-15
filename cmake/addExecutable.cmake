@@ -17,7 +17,7 @@ macro(alpaka_add_executable In_Name)
 
     add_executable(${In_Name} ${ARGN})
 
-    target_link_libraries(${In_Name} PUBLIC alpaka::alpaka)
+    #target_link_libraries(${In_Name} PUBLIC alpaka::alpaka)
     target_link_libraries(${In_Name} PRIVATE alpaka3::alpaka)
 
     alpaka_finalize(${In_Name})

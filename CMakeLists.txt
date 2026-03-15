@@ -14,9 +14,9 @@ include(CMakePrintHelpers)
 
 #-------------------------------------------------------------------------------
 # Find alpaka version.
-file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/include/alpaka/version.hpp" alpaka_VERSION_MAJOR_HPP REGEX "#define ALPAKA_VERSION_MAJOR ")
-file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/include/alpaka/version.hpp" alpaka_VERSION_MINOR_HPP REGEX "#define ALPAKA_VERSION_MINOR ")
-file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/include/alpaka/version.hpp" alpaka_VERSION_PATCH_HPP REGEX "#define ALPAKA_VERSION_PATCH ")
+file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/include/aV2P/version.hpp" alpaka_VERSION_MAJOR_HPP REGEX "#define AV2P_VERSION_MAJOR ")
+file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/include/aV2P/version.hpp" alpaka_VERSION_MINOR_HPP REGEX "#define AV2P_VERSION_MINOR ")
+file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/include/aV2P/version.hpp" alpaka_VERSION_PATCH_HPP REGEX "#define AV2P_VERSION_PATCH ")
 
 string(REGEX MATCH "([0-9]+)" alpaka_VERSION_MAJOR  ${alpaka_VERSION_MAJOR_HPP})
 string(REGEX MATCH "([0-9]+)" alpaka_VERSION_MINOR  ${alpaka_VERSION_MINOR_HPP})

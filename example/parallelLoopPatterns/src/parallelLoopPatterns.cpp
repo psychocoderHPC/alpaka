@@ -2,8 +2,8 @@
  * SPDX-License-Identifier: ISC
  */
 
-#include <alpaka/alpaka.hpp>
-#include <alpaka/example/ExecuteForEachAccTag.hpp>
+#include <aV2P/aV2P.hpp>
+#include <aV2P/example/ExecuteForEachAccTag.hpp>
 
 #include <iostream>
 #include <typeinfo>
@@ -34,16 +34,16 @@ template<typename TQueue, typename TBufAcc>
 void testResult(TQueue& queue, TBufAcc& bufAcc)
 {
     // Wait for kernel to finish
-    alpaka::wait(queue);
+    aV2P::wait(queue);
     // Copy results to host
-    auto const n = alpaka::getExtentProduct(bufAcc);
-    auto const platformHost = alpaka::PlatformCpu{};
-    auto const devHost = alpaka::getDevByIdx(platformHost, 0);
-    auto bufHost = alpaka::allocBuf<float, uint64_t>(devHost, n);
-    alpaka::memcpy(queue, bufHost, bufAcc);
+    auto const n = aV2P::getExtentProduct(bufAcc);
+    auto const platformHost = aV2P::PlatformCpu{};
+    auto const devHost = aV2P::getDevByIdx(platformHost, 0);
+    auto bufHost = aV2P::allocBuf<float, uint64_t>(devHost, n);
+    aV2P::memcpy(queue, bufHost, bufAcc);
     // Reset values of device buffer
     auto const byte(static_cast<uint8_t>(0u));
-    alpaka::memset(queue, bufAcc, byte);
+    aV2P::memset(queue, bufAcc, byte);
     // Test that all elements were processed
     bool testPassed = true;
     for(uint64_t i = 0u; i < n; i++)
@@ -52,7 +52,7 @@ void testResult(TQueue& queue, TBufAcc& bufAcc)
 }
 
 //! Helper type to set alpaka kernel launch configuration
-using WorkDiv = alpaka::WorkDivMembers<alpaka::DimInt<1u>, uint64_t>;
+using WorkDiv = aV2P::WorkDivMembers<aV2P::DimInt<1u>, uint64_t>;
 
 //! A naive CUDA style kernel processing a single element per thread.
 struct NaiveCudaStyleKernel
@@ -73,7 +73,7 @@ struct NaiveCudaStyleKernel
     template<typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc, float* result, uint64_t n) const
     {
-        auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0u];
+        auto const globalThreadIdx = aV2P::getIdx<aV2P::Grid, aV2P::Threads>(acc)[0u];
         // Cuf off threads that have nothing to do
         if(globalThreadIdx < n)
         {
@@ -99,8 +99,8 @@ struct NaiveCudaStyleKernel
 template<typename TAcc, typename TDev, typename TQueue, typename TBufAcc>
 void naiveCudaStyle(TDev& dev, TQueue& queue, TBufAcc& bufAcc)
 {
-    auto const n = alpaka::getExtentProduct(bufAcc);
-    auto const deviceProperties = alpaka::getAccDevProps<TAcc>(dev);
+    auto const n = aV2P::getExtentProduct(bufAcc);
+    auto const deviceProperties = aV2P::getAccDevProps<TAcc>(dev);
     auto const maxThreadsPerBlock = deviceProperties.m_blockThreadExtentMax[0];
 
     // With this approach, one normally has a fixed number of threads per block
@@ -114,7 +114,7 @@ void naiveCudaStyle(TDev& dev, TQueue& queue, TBufAcc& bufAcc)
     std::cout << "\nNaive CUDA style processing - each thread processes one data point:\n";
     std::cout << "   " << blocksPerGrid << " blocks, " << threadsPerBlock << " threads per block, "
               << "alpaka element layer not used\n";
-    alpaka::exec<TAcc>(queue, workDiv, NaiveCudaStyleKernel{}, std::data(bufAcc), n);
+    aV2P::exec<TAcc>(queue, workDiv, NaiveCudaStyleKernel{}, std::data(bufAcc), n);
     testResult(queue, bufAcc);
 }
 
@@ -140,8 +140,8 @@ struct GridStridedLoopKernel
     template<typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc, float* result, uint64_t n) const
     {
-        auto const globalThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc)[0u];
-        auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0u];
+        auto const globalThreadExtent = aV2P::getWorkDiv<aV2P::Grid, aV2P::Threads>(acc)[0u];
+        auto const globalThreadIdx = aV2P::getIdx<aV2P::Grid, aV2P::Threads>(acc)[0u];
         for(auto dataDomainIdx = globalThreadIdx; dataDomainIdx < n; dataDomainIdx += globalThreadExtent)
         {
             auto const memoryIdx = dataDomainIdx;
@@ -163,8 +163,8 @@ struct GridStridedLoopKernel
 template<typename TAcc, typename TDev, typename TQueue, typename TBufAcc>
 void gridStridedLoop(TDev& dev, TQueue& queue, TBufAcc& bufAcc)
 {
-    auto const n = alpaka::getExtentProduct(bufAcc);
-    auto const deviceProperties = alpaka::getAccDevProps<TAcc>(dev);
+    auto const n = aV2P::getExtentProduct(bufAcc);
+    auto const deviceProperties = aV2P::getAccDevProps<TAcc>(dev);
     auto const maxThreadsPerBlock = deviceProperties.m_blockThreadExtentMax[0];
 
     // With this approach, one normally has a fixed number of threads per block
@@ -182,7 +182,7 @@ void gridStridedLoop(TDev& dev, TQueue& queue, TBufAcc& bufAcc)
     std::cout << "\nGrid strided loop processing - fixed number of threads and blocks:\n";
     std::cout << "   " << blocksPerGrid << " blocks, " << threadsPerBlock << " threads per block, "
               << "alpaka element layer not used\n";
-    alpaka::exec<TAcc>(queue, workDiv, GridStridedLoopKernel{}, std::data(bufAcc), n);
+    aV2P::exec<TAcc>(queue, workDiv, GridStridedLoopKernel{}, std::data(bufAcc), n);
     testResult(queue, bufAcc);
 }
 
@@ -210,9 +210,9 @@ struct ChunkedGridStridedLoopKernel
     template<typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc, float* result, uint64_t n) const
     {
-        auto const numElements = alpaka::getWorkDiv<alpaka::Thread, alpaka::Elems>(acc)[0u];
-        auto const globalThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc)[0u];
-        auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0u];
+        auto const numElements = aV2P::getWorkDiv<aV2P::Thread, aV2P::Elems>(acc)[0u];
+        auto const globalThreadExtent = aV2P::getWorkDiv<aV2P::Grid, aV2P::Threads>(acc)[0u];
+        auto const globalThreadIdx = aV2P::getIdx<aV2P::Grid, aV2P::Threads>(acc)[0u];
         // Additionally could split the loop into peeled and remainder
         for(auto chunkStart = globalThreadIdx * numElements; chunkStart < n;
             chunkStart += globalThreadExtent * numElements)
@@ -242,8 +242,8 @@ struct ChunkedGridStridedLoopKernel
 template<typename TAcc, typename TDev, typename TQueue, typename TBufAcc>
 void chunkedGridStridedLoop(TDev& dev, TQueue& queue, TBufAcc& bufAcc)
 {
-    auto const n = alpaka::getExtentProduct(bufAcc);
-    auto const deviceProperties = alpaka::getAccDevProps<TAcc>(dev);
+    auto const n = aV2P::getExtentProduct(bufAcc);
+    auto const deviceProperties = aV2P::getAccDevProps<TAcc>(dev);
     auto const maxThreadsPerBlock = deviceProperties.m_blockThreadExtentMax[0];
 
     // With this approach, one normally has a fixed number of threads per block
@@ -262,7 +262,7 @@ void chunkedGridStridedLoop(TDev& dev, TQueue& queue, TBufAcc& bufAcc)
     std::cout << "\nChunked grid strided loop processing - fixed number of threads and blocks:\n";
     std::cout << "   " << blocksPerGrid << " blocks, " << threadsPerBlock << " threads per block, "
               << elementsPerThread << " alpaka elements per thread\n";
-    alpaka::exec<TAcc>(queue, workDiv, ChunkedGridStridedLoopKernel{}, std::data(bufAcc), n);
+    aV2P::exec<TAcc>(queue, workDiv, ChunkedGridStridedLoopKernel{}, std::data(bufAcc), n);
     testResult(queue, bufAcc);
 }
 
@@ -287,8 +287,8 @@ struct NaiveOpenMPStyleKernel
     template<typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc, float* result, uint64_t n) const
     {
-        auto const globalThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc)[0u];
-        auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0u];
+        auto const globalThreadExtent = aV2P::getWorkDiv<aV2P::Grid, aV2P::Threads>(acc)[0u];
+        auto const globalThreadIdx = aV2P::getIdx<aV2P::Grid, aV2P::Threads>(acc)[0u];
         auto const processPerThread = (n + globalThreadExtent - 1) / globalThreadExtent;
         for(auto dataDomainIdx = globalThreadIdx * processPerThread;
             (dataDomainIdx < (globalThreadIdx + 1) * processPerThread) && (dataDomainIdx < n);
@@ -313,8 +313,8 @@ struct NaiveOpenMPStyleKernel
 template<typename TAcc, typename TDev, typename TQueue, typename TBufAcc>
 void naiveOpenMPStyle(TDev& dev, TQueue& queue, TBufAcc& bufAcc)
 {
-    auto const n = alpaka::getExtentProduct(bufAcc);
-    auto const deviceProperties = alpaka::getAccDevProps<TAcc>(dev);
+    auto const n = aV2P::getExtentProduct(bufAcc);
+    auto const deviceProperties = aV2P::getAccDevProps<TAcc>(dev);
     auto const maxThreadsPerBlock = deviceProperties.m_blockThreadExtentMax[0];
     auto const numCores = std::max<uint64_t>(deviceProperties.m_multiProcessorCount, 1ul);
 
@@ -333,7 +333,7 @@ void naiveOpenMPStyle(TDev& dev, TQueue& queue, TBufAcc& bufAcc)
     std::cout << "\nNaive OpenMP style processing - each thread processes a single consecutive range of elements:\n";
     std::cout << "   " << blocksPerGrid << " blocks, " << threadsPerBlock << " threads per block, "
               << "alpaka element layer not used\n";
-    alpaka::exec<TAcc>(queue, workDiv, NaiveOpenMPStyleKernel{}, std::data(bufAcc), n);
+    aV2P::exec<TAcc>(queue, workDiv, NaiveOpenMPStyleKernel{}, std::data(bufAcc), n);
     testResult(queue, bufAcc);
 }
 
@@ -357,9 +357,9 @@ struct OpenMPSimdStyleKernel
     template<typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc, float* result, uint64_t n) const
     {
-        auto const numElements = alpaka::getWorkDiv<alpaka::Thread, alpaka::Elems>(acc)[0u];
-        auto const globalThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc)[0u];
-        auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0u];
+        auto const numElements = aV2P::getWorkDiv<aV2P::Thread, aV2P::Elems>(acc)[0u];
+        auto const globalThreadExtent = aV2P::getWorkDiv<aV2P::Grid, aV2P::Threads>(acc)[0u];
+        auto const globalThreadIdx = aV2P::getIdx<aV2P::Grid, aV2P::Threads>(acc)[0u];
         // This is the number for naive OpenMP style
         auto const naiveProcessPerThread = (n + globalThreadExtent - 1) / globalThreadExtent;
         // Round up to multiple of numElements
@@ -395,8 +395,8 @@ struct OpenMPSimdStyleKernel
 template<typename TAcc, typename TDev, typename TQueue, typename TBufAcc>
 void openMPSimdStyle(TDev& dev, TQueue& queue, TBufAcc& bufAcc)
 {
-    auto const n = alpaka::getExtentProduct(bufAcc);
-    auto const deviceProperties = alpaka::getAccDevProps<TAcc>(dev);
+    auto const n = aV2P::getExtentProduct(bufAcc);
+    auto const deviceProperties = aV2P::getAccDevProps<TAcc>(dev);
     auto const maxThreadsPerBlock = deviceProperties.m_blockThreadExtentMax[0];
     auto const numCores = std::max<uint64_t>(deviceProperties.m_multiProcessorCount, 1ul);
 
@@ -416,7 +416,7 @@ void openMPSimdStyle(TDev& dev, TQueue& queue, TBufAcc& bufAcc)
     std::cout << "\nOpenMP SIMD style processing - each thread processes a single consecutive range of elements:\n";
     std::cout << "   " << blocksPerGrid << " blocks, " << threadsPerBlock << " threads per block, "
               << elementsPerThread << " alpaka elements per thread\n";
-    alpaka::exec<TAcc>(queue, workDiv, OpenMPSimdStyleKernel{}, std::data(bufAcc), n);
+    aV2P::exec<TAcc>(queue, workDiv, OpenMPSimdStyleKernel{}, std::data(bufAcc), n);
     testResult(queue, bufAcc);
 }
 
@@ -424,24 +424,24 @@ void openMPSimdStyle(TDev& dev, TQueue& queue, TBufAcc& bufAcc)
 // Instead, a single accelerator is selected once from the active accelerators and the kernels are executed with the
 // selected accelerator only. If you use the example as the starting point for your project, you can rename the
 // example() function to main() and move the accelerator tag to the function body.
-template<alpaka::concepts::Tag TAccTag>
+template<aV2P::concepts::Tag TAccTag>
 auto example(TAccTag const&) -> int
 {
     // Define the index domain, this example is only for 1d
-    using Dim = alpaka::DimInt<1u>;
+    using Dim = aV2P::DimInt<1u>;
 
     // Define the accelerator
-    using Acc = alpaka::TagToAcc<TAccTag, Dim, uint64_t>;
-    std::cout << "Using alpaka accelerator: " << alpaka::getAccName<Acc>() << std::endl;
+    using Acc = aV2P::TagToAcc<TAccTag, Dim, uint64_t>;
+    std::cout << "Using alpaka accelerator: " << aV2P::getAccName<Acc>() << std::endl;
 
     // Select a device and create queue for it
-    auto const platformAcc = alpaka::Platform<Acc>{};
-    auto const devAcc = alpaka::getDevByIdx(platformAcc, 0);
-    auto queue = alpaka::Queue<Acc, alpaka::Blocking>(devAcc);
+    auto const platformAcc = aV2P::Platform<Acc>{};
+    auto const devAcc = aV2P::getDevByIdx(platformAcc, 0);
+    auto queue = aV2P::Queue<Acc, aV2P::Blocking>(devAcc);
 
     // Define the problem size = buffer size and allocate memory
     uint64_t const bufferSize = 1317u;
-    auto bufAcc = alpaka::allocBuf<float, uint64_t>(devAcc, bufferSize);
+    auto bufAcc = aV2P::allocBuf<float, uint64_t>(devAcc, bufferSize);
 
     // Call different kernel versions
     naiveCudaStyle<Acc>(devAcc, queue, bufAcc);
@@ -456,7 +456,7 @@ auto example(TAccTag const&) -> int
 auto main() -> int
 {
     std::cout << "Check enabled accelerator tags:" << std::endl;
-    alpaka::printTagNames<alpaka::EnabledAccTags>();
+    aV2P::printTagNames<aV2P::EnabledAccTags>();
     // Execute the example once for each enabled accelerator.
     // If you would like to execute it for a single accelerator only you can use the following code.
     //  \code{.cpp}
@@ -468,5 +468,5 @@ auto main() -> int
     //   TagCpuSerial, TagGpuHipRt, TagGpuCudaRt, TagCpuOmp2Blocks, TagCpuTbbBlocks,
     //   TagCpuOmp2Threads, TagCpuSycl, TagCpuTbbBlocks, TagCpuThreads,
     //   TagFpgaSyclIntel, TagGenericSycl, TagGpuSyclIntel
-    return alpaka::executeForEachAccTag([=](auto const& tag) { return example(tag); });
+    return aV2P::executeForEachAccTag([=](auto const& tag) { return example(tag); });
 }

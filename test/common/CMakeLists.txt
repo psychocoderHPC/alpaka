@@ -28,7 +28,7 @@ if(alpaka_ACC_GPU_CUDA_ENABLE)
     target_compile_definitions(${_COMMON_TARGET_NAME} INTERFACE "CUDA_API_PER_THREAD_DEFAULT_STREAM")
 endif()
 
-target_link_libraries(${_COMMON_TARGET_NAME} INTERFACE alpaka::alpaka)
+target_link_libraries(${_COMMON_TARGET_NAME} INTERFACE aV2P::alpaka)
 
 # Prevent "unsafe buffer usage" warnings from clang >= 16
 if((CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "16.0.0") OR

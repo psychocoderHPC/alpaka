@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <alpaka/alpaka.hpp>
+#include <aV2P/aV2P.hpp>
 
 //! A cheap wrapper around a C-style array in heap memory.
 template<typename T, uint64_t size>
@@ -62,14 +62,14 @@ struct ReduceKernel
         TIdx const& n,
         TFunc func) const -> void
     {
-        auto& sdata(alpaka::declareSharedVar<cheapArray<T, TBlockSize>, __COUNTER__>(acc));
+        auto& sdata(aV2P::declareSharedVar<cheapArray<T, TBlockSize>, __COUNTER__>(acc));
 
-        auto const blockIndex(static_cast<uint32_t>(alpaka::getIdx<alpaka::Grid, alpaka::Blocks>(acc)[0]));
-        auto const threadIndex(static_cast<uint32_t>(alpaka::getIdx<alpaka::Block, alpaka::Threads>(acc)[0]));
-        auto const gridDimension(static_cast<uint32_t>(alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0]));
+        auto const blockIndex(static_cast<uint32_t>(aV2P::getIdx<aV2P::Grid, aV2P::Blocks>(acc)[0]));
+        auto const threadIndex(static_cast<uint32_t>(aV2P::getIdx<aV2P::Block, aV2P::Threads>(acc)[0]));
+        auto const gridDimension(static_cast<uint32_t>(aV2P::getWorkDiv<aV2P::Grid, aV2P::Blocks>(acc)[0]));
 
         // equivalent to blockIndex * TBlockSize + threadIndex
-        auto const linearizedIndex(static_cast<uint32_t>(alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0]));
+        auto const linearizedIndex(static_cast<uint32_t>(aV2P::getIdx<aV2P::Grid, aV2P::Threads>(acc)[0]));
 
         typename GetIterator<T, TElem, TAcc>::Iterator it(acc, source, linearizedIndex, gridDimension * TBlockSize, n);
 
@@ -100,7 +100,7 @@ struct ReduceKernel
         if(threadIndex < n)
             sdata[threadIndex] = result;
 
-        alpaka::syncBlockThreads(acc);
+        aV2P::syncBlockThreads(acc);
 
         // --------
         // Level 2: block + warp reduce, reading from shared memory
@@ -122,7 +122,7 @@ struct ReduceKernel
             if(cond)
                 sdata[threadIndex] = func(sdata[threadIndex], sdata[threadIndex + currentBlockSizeUp]);
 
-            alpaka::syncBlockThreads(acc);
+            aV2P::syncBlockThreads(acc);
         }
 
         // store block result to gmem

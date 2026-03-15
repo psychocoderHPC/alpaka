@@ -27,7 +27,7 @@ endif()
 #-------------------------------------------------------------------------------
 # Find alpaka.
 
-if(NOT TARGET alpaka::alpaka)
+if(NOT TARGET aV2P::alpaka)
     option(alpaka_USE_SOURCE_TREE "Use alpaka's source tree instead of an alpaka installation" OFF)
 
     if(alpaka_USE_SOURCE_TREE)
@@ -52,7 +52,7 @@ alpaka_add_executable(
     src/useRocBLASInAlpaka.cpp)
 target_link_libraries(
     ${_TARGET_NAME}
-    PUBLIC alpaka::alpaka rocblas)
+    PUBLIC aV2P::alpaka rocblas)
 
 set_target_properties(${_TARGET_NAME} PROPERTIES FOLDER example)
 add_test(NAME ${_TARGET_NAME} COMMAND ${_TARGET_NAME})

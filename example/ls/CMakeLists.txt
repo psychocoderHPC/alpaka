@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.25)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 project(alpaka-ls LANGUAGES CXX)
-if(NOT TARGET alpaka::alpaka)
+if(NOT TARGET aV2P::alpaka)
     option(alpaka_USE_SOURCE_TREE "Use alpaka's source tree instead of an alpaka installation" OFF)
     if(alpaka_USE_SOURCE_TREE)
         set(alpaka_BUILD_EXAMPLES OFF) # Don't build the examples recursively
@@ -16,6 +16,6 @@ if(NOT TARGET alpaka::alpaka)
 endif()
 
 alpaka_add_executable(${PROJECT_NAME} src/ls.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC alpaka::alpaka)
+target_link_libraries(${PROJECT_NAME} PUBLIC aV2P::alpaka)
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER example)
 add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})
