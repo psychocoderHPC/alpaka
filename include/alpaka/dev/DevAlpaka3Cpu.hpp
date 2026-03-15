@@ -28,63 +28,60 @@
 
 namespace alpaka
 {
-    class DevAlpaka3Cpu;
-    struct PlatformAlpaka3Cpu;
+
+    template<onHost::concepts::DeviceSpec TDevSpec>
+    struct PlatformAlpaka3;
 
     namespace trait
     {
         template<typename TPlatform, typename TSfinae>
         struct GetDevByIdx;
     } // namespace trait
-    struct PlatformAlpaka3Cpu;
 
-    //! The CPU device handle.
-    class DevAlpaka3Cpu
-        : public interface::Implements<ConceptCurrentThreadWaitFor, DevAlpaka3Cpu>
-        , public interface::Implements<ConceptDev, DevAlpaka3Cpu>
+    template<onHost::concepts::DeviceSpec TDevSpec>
+    struct PlatformAlpaka3;
+
+    template<onHost::concepts::DeviceSpec TDevSpec>
+    class DevAlpaka3
+        : public interface::Implements<ConceptCurrentThreadWaitFor, DevAlpaka3<TDevSpec>>
+        , public interface::Implements<ConceptDev, DevAlpaka3<TDevSpec>>
     {
-        friend struct trait::GetDevByIdx<PlatformAlpaka3Cpu>;
+        friend struct trait::GetDevByIdx<PlatformAlpaka3<TDevSpec>>;
 
     protected:
-        DevAlpaka3Cpu(size_t devIdx) : m_devImpl{alpaka::onHost::makeDeviceSelector(DeviceSpec{}).makeDevice(devIdx)}
+        DevAlpaka3(size_t devIdx) : m_devImpl{alpaka::onHost::makeDeviceSelector(DevSpec{}).makeDevice(devIdx)}
         {
         }
 
     public:
-        using DeviceSpec = alpaka::onHost::DeviceSpec<alpaka::api::Host, alpaka::deviceKind::Cpu>;
-        using DevType = decltype(alpaka::onHost::makeDeviceSelector(DeviceSpec{}).makeDevice(0));
+        using DevSpec = TDevSpec;
+        using DevType = decltype(alpaka::onHost::makeDeviceSelector(DevSpec{}).makeDevice(0));
 
         auto getAlpaka3() const
         {
             return m_devImpl;
         }
 
-        auto operator==(DevAlpaka3Cpu const& other) const -> bool
+        auto operator==(DevAlpaka3 const& other) const -> bool
         {
             return m_devImpl == other.m_devImpl;
         }
 
-        auto operator!=(DevAlpaka3Cpu const& other) const -> bool
+        auto operator!=(DevAlpaka3 const& other) const -> bool
         {
             return m_devImpl != other.m_devImpl;
         }
 
         [[nodiscard]] auto getNativeHandle() const noexcept
         {
-            return 0;
+            return getAlpaka3().getNativeHandle();
         }
 
-        static void setDeviceProperties(alpaka::DevAlpaka3Cpu const& device, alpaka::DeviceProperties& devProperties)
-        {
-            devProperties.name = device.m_devImpl.getName();
-            devProperties.totalGlobalMem = device.m_devImpl.getDeviceProperties().globalMemCapacityBytes;
-        }
-
-        friend struct trait::GetName<DevAlpaka3Cpu>;
-        friend struct trait::GetMemBytes<DevAlpaka3Cpu>;
-        friend struct trait::GetFreeMemBytes<DevAlpaka3Cpu>;
-        friend struct trait::GetWarpSizes<DevAlpaka3Cpu>;
-        friend struct trait::GetPreferredWarpSize<DevAlpaka3Cpu>;
+        friend struct trait::GetName<DevAlpaka3>;
+        friend struct trait::GetMemBytes<DevAlpaka3>;
+        friend struct trait::GetFreeMemBytes<DevAlpaka3>;
+        friend struct trait::GetWarpSizes<DevAlpaka3>;
+        friend struct trait::GetPreferredWarpSize<DevAlpaka3>;
 
     private:
         DevType m_devImpl;
@@ -92,73 +89,66 @@ namespace alpaka
 
     namespace trait
     {
-
-        //! The CPU device name get trait specialization.
-        template<>
-        struct GetName<DevAlpaka3Cpu>
+        template<onHost::concepts::DeviceSpec TDevSpec>
+        struct GetName<DevAlpaka3<TDevSpec>>
         {
-            ALPAKA_FN_HOST static auto getName(DevAlpaka3Cpu const& dev) -> std::string
+            ALPAKA_FN_HOST static auto getName(DevAlpaka3<TDevSpec> const& dev) -> std::string
             {
-                return dev.m_devImpl.getName();
+                return dev.getAlpaka3.getName();
             }
         };
 
-        //! The CPU device available memory get trait specialization.
-        template<>
-        struct GetMemBytes<DevAlpaka3Cpu>
+        template<onHost::concepts::DeviceSpec TDevSpec>
+        struct GetMemBytes<DevAlpaka3<TDevSpec>>
         {
-            ALPAKA_FN_HOST static auto getMemBytes(DevAlpaka3Cpu const& dev) -> std::size_t
+            ALPAKA_FN_HOST static auto getMemBytes(DevAlpaka3<TDevSpec> const& dev) -> std::size_t
             {
-                return dev.m_devImpl.getDeviceProperties().globalMemCapacityBytes;
+                return dev.getAlpaka3.getDeviceProperties().globalMemCapacityBytes;
             }
         };
 
-        //! The CPU device free memory get trait specialization.
-        template<>
-        struct GetFreeMemBytes<DevAlpaka3Cpu>
+        template<onHost::concepts::DeviceSpec TDevSpec>
+        struct GetFreeMemBytes<DevAlpaka3<TDevSpec>>
         {
-            ALPAKA_FN_HOST static auto getFreeMemBytes(DevAlpaka3Cpu const& dev) -> std::size_t
+            ALPAKA_FN_HOST static auto getFreeMemBytes(DevAlpaka3<TDevSpec> const& dev) -> std::size_t
             {
-                return dev.m_devImpl.getFreeGlobalMemBytes();
+                return dev.getAlpaka3.getFreeGlobalMemBytes();
             }
         };
 
-        //! The CPU device warp size get trait specialization.
-        template<>
-        struct GetWarpSizes<DevAlpaka3Cpu>
+        template<onHost::concepts::DeviceSpec TDevSpec>
+        struct GetWarpSizes<DevAlpaka3<TDevSpec>>
         {
-            ALPAKA_FN_HOST static auto getWarpSizes(DevAlpaka3Cpu const& dev) -> std::vector<std::size_t>
+            ALPAKA_FN_HOST static auto getWarpSizes(DevAlpaka3<TDevSpec> const& dev) -> std::vector<std::size_t>
             {
-                return {dev.m_devImpl.getDeviceProperties().warpSize};
+                return {dev.getAlpaka3.getDeviceProperties().warpSize};
             }
         };
 
-        //! The CPU device preferred warp size get trait specialization.
-        template<>
-        struct GetPreferredWarpSize<DevAlpaka3Cpu>
+        template<onHost::concepts::DeviceSpec TDevSpec>
+        struct GetPreferredWarpSize<DevAlpaka3<TDevSpec>>
         {
-            ALPAKA_FN_HOST static auto getPreferredWarpSize(DevAlpaka3Cpu const& dev) -> std::size_t
+            ALPAKA_FN_HOST static auto getPreferredWarpSize(DevAlpaka3<TDevSpec> const& dev) -> std::size_t
             {
-                return dev.m_devImpl.getDeviceProperties().warpSize;
+                return dev.getAlpaka3.getDeviceProperties().warpSize;
             }
         };
 
-        //! The CPU device reset trait specialization.
-        template<>
-        struct Reset<DevAlpaka3Cpu>
+        template<onHost::concepts::DeviceSpec TDevSpec>
+        struct Reset<DevAlpaka3<TDevSpec>>
         {
-            ALPAKA_FN_HOST static auto reset(DevAlpaka3Cpu const& /* dev */) -> void
+            ALPAKA_FN_HOST static auto reset(DevAlpaka3<TDevSpec> const& /* dev */) -> void
             {
                 ALPAKA_DEBUG_FULL_LOG_SCOPE;
+                static_assert(sizeof(TDevSpec) && false, "not implemented");
                 // The CPU does nothing on reset.
             }
         };
 
-        //! The CPU device native handle type trait specialization.
-        template<>
-        struct NativeHandle<DevAlpaka3Cpu>
+        template<onHost::concepts::DeviceSpec TDevSpec>
+        struct NativeHandle<DevAlpaka3<TDevSpec>>
         {
-            [[nodiscard]] static auto getNativeHandle(DevAlpaka3Cpu const& dev)
+            [[nodiscard]] static auto getNativeHandle(DevAlpaka3<TDevSpec> const& dev)
             {
                 return dev.getNativeHandle();
             }
@@ -168,25 +158,25 @@ namespace alpaka
     namespace trait
     {
         //! The CPU device platform type trait specialization.
-        template<>
-        struct PlatformType<DevAlpaka3Cpu>
+        template<onHost::concepts::DeviceSpec TDevSpec>
+        struct PlatformType<DevAlpaka3<TDevSpec>>
         {
-            using type = PlatformAlpaka3Cpu;
+            using type = PlatformAlpaka3<TDevSpec>;
         };
     } // namespace trait
 
     namespace trait
     {
-        template<>
-        struct QueueType<DevAlpaka3Cpu, Blocking>
+        template<onHost::concepts::DeviceSpec TDevSpec>
+        struct QueueType<DevAlpaka3<TDevSpec>, Blocking>
         {
-            using type = QueueAlpaka3CpuBlocking<DevAlpaka3Cpu>;
+            using type = QueueAlpaka3CpuBlocking<DevAlpaka3<TDevSpec>>;
         };
 
-        template<>
-        struct QueueType<DevAlpaka3Cpu, NonBlocking>
+        template<onHost::concepts::DeviceSpec TDevSpec>
+        struct QueueType<DevAlpaka3<TDevSpec>, NonBlocking>
         {
-            using type = QueueAlpaka3CpuNonBlocking<DevAlpaka3Cpu>;
+            using type = QueueAlpaka3CpuNonBlocking<DevAlpaka3<TDevSpec>>;
         };
     } // namespace trait
 } // namespace alpaka

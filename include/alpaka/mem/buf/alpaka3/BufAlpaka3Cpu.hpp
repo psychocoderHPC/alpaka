@@ -18,13 +18,12 @@
 
 namespace alpaka
 {
-    //! The CPU memory buffer template implementing muting accessors.
-    template<typename TElem, typename TDim, typename TIdx>
-    class BufAlpaka3Cpu : public internal::ViewAccessorType<DevAlpaka3Cpu, BufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<onHost::concepts::DeviceSpec TDevSpec, typename TElem, typename TDim, typename TIdx>
+    class BufAlpaka3 : public internal::ViewAccessorType<DevAlpaka3<TDevSpec>, BufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
     public:
         using BufType = decltype(onHost::alloc<TElem>(
-            std::declval<typename DevAlpaka3Cpu::DevType>(),
+            std::declval<DevAlpaka3<TDevSpec>>().getAlpaka3(),
             std::declval<Vec<TIdx, TDim::value>>()));
 
         auto getAlpaka3() const
@@ -33,22 +32,25 @@ namespace alpaka
         }
 
         template<typename TExtent, typename Deleter>
-        ALPAKA_FN_HOST BufAlpaka3Cpu(
-            DevAlpaka3Cpu const& dev,
+        ALPAKA_FN_HOST BufAlpaka3(
+            DevAlpaka3<TDevSpec> const& dev,
             TElem* const pMem,
             Deleter deleter,
             TExtent const& extents,
             TExtent const& pitches)
             : m_memImpl{BufType(getApi(dev.m_devImpl), pMem, extents, pitches, deleter)}
+            , m_dev{dev}
         {
         }
 
-        ALPAKA_FN_HOST BufAlpaka3Cpu(BufType const& sharedBuff) : m_memImpl{sharedBuff}
+        ALPAKA_FN_HOST BufAlpaka3(BufType const& sharedBuff, DevAlpaka3<TDevSpec> const& dev)
+            : m_memImpl{sharedBuff}
+            , m_dev{dev}
         {
         }
 
-        BufAlpaka3Cpu(BufAlpaka3Cpu const&) = default;
-        BufAlpaka3Cpu& operator=(BufAlpaka3Cpu const&) = default;
+        BufAlpaka3(BufAlpaka3 const&) = default;
+        BufAlpaka3& operator=(BufAlpaka3 const&) = default;
 
         ALPAKA_FN_HOST decltype(auto) operator[](TIdx i)
         {
@@ -62,8 +64,20 @@ namespace alpaka
             return m_memImpl[i];
         }
 
+        ALPAKA_FN_HOST decltype(auto) data() const
+        {
+            return m_memImpl.data();
+        }
+
+        ALPAKA_FN_HOST decltype(auto) data()
+        {
+            return m_memImpl.data();
+        }
+
+
     public:
         BufType m_memImpl;
+        DevAlpaka3<TDevSpec> m_dev;
     };
 } // namespace alpaka
 

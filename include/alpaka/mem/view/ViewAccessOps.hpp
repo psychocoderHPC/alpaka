@@ -28,13 +28,13 @@ namespace alpaka::internal
         typename Idx<TView>;
         typename Dim<TView>;
         {
-            getPtrNative(std::declval<TView>())
+            alpaka::getPtrNative(std::declval<TView>())
         };
         {
-            getPitchesInBytes(std::declval<TView>())
+            alpaka::getPitchesInBytes(std::declval<TView>())
         };
         {
-            getExtents(std::declval<TView>())
+            alpaka::getExtents(std::declval<TView>())
         };
     };
 

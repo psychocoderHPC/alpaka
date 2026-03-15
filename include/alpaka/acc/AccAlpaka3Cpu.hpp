@@ -29,15 +29,21 @@
 
 namespace alpaka
 {
-    template<typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
+    template<typename TAcc, typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
     class TaskKernelAlpaka3;
 
     //! The CPU serial accelerator.
     //!
     //! This accelerator allows serial kernel execution on a CPU device.
     //! The block idx is restricted to 1x1x1 and all blocks are executed serially so there is no parallelism at all.
-    template<typename TDim, typename TIdx>
-    class AccAlpaka3Cpu final : public interface::Implements<InterfaceAcc, AccAlpaka3Cpu<TDim, TIdx>>
+    template<
+        typename TDim,
+        typename TIdx,
+        concepts::Api TApi,
+        concepts::DeviceKind TDeviceKind,
+        concepts::Executor TExecutor>
+    class AccAlpaka3 final
+        : public interface::Implements<InterfaceAcc, AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>>
     {
         static_assert(
             sizeof(TIdx) >= sizeof(int),
@@ -48,45 +54,101 @@ namespace alpaka
         template<typename TDim2, typename TIdx2, typename TKernelFnObj, typename... TArgs>
         friend class ::alpaka::TaskKernelAlpaka3;
 
-        AccAlpaka3Cpu(AccAlpaka3Cpu const&) = delete;
-        AccAlpaka3Cpu(AccAlpaka3Cpu&&) = delete;
-        auto operator=(AccAlpaka3Cpu const&) -> AccAlpaka3Cpu& = delete;
-        auto operator=(AccAlpaka3Cpu&&) -> AccAlpaka3Cpu& = delete;
+        using DevSpec = onHost::DeviceSpec<TApi, TDeviceKind>;
+        using Executor = TExecutor;
+        using Dim = TDim;
+        using Idx = TIdx;
+
+        AccAlpaka3(AccAlpaka3 const&) = delete;
+        AccAlpaka3(AccAlpaka3&&) = delete;
+        auto operator=(AccAlpaka3 const&) -> AccAlpaka3& = delete;
+        auto operator=(AccAlpaka3&&) -> AccAlpaka3& = delete;
     };
+
+    template<typename TDim, typename TIdx>
+    using AccAlpaka3Cpu = AccAlpaka3<TDim, TIdx, api::Host, deviceKind::Cpu, exec::CpuSerial>;
+
+    template<typename TDim, typename TIdx>
+    using AccAlpaka3Omp = AccAlpaka3<TDim, TIdx, api::Host, deviceKind::Cpu, exec::CpuOmpBlocks>;
 
     namespace trait
     {
+        template<typename TDim, typename TIdx>
+        struct TagToAcc<alpaka::TagAlpaka3Cpu, TDim, TIdx>
+        {
+            using type = alpaka::AccAlpaka3Cpu<TDim, TIdx>;
+        };
+
+        template<typename TDim, typename TIdx>
+        struct AccToTag<alpaka::AccAlpaka3Cpu<TDim, TIdx>>
+        {
+            using type = alpaka::TagAlpaka3Cpu;
+        };
+
+        template<typename TDim, typename TIdx>
+        struct TagToAcc<alpaka::TagAlpaka3Omp, TDim, TIdx>
+        {
+            using type = alpaka::AccAlpaka3Omp<TDim, TIdx>;
+        };
+
+        template<typename TDim, typename TIdx>
+        struct AccToTag<alpaka::AccAlpaka3Omp<TDim, TIdx>>
+        {
+            using type = alpaka::TagAlpaka3Omp;
+        };
+
         //! The CPU serial accelerator accelerator type trait specialization.
-        template<typename TDim, typename TIdx>
-        struct AccType<AccAlpaka3Cpu<TDim, TIdx>>
+        template<
+            typename TDim,
+            typename TIdx,
+            concepts::Api TApi,
+            concepts::DeviceKind TDeviceKind,
+            concepts::Executor TExecutor>
+        struct AccType<AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>>
         {
-            using type = AccAlpaka3Cpu<TDim, TIdx>;
+            using type = AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>;
         };
 
-        //! The CPU serial single thread accelerator type trait specialization.
-        template<typename TDim, typename TIdx>
-        struct IsSingleThreadAcc<AccAlpaka3Cpu<TDim, TIdx>> : std::true_type
+        template<
+            typename TDim,
+            typename TIdx,
+            concepts::Api TApi,
+            concepts::DeviceKind TDeviceKind,
+            concepts::Executor TExecutor>
+        struct IsSingleThreadAcc<AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>>
+            : std::bool_constant<exec::isSeqExecutor_v<TExecutor>>
         {
         };
 
-        //! The CPU serial multi thread accelerator type trait specialization.
-        template<typename TDim, typename TIdx>
-        struct IsMultiThreadAcc<AccAlpaka3Cpu<TDim, TIdx>> : std::false_type
+        template<
+            typename TDim,
+            typename TIdx,
+            concepts::Api TApi,
+            concepts::DeviceKind TDeviceKind,
+            concepts::Executor TExecutor>
+        struct IsMultiThreadAcc<AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>>
+            : std::bool_constant<!exec::isSeqExecutor_v<TExecutor>>
         {
         };
 
-        //! The CPU serial accelerator device properties get trait specialization.
-        template<typename TDim, typename TIdx>
-        struct GetAccDevProps<AccAlpaka3Cpu<TDim, TIdx>>
+        template<
+            typename TDim,
+            typename TIdx,
+            concepts::Api TApi,
+            concepts::DeviceKind TDeviceKind,
+            concepts::Executor TExecutor>
+        struct GetAccDevProps<AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>>
         {
-            ALPAKA_FN_HOST static auto getAccDevProps(DevAlpaka3Cpu const& dev) -> AccDevProps<TDim, TIdx>
+            template<onHost::concepts::DeviceSpec TDevSpec>
+            ALPAKA_FN_HOST static auto getAccDevProps(DevAlpaka3<TDevSpec> const& dev) -> AccDevProps<TDim, TIdx>
             {
+                auto prop = dev.getAlpaka3().getDeviceProperties();
                 return {// m_multiProcessorCount
-                        static_cast<TIdx>(1),
+                        prop.multiProcessorCount,
                         // m_gridBlockExtentMax
                         VecOld<TDim, TIdx>::all(std::numeric_limits<TIdx>::max()),
                         // m_gridBlockCountMax
-                        std::numeric_limits<TIdx>::max(),
+                        prop.maxThreadsPerBlock,
                         // m_blockThreadExtentMax
                         VecOld<TDim, TIdx>::ones(),
                         // m_blockThreadCountMax
@@ -96,53 +158,60 @@ namespace alpaka
                         // m_threadElemCountMax
                         std::numeric_limits<TIdx>::max(),
                         // m_sharedMemSizeBytes
-                        static_cast<size_t>(0u),
+                        prop.sharedMemPerBlockBytes,
                         // m_globalMemSizeBytes
-                        getMemBytes(dev)};
+                        prop.globalMemCapacityBytes};
             }
         };
 
-        //! The CPU serial accelerator name trait specialization.
-        template<typename TDim, typename TIdx>
-        struct GetAccName<AccAlpaka3Cpu<TDim, TIdx>>
+        template<
+            typename TDim,
+            typename TIdx,
+            concepts::Api TApi,
+            concepts::DeviceKind TDeviceKind,
+            concepts::Executor TExecutor>
+        struct GetAccName<AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>>
         {
             ALPAKA_FN_HOST static auto getAccName() -> std::string
             {
-#    if ALPAKA_COMP_CLANG
-#        pragma clang diagnostic push
-#        pragma clang diagnostic ignored "-Wexit-time-destructors"
-#    endif
-                using namespace std::literals;
-                static std::string const accName =
-#    ifdef __cpp_lib_format
-                    std::format("AccAlpaka3<{},{}>", TDim::value, core::demangled<TIdx>);
-#    else
-                    "AccAlpaka3<"s + std::to_string(TDim::value) + ","s + std::string(core::demangled<TIdx>) + ">"s;
-#    endif
-                return accName;
-#    if ALPAKA_COMP_CLANG
-#        pragma clang diagnostic pop
-#    endif
+                return typename AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>::DevSpec{}.getName();
             }
         };
 
-        //! The CPU serial accelerator device type trait specialization.
-        template<typename TDim, typename TIdx>
-        struct DevType<AccAlpaka3Cpu<TDim, TIdx>>
+        template<
+            typename TDim,
+            typename TIdx,
+            concepts::Api TApi,
+            concepts::DeviceKind TDeviceKind,
+            concepts::Executor TExecutor>
+        struct DevType<AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>>
         {
-            using type = DevAlpaka3Cpu;
+            using DevSpec = typename AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>::DevSpec;
+            using type = DevAlpaka3<DevSpec>;
         };
 
-        //! The CPU serial accelerator dimension getter trait specialization.
-        template<typename TDim, typename TIdx>
-        struct DimType<AccAlpaka3Cpu<TDim, TIdx>>
+        template<
+            typename TDim,
+            typename TIdx,
+            concepts::Api TApi,
+            concepts::DeviceKind TDeviceKind,
+            concepts::Executor TExecutor>
+        struct DimType<AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>>
         {
             using type = TDim;
         };
 
         //! The CPU serial accelerator execution task type trait specialization.
-        template<typename TDim, typename TIdx, typename TWorkDiv, typename TKernelFnObj, typename... TArgs>
-        struct CreateTaskKernel<AccAlpaka3Cpu<TDim, TIdx>, TWorkDiv, TKernelFnObj, TArgs...>
+        template<
+            concepts::Api TApi,
+            concepts::DeviceKind TDeviceKind,
+            concepts::Executor TExecutor,
+            typename TDim,
+            typename TIdx,
+            typename TWorkDiv,
+            typename TKernelFnObj,
+            typename... TArgs>
+        struct CreateTaskKernel<AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>, TWorkDiv, TKernelFnObj, TArgs...>
         {
             ALPAKA_FN_HOST static auto createTaskKernel(
                 TWorkDiv const& workDiv,
@@ -153,40 +222,42 @@ namespace alpaka
                 {
                     throw std::runtime_error(
                         "The given work division is not valid for a single thread Acc: "
-                        + getAccName<AccAlpaka3Cpu<TDim, TIdx>>() + ". Threads per block should be 1!");
+                        + getAccName<AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>>()
+                        + ". Threads per block should be 1!");
                 }
 
-                return TaskKernelAlpaka3<TDim, TIdx, TKernelFnObj, TArgs...>(
-                    workDiv,
-                    kernelFnObj,
-                    std::forward<TArgs>(args)...);
+                return TaskKernelAlpaka3<
+                    AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>,
+                    TDim,
+                    TIdx,
+                    TKernelFnObj,
+                    TArgs...>(workDiv, kernelFnObj, std::forward<TArgs>(args)...);
             }
         };
 
         //! The CPU serial execution task platform type trait specialization.
-        template<typename TDim, typename TIdx>
-        struct PlatformType<AccAlpaka3Cpu<TDim, TIdx>>
+        template<
+            typename TDim,
+            typename TIdx,
+            concepts::Api TApi,
+            concepts::DeviceKind TDeviceKind,
+            concepts::Executor TExecutor>
+        struct PlatformType<AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>>
         {
-            using type = PlatformAlpaka3Cpu;
+            using DevSpec = typename AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>::DevSpec;
+            using type = PlatformAlpaka3<DevSpec>;
         };
 
         //! The CPU serial accelerator idx type trait specialization.
-        template<typename TDim, typename TIdx>
-        struct IdxType<AccAlpaka3Cpu<TDim, TIdx>>
+        template<
+            typename TDim,
+            typename TIdx,
+            concepts::Api TApi,
+            concepts::DeviceKind TDeviceKind,
+            concepts::Executor TExecutor>
+        struct IdxType<AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>>
         {
             using type = TIdx;
-        };
-
-        template<typename TDim, typename TIdx>
-        struct AccToTag<alpaka::AccAlpaka3Cpu<TDim, TIdx>>
-        {
-            using type = alpaka::TagAlpaka3Cpu;
-        };
-
-        template<typename TDim, typename TIdx>
-        struct TagToAcc<alpaka::TagAlpaka3Cpu, TDim, TIdx>
-        {
-            using type = alpaka::AccAlpaka3Cpu<TDim, TIdx>;
         };
 
         template<typename TDict>
@@ -279,10 +350,6 @@ namespace alpaka
         template<typename TDict, typename TInterface>
         struct ImplementsInterface<TInterface, onAcc::Acc<TDict>>
         {
-            template<typename TBase>
-            static auto implements(Implements<TInterface, TBase>&) -> std::true_type;
-            static auto implements(...) -> std::false_type;
-
             static constexpr auto value = true;
         };
 
@@ -294,9 +361,6 @@ namespace alpaka
                 onAcc::Acc<TDict>,
                 std::enable_if_t<ImplementsInterface<TInterface, onAcc::Acc<TDict>>::value>>
             {
-                template<typename TBase>
-                static auto implementer(Implements<TInterface, TBase>&) -> TBase;
-
                 using type = onAcc::Acc<TDict>;
             };
         } // namespace detail

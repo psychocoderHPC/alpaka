@@ -16,42 +16,45 @@ namespace alpaka
 
 
     //! The CPU device platform.
-    struct PlatformAlpaka3Cpu : interface::Implements<ConceptPlatform, PlatformAlpaka3Cpu>
+    template<onHost::concepts::DeviceSpec TDevSpec>
+    struct PlatformAlpaka3 : interface::Implements<ConceptPlatform, PlatformAlpaka3<TDevSpec>>
     {
-        using DeviceSpec = alpaka::onHost::DeviceSpec<alpaka::api::Host, alpaka::deviceKind::Cpu>;
+        using DevSpec = alpaka::onHost::DeviceSpec<alpaka::api::Host, alpaka::deviceKind::Cpu>;
     };
+
+    using PlatformAlpaka3Cpu = PlatformAlpaka3<onHost::DeviceSpec<api::Host, deviceKind::Cpu>>;
 
     namespace trait
     {
         //! The CPU device device type trait specialization.
-        template<>
-        struct DevType<PlatformAlpaka3Cpu>
+        template<onHost::concepts::DeviceSpec TDevSpec>
+        struct DevType<PlatformAlpaka3<TDevSpec>>
         {
-            using type = DevAlpaka3Cpu;
+            using type = DevAlpaka3<TDevSpec>;
         };
 
         //! The CPU platform device count get trait specialization.
-        template<>
-        struct GetDevCount<PlatformAlpaka3Cpu>
+        template<onHost::concepts::DeviceSpec TDevSpec>
+        struct GetDevCount<PlatformAlpaka3<TDevSpec>>
         {
             ALPAKA_FN_HOST static auto getDevCount(PlatformAlpaka3Cpu const&) -> std::size_t
             {
                 ALPAKA_DEBUG_FULL_LOG_SCOPE;
 
-                return alpaka::onHost::makeDeviceSelector(typename PlatformAlpaka3Cpu::DeviceSpec{}).getDeviceCount();
+                return alpaka::onHost::makeDeviceSelector(TDevSpec{}).getDeviceCount();
             }
         };
 
         //! The CPU platform device get trait specialization.
-        template<>
-        struct GetDevByIdx<PlatformAlpaka3Cpu>
+        template<onHost::concepts::DeviceSpec TDevSpec>
+        struct GetDevByIdx<PlatformAlpaka3<TDevSpec>>
         {
             ALPAKA_FN_HOST static auto getDevByIdx(PlatformAlpaka3Cpu const&, std::size_t const& devIdx)
-                -> DevAlpaka3Cpu
+                -> DevAlpaka3<TDevSpec>
             {
                 ALPAKA_DEBUG_FULL_LOG_SCOPE;
 
-                return DevAlpaka3Cpu{devIdx};
+                return DevAlpaka3<TDevSpec>{devIdx};
             }
         };
     } // namespace trait

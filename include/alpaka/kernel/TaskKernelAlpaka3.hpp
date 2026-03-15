@@ -32,13 +32,19 @@
 
 namespace alpaka
 {
-    class DevAlpaka3Cpu;
+    template<onHost::concepts::DeviceSpec TDevSpec>
+    class DevAlpaka3;
 
     //! The CPU serial execution task implementation.
-    template<typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
+    template<typename TAcc, typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
     class TaskKernelAlpaka3 final : public WorkDivMembers<TDim, TIdx>
     {
     public:
+        auto getExecutor() const
+        {
+            return typename TAcc::Executor{};
+        }
+
         template<typename TWorkDiv>
         ALPAKA_FN_HOST TaskKernelAlpaka3(TWorkDiv&& workDiv, TKernelFnObj kernelFnObj, TArgs&&... args)
             : WorkDivMembers<TDim, TIdx>(std::forward<TWorkDiv>(workDiv))
@@ -55,36 +61,38 @@ namespace alpaka
     namespace trait
     {
         //! The CPU serial execution task accelerator type trait specialization.
-        template<typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
-        struct AccType<TaskKernelAlpaka3<TDim, TIdx, TKernelFnObj, TArgs...>>
+        template<typename TAcc, typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
+        struct AccType<TaskKernelAlpaka3<TAcc, TDim, TIdx, TKernelFnObj, TArgs...>>
         {
-            using type = AccAlpaka3Cpu<TDim, TIdx>;
+            using type = TAcc;
         };
 
         //! The CPU serial execution task device type trait specialization.
-        template<typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
-        struct DevType<TaskKernelAlpaka3<TDim, TIdx, TKernelFnObj, TArgs...>>
+        template<typename TAcc, typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
+        struct DevType<TaskKernelAlpaka3<TAcc, TDim, TIdx, TKernelFnObj, TArgs...>>
         {
-            using type = DevAlpaka3Cpu;
+            using DevSpec = typename TAcc::DevSpec;
+            using type = DevAlpaka3<DevSpec>;
         };
 
         //! The CPU serial execution task dimension getter trait specialization.
-        template<typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
-        struct DimType<TaskKernelAlpaka3<TDim, TIdx, TKernelFnObj, TArgs...>>
+        template<typename TAcc, typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
+        struct DimType<TaskKernelAlpaka3<TAcc, TDim, TIdx, TKernelFnObj, TArgs...>>
         {
             using type = TDim;
         };
 
         //! The CPU serial execution task platform type trait specialization.
-        template<typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
-        struct PlatformType<TaskKernelAlpaka3<TDim, TIdx, TKernelFnObj, TArgs...>>
+        template<typename TAcc, typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
+        struct PlatformType<TaskKernelAlpaka3<TAcc, TDim, TIdx, TKernelFnObj, TArgs...>>
         {
-            using type = PlatformAlpaka3Cpu;
+            using DevSpec = typename TAcc::DevSpec;
+            using type = PlatformAlpaka3<DevSpec>;
         };
 
         //! The CPU serial execution task idx type trait specialization.
-        template<typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
-        struct IdxType<TaskKernelAlpaka3<TDim, TIdx, TKernelFnObj, TArgs...>>
+        template<typename TAcc, typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
+        struct IdxType<TaskKernelAlpaka3<TAcc, TDim, TIdx, TKernelFnObj, TArgs...>>
         {
             using type = TIdx;
         };
@@ -95,8 +103,16 @@ namespace alpaka
         //! \tparam TIdx The idx type of the accelerator device properties.
         //! \tparam TKernelFn Kernel function object type.
         //! \tparam TArgs Kernel function object argument types as a parameter pack.
-        template<typename TDev, typename TDim, typename TIdx, typename TKernelFn, typename... TArgs>
-        struct FunctionAttributes<AccAlpaka3Cpu<TDim, TIdx>, TDev, TKernelFn, TArgs...>
+        template<
+            concepts::Api TApi,
+            concepts::DeviceKind TDeviceKind,
+            concepts::Executor TExecutor,
+            typename TDev,
+            typename TDim,
+            typename TIdx,
+            typename TKernelFn,
+            typename... TArgs>
+        struct FunctionAttributes<AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>, TDev, TKernelFn, TArgs...>
         {
             //! \param dev The device instance
             //! \param kernelFn The kernel function object which should be executed.
@@ -127,7 +143,7 @@ namespace alpaka
             {
                 auto tSpec
                     = onHost::ThreadSpec{task.m_gridBlockExtent.getAlpaka3(), task.m_blockThreadExtent.getAlpaka3()};
-                queue.getAlpaka3().enqueue(exec::cpuSerial, tSpec, task.m_kernelBundle);
+                queue.getAlpaka3().enqueue(task.getExecutor(), tSpec, task.m_kernelBundle);
             }
         };
 
@@ -140,7 +156,7 @@ namespace alpaka
             {
                 auto tSpec
                     = onHost::ThreadSpec{task.m_gridBlockExtent.getAlpaka3(), task.m_blockThreadExtent.getAlpaka3()};
-                queue.getAlpaka3().enqueue(exec::cpuSerial, tSpec, task.m_kernelBundle);
+                queue.getAlpaka3().enqueue(task.getExecutor(), tSpec, task.m_kernelBundle);
             }
         };
     } // namespace trait

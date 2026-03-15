@@ -31,6 +31,7 @@ namespace alpaka
     CREATE_ACC_TAG(TagCpuSerial);
 
     CREATE_ACC_TAG(TagAlpaka3Cpu);
+    CREATE_ACC_TAG(TagAlpaka3Omp);
 
     namespace concepts
     {
@@ -69,7 +70,7 @@ namespace alpaka
     inline constexpr bool accMatchesTags = (std::is_same_v<alpaka::AccToTag<TAcc>, TTag> || ...);
 
     //! list of all available tags
-    using AccTags = std::tuple<alpaka::TagCpuSerial, alpaka::TagAlpaka3Cpu>;
+    using AccTags = std::tuple<alpaka::TagCpuSerial, alpaka::TagAlpaka3Cpu, TagAlpaka3Omp>;
 
     //!  \brief Function to print the names of each tag in the given tuple of tags
     //!  \tparam TTuple is the type of the tuple of tags

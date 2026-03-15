@@ -23,15 +23,18 @@
 namespace alpaka
 {
     // Predeclaration of BufAlpaka3Cpu
-    template<typename TElem, typename TDim, typename TIdx>
-    class BufAlpaka3Cpu;
+    template<onHost::concepts::DeviceSpec TDevSpec, typename TElem, typename TDim, typename TIdx>
+    class BufAlpaka3;
 
     //! The CPU memory buffer.
-    template<typename TElem, typename TDim, typename TIdx>
-    class ConstBufAlpaka3Cpu : public internal::ViewAccessorType<DevAlpaka3Cpu, ConstBufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<onHost::concepts::DeviceSpec TDevSpec, typename TElem, typename TDim, typename TIdx>
+    class ConstBufAlpaka3
+        : public internal::ViewAccessorType<DevAlpaka3<TDevSpec>, ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
     public:
-        using BufType = onHost::SharedBuffer<api::Host, TElem, Vec<TIdx, TDim::value>>;
+        using BufType = decltype(onHost::alloc<TElem>(
+            std::declval<typename DevAlpaka3<TDevSpec>::DevType>(),
+            std::declval<Vec<TIdx, TDim::value>>()));
 
         auto getAlpaka3() const
         {
@@ -39,35 +42,37 @@ namespace alpaka
         }
 
         template<typename TExtent, typename Deleter>
-        ALPAKA_FN_HOST ConstBufAlpaka3Cpu(
-            DevAlpaka3Cpu const& dev,
+        ALPAKA_FN_HOST ConstBufAlpaka3(
+            DevAlpaka3<TDevSpec> const& dev,
             TElem* const pMem,
             Deleter deleter,
             TExtent const& extents,
             TExtent const& pitches)
             : m_memImpl{BufType(getApi(dev.m_devImpl), pMem, extents, pitches, deleter)}
+            , m_dev{dev}
         {
         }
 
-        ALPAKA_FN_HOST ConstBufAlpaka3Cpu(BufType const& sharedBuff) : m_memImpl{sharedBuff}
+        ALPAKA_FN_HOST ConstBufAlpaka3(BufType const& sharedBuff, DevAlpaka3<TDevSpec> dev)
+            : m_memImpl{sharedBuff}
+            , m_dev{dev}
         {
         }
 
-        ALPAKA_FN_HOST ConstBufAlpaka3Cpu(BufAlpaka3Cpu<TElem, TDim, TIdx> const& buf) : m_memImpl{buf.m_spBufImpl}
+        ALPAKA_FN_HOST ConstBufAlpaka3(BufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf, DevAlpaka3<TDevSpec> dev)
+            : m_memImpl{buf.m_spBufImpl}
+            , m_dev{dev}
         {
         }
 
-        ALPAKA_FN_HOST ConstBufAlpaka3Cpu(BufAlpaka3Cpu<TElem, TDim, TIdx>&& buf)
+        ALPAKA_FN_HOST ConstBufAlpaka3(BufAlpaka3<TDevSpec, TElem, TDim, TIdx>&& buf, DevAlpaka3<TDevSpec> dev)
             : m_memImpl{std::move(buf.m_spBufImpl)}
+            , m_dev{dev}
         {
         }
 
     private:
         BufType m_memImpl;
-
-        friend alpaka::trait::GetDev<ConstBufAlpaka3Cpu<TElem, TDim, TIdx>>;
-        friend alpaka::trait::GetExtents<ConstBufAlpaka3Cpu<TElem, TDim, TIdx>>;
-        friend alpaka::trait::GetPtrNative<ConstBufAlpaka3Cpu<TElem, TDim, TIdx>>;
-        friend alpaka::trait::GetPtrDev<ConstBufAlpaka3Cpu<TElem, TDim, TIdx>, DevAlpaka3Cpu>;
+        DevAlpaka3<TDevSpec> m_dev;
     };
 } // namespace alpaka

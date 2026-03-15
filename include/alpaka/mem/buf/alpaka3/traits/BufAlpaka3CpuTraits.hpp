@@ -11,74 +11,75 @@
 namespace alpaka::trait
 {
     //! The CPU device memory buffer type trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct BufType<DevAlpaka3Cpu, TElem, TDim, TIdx>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct BufType<DevAlpaka3<TDevSpec>, TElem, TDim, TIdx>
     {
-        using type = BufAlpaka3Cpu<TElem, TDim, TIdx>;
+        using type = BufAlpaka3<TDevSpec, TElem, TDim, TIdx>;
     };
 
     //!  The BufAlpaka3Cpu device type trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct DevType<BufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct DevType<BufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
-        using type = DevAlpaka3Cpu;
+        using type = DevAlpaka3<TDevSpec>;
     };
 
     //! The BufAlpaka3Cpu device get trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct GetDev<BufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct GetDev<BufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
-        ALPAKA_FN_HOST static auto getDev(BufAlpaka3Cpu<TElem, TDim, TIdx> const& buf) -> DevAlpaka3Cpu
+        ALPAKA_FN_HOST static auto getDev(BufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf) -> DevAlpaka3<TDevSpec>
         {
-            return buf.m_spBufImpl->m_dev;
+            return buf.m_dev;
         }
     };
 
     //! The BufAlpaka3Cpu dimension getter trait.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct DimType<BufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct DimType<BufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
         using type = TDim;
     };
 
     //! The BufAlpaka3Cpu memory element type get trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct ElemType<BufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct ElemType<BufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
         using type = TElem;
     };
 
     //! The BufAlpaka3Cpu width get trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct GetExtents<BufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct GetExtents<BufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
-        ALPAKA_FN_HOST VecOld<TDim, TIdx> operator()(BufAlpaka3Cpu<TElem, TDim, TIdx> const& buf)
+        ALPAKA_FN_HOST VecOld<TDim, TIdx> operator()(BufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf)
         {
             return VecOld<TDim, TIdx>{buf.getAlpaka3().getExtents()};
         }
     };
 
     //! The BufAlpaka3Cpu native pointer get trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct GetPtrNative<BufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct GetPtrNative<BufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
-        ALPAKA_FN_HOST static auto getPtrNative(BufAlpaka3Cpu<TElem, TDim, TIdx> const& buf) -> TElem const*
+        ALPAKA_FN_HOST static auto getPtrNative(BufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf) -> TElem const*
         {
             return buf.getAlpaka3().data();
         }
 
-        ALPAKA_FN_HOST static auto getPtrNative(BufAlpaka3Cpu<TElem, TDim, TIdx>& buf) -> TElem*
+        ALPAKA_FN_HOST static auto getPtrNative(BufAlpaka3<TDevSpec, TElem, TDim, TIdx>& buf) -> TElem*
         {
             return buf.getAlpaka3().data();
         }
     };
 
     //! The BufAlpaka3Cpu pointer on device get trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct GetPtrDev<BufAlpaka3Cpu<TElem, TDim, TIdx>, DevAlpaka3Cpu>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct GetPtrDev<BufAlpaka3<TDevSpec, TElem, TDim, TIdx>, DevAlpaka3<TDevSpec>>
     {
-        ALPAKA_FN_HOST static auto getPtrDev(BufAlpaka3Cpu<TElem, TDim, TIdx> const& buf, DevAlpaka3Cpu const& dev)
-            -> TElem const*
+        ALPAKA_FN_HOST static auto getPtrDev(
+            BufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf,
+            DevAlpaka3<TDevSpec> const& dev) -> TElem const*
         {
             if(dev == getDev(buf))
             {
@@ -90,7 +91,9 @@ namespace alpaka::trait
             }
         }
 
-        ALPAKA_FN_HOST static auto getPtrDev(BufAlpaka3Cpu<TElem, TDim, TIdx>& buf, DevAlpaka3Cpu const& dev) -> TElem*
+        ALPAKA_FN_HOST static auto getPtrDev(
+            BufAlpaka3<TDevSpec, TElem, TDim, TIdx>& buf,
+            DevAlpaka3<TDevSpec> const& dev) -> TElem*
         {
             if(dev == getDev(buf))
             {
@@ -104,68 +107,70 @@ namespace alpaka::trait
     };
 
     //! The BufAlpaka3Cpu offset get trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct GetOffsets<BufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct GetOffsets<BufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
-        ALPAKA_FN_HOST auto operator()(BufAlpaka3Cpu<TElem, TDim, TIdx> const& /*buf*/) const -> VecOld<TDim, TIdx>
+        ALPAKA_FN_HOST auto operator()(BufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& /*buf*/) const
+            -> VecOld<TDim, TIdx>
         {
             return VecOld<TDim, TIdx>::zeros();
         }
     };
 
     //! The BufAlpaka3Cpu idx type trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct IdxType<BufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct IdxType<BufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
         using type = TIdx;
     };
 
     //! The MakeConstBuf trait for CPU buffers.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct MakeConstBuf<BufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct MakeConstBuf<BufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
-        ALPAKA_FN_HOST static auto makeConstBuf(BufAlpaka3Cpu<TElem, TDim, TIdx> const& buf)
-            -> ConstBufAlpaka3Cpu<TElem, TDim, TIdx>
+        ALPAKA_FN_HOST static auto makeConstBuf(BufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf)
+            -> ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>
         {
-            return ConstBufAlpaka3Cpu<TElem, TDim, TIdx>(buf);
+            return ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>(buf);
         }
 
-        ALPAKA_FN_HOST static auto makeConstBuf(BufAlpaka3Cpu<TElem, TDim, TIdx>&& buf)
-            -> ConstBufAlpaka3Cpu<TElem, TDim, TIdx>
+        ALPAKA_FN_HOST static auto makeConstBuf(BufAlpaka3<TDevSpec, TElem, TDim, TIdx>&& buf)
+            -> ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>
         {
-            return ConstBufAlpaka3Cpu<TElem, TDim, TIdx>(std::move(buf));
+            return ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>(std::move(buf));
         }
     };
 
     //! The BufAlpaka3Cpu memory allocation trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct BufAlloc<TElem, TDim, TIdx, DevAlpaka3Cpu>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct BufAlloc<TElem, TDim, TIdx, DevAlpaka3<TDevSpec>>
     {
         template<typename TExtent>
-        ALPAKA_FN_HOST static auto allocBuf(DevAlpaka3Cpu const& dev, TExtent const& extent)
-            -> BufAlpaka3Cpu<TElem, TDim, TIdx>
+        ALPAKA_FN_HOST static auto allocBuf(DevAlpaka3<TDevSpec> const& dev, TExtent const& extent)
+            -> BufAlpaka3<TDevSpec, TElem, TDim, TIdx>
         {
             ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
+            using Buff = BufAlpaka3<TDevSpec, TElem, TDim, TIdx>;
             if constexpr(std::is_integral_v<TExtent>)
-                return onHost::alloc<TElem>(dev.getAlpaka3(), Vec{extent});
+                return Buff{onHost::alloc<TElem>(dev.getAlpaka3(), Vec{extent}), dev};
             else
-                return onHost::alloc<TElem>(dev.getAlpaka3(), extent.getAlpaka3());
+                return Buff{onHost::alloc<TElem>(dev.getAlpaka3(), extent.getAlpaka3()), dev};
         }
     };
 
     //! The BufAlpaka3Cpu stream-ordered memory allocation capability trait specialization.
-    template<typename TDim>
-    struct HasAsyncBufSupport<TDim, DevAlpaka3Cpu> : public std::true_type
+    template<typename TDim, onHost::concepts::DeviceSpec TDevSpec>
+    struct HasAsyncBufSupport<TDim, DevAlpaka3<TDevSpec>> : public std::true_type
     {
     };
 
     //! The BufAlpaka3Cpu stream-ordered memory allocation trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct AsyncBufAlloc<TElem, TDim, TIdx, DevAlpaka3Cpu>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct AsyncBufAlloc<TElem, TDim, TIdx, DevAlpaka3<TDevSpec>>
     {
         template<typename TQueue, typename TExtent>
         ALPAKA_FN_HOST static auto allocAsyncBuf(TQueue queue, TExtent const& extent)
-            -> BufAlpaka3Cpu<TElem, TDim, TIdx>
+            -> BufAlpaka3<TDevSpec, TElem, TDim, TIdx>
         {
             ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
 
@@ -174,34 +179,34 @@ namespace alpaka::trait
     };
 
     //! The pinned/mapped memory allocation capability trait specialization.
-    template<>
-    struct HasMappedBufSupport<PlatformAlpaka3Cpu> : public std::true_type
+    template<onHost::concepts::DeviceSpec TDevSpec>
+    struct HasMappedBufSupport<PlatformAlpaka3<TDevSpec>> : public std::true_type
     {
     };
 
     //! The pinned/mapped memory allocation trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct BufAllocMapped<PlatformAlpaka3Cpu, TElem, TDim, TIdx>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct BufAllocMapped<PlatformAlpaka3<TDevSpec>, TElem, TDim, TIdx>
     {
         template<typename TExtent>
         ALPAKA_FN_HOST static auto allocMappedBuf(
-            DevAlpaka3Cpu const& dev,
-            PlatformAlpaka3Cpu const& /*platform*/,
-            TExtent const& extent) -> BufAlpaka3Cpu<TElem, TDim, TIdx>
+            DevAlpaka3<TDevSpec> const& dev,
+            PlatformAlpaka3<TDevSpec> const& /*platform*/,
+            TExtent const& extent) -> BufAlpaka3<TDevSpec, TElem, TDim, TIdx>
         {
             return {onHost::allocMapped<TElem>(dev.getAlpaka3(), extent.getAlpaka3())};
         }
     };
 
     //! The unified/managed memory allocation trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct BufAllocManaged<PlatformAlpaka3Cpu, TElem, TDim, TIdx>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct BufAllocManaged<PlatformAlpaka3<TDevSpec>, TElem, TDim, TIdx>
     {
         template<typename TExtent>
         ALPAKA_FN_HOST static auto allocManagedBuf(
-            DevAlpaka3Cpu const& dev,
-            PlatformAlpaka3Cpu const& /*platform*/,
-            TExtent const& extent) -> BufAlpaka3Cpu<TElem, TDim, TIdx>
+            DevAlpaka3<TDevSpec> const& dev,
+            PlatformAlpaka3<TDevSpec> const& /*platform*/,
+            TExtent const& extent) -> BufAlpaka3<TDevSpec, TElem, TDim, TIdx>
         {
             return {onHost::allocUnified<TElem>(dev.getAlpaka3(), extent.getAlpaka3())};
         }

@@ -12,71 +12,73 @@
 namespace alpaka::trait
 {
     //! The CPU device memory const-buffer type trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct ConstBufType<DevAlpaka3Cpu, TElem, TDim, TIdx>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct ConstBufType<DevAlpaka3<TDevSpec>, TElem, TDim, TIdx>
     {
-        using type = ConstBufAlpaka3Cpu<TElem, TDim, TIdx>;
+        using type = ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>;
     };
 
     //! The ConstBufAlpaka3Cpu device type trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct DevType<ConstBufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct DevType<ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
-        using type = DevAlpaka3Cpu;
+        using type = DevAlpaka3<TDevSpec>;
     };
 
     //! The ConstBufAlpaka3Cpu device get trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct GetDev<ConstBufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct GetDev<ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
-        ALPAKA_FN_HOST static auto getDev(ConstBufAlpaka3Cpu<TElem, TDim, TIdx> const& buf) -> DevAlpaka3Cpu
+        ALPAKA_FN_HOST static auto getDev(ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf)
+            -> DevAlpaka3<TDevSpec>
         {
-            return buf.m_spBufImpl->m_dev;
+            return buf.m_dev;
         }
     };
 
     //! The ConstBufAlpaka3Cpu dimension getter trait.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct DimType<ConstBufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct DimType<ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
         using type = TDim;
     };
 
     //! The ConstBufAlpaka3Cpu memory element type get trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct ElemType<ConstBufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct ElemType<ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
         // const qualify the element type of the inner view
         using type = TElem const;
     };
 
     //! The ConstBufAlpaka3Cpu width get trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct GetExtents<ConstBufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct GetExtents<ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
-        ALPAKA_FN_HOST auto operator()(ConstBufAlpaka3Cpu<TElem, TDim, TIdx> const& buf)
+        ALPAKA_FN_HOST auto operator()(ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf)
         {
             return buf.m_spBufImpl->m_extentElements;
         }
     };
 
     //! The ConstBufAlpaka3Cpu native pointer get trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct GetPtrNative<ConstBufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct GetPtrNative<ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
-        ALPAKA_FN_HOST static auto getPtrNative(ConstBufAlpaka3Cpu<TElem, TDim, TIdx> const& buf) -> TElem const*
+        ALPAKA_FN_HOST static auto getPtrNative(ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf)
+            -> TElem const*
         {
             return buf.m_spBufImpl->m_pMem;
         }
     };
 
     //! The ConstBufAlpaka3Cpu pointer on device get trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct GetPtrDev<ConstBufAlpaka3Cpu<TElem, TDim, TIdx>, DevAlpaka3Cpu>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct GetPtrDev<ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>, DevAlpaka3<TDevSpec>>
     {
         ALPAKA_FN_HOST static auto getPtrDev(
-            ConstBufAlpaka3Cpu<TElem, TDim, TIdx> const& buf,
-            DevAlpaka3Cpu const& dev) -> TElem const*
+            ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf,
+            DevAlpaka3<TDevSpec> const& dev) -> TElem const*
         {
             if(dev == getDev(buf))
             {
@@ -90,34 +92,34 @@ namespace alpaka::trait
     };
 
     //! The ConstBufAlpaka3Cpu offset get trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct GetOffsets<ConstBufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct GetOffsets<ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
-        ALPAKA_FN_HOST auto operator()(ConstBufAlpaka3Cpu<TElem, TDim, TIdx> const&) const -> VecOld<TDim, TIdx>
+        ALPAKA_FN_HOST auto operator()(ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx> const&) const -> VecOld<TDim, TIdx>
         {
             return VecOld<TDim, TIdx>::zeros();
         }
     };
 
     //! The ConstBufAlpaka3Cpu idx type trait specialization.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct IdxType<ConstBufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct IdxType<ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
         using type = TIdx;
     };
 
     //! The MakeConstBuf trait for constant CPU buffers.
-    template<typename TElem, typename TDim, typename TIdx>
-    struct MakeConstBuf<ConstBufAlpaka3Cpu<TElem, TDim, TIdx>>
+    template<typename TElem, typename TDim, typename TIdx, onHost::concepts::DeviceSpec TDevSpec>
+    struct MakeConstBuf<ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
-        ALPAKA_FN_HOST static auto makeConstBuf(ConstBufAlpaka3Cpu<TElem, TDim, TIdx> const& buf)
-            -> ConstBufAlpaka3Cpu<TElem, TDim, TIdx>
+        ALPAKA_FN_HOST static auto makeConstBuf(ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf)
+            -> ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>
         {
             return buf;
         }
 
-        ALPAKA_FN_HOST static auto makeConstBuf(ConstBufAlpaka3Cpu<TElem, TDim, TIdx>&& buf)
-            -> ConstBufAlpaka3Cpu<TElem, TDim, TIdx>
+        ALPAKA_FN_HOST static auto makeConstBuf(ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>&& buf)
+            -> ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>
         {
             return buf;
         }

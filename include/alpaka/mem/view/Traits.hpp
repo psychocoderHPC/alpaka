@@ -379,10 +379,10 @@ namespace alpaka
             "The source and destination view must have the same element type!");
 
         assert(
-            (extent <= getExtents(viewSrc)).all()
+            (extent <= alpaka::getExtents(viewSrc)).all()
             && "The memcpy extent must not be larger than the source view's extent!");
         assert(
-            (extent <= getExtents(viewDst)).all()
+            (extent <= alpaka::getExtents(viewDst)).all()
             && "The memcpy extent must not be larger than the destination view's extent!");
 
         return trait::CreateTaskMemcpy<Dim<TViewDst>, Dev<TViewDst>, Dev<TViewSrc>>::createTaskMemcpy(

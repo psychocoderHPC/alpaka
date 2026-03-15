@@ -17,7 +17,8 @@
 
 namespace alpaka
 {
-    class DevAlpaka3Cpu;
+    template<onHost::concepts::DeviceSpec TDevSpec>
+    class DevAlpaka3;
 } // namespace alpaka
 
 namespace alpaka
@@ -50,8 +51,8 @@ namespace alpaka
         //! The CPU device memory copy trait specialization.
         //!
         //! Copies from CPU memory into CPU memory.
-        template<typename TDim>
-        struct CreateTaskMemcpy<TDim, DevAlpaka3Cpu, DevAlpaka3Cpu>
+        template<onHost::concepts::DeviceSpec TDevSpec, typename TDim>
+        struct CreateTaskMemcpy<TDim, DevAlpaka3<TDevSpec>, DevAlpaka3<TDevSpec>>
         {
             template<typename TExtent, typename TViewSrc, typename TViewDstFwd>
             ALPAKA_FN_HOST static auto createTaskMemcpy(
@@ -66,8 +67,8 @@ namespace alpaka
             }
         };
 
-        template<typename TDim>
-        struct CreateTaskMemcpy<TDim, DevAlpaka3Cpu, DevCpu>
+        template<onHost::concepts::DeviceSpec TDevSpec, typename TDim>
+        struct CreateTaskMemcpy<TDim, DevAlpaka3<TDevSpec>, DevCpu>
         {
             template<typename TExtent, typename TViewSrc, typename TViewDstFwd>
             ALPAKA_FN_HOST static auto createTaskMemcpy(
@@ -88,8 +89,8 @@ namespace alpaka
             }
         };
 
-        template<typename TDim>
-        struct CreateTaskMemcpy<TDim, DevCpu, DevAlpaka3Cpu>
+        template<onHost::concepts::DeviceSpec TDevSpec, typename TDim>
+        struct CreateTaskMemcpy<TDim, DevCpu, DevAlpaka3<TDevSpec>>
         {
             template<typename TExtent, typename TViewSrc, typename TViewDstFwd>
             ALPAKA_FN_HOST static auto createTaskMemcpy(
