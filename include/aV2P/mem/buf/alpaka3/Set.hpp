@@ -48,24 +48,11 @@ namespace aV2P
             }
         };
 
-        template<typename TDev, typename TView, typename TExtents>
-        struct Enqueue<QueueAlpaka3CpuNonBlocking<TDev>, aV2P::detail::TaskSetAlpaka3<TView, TExtents>>
+        template<typename TDev, typename TView, typename TExtents, typename TQueueKind>
+        struct Enqueue<QueueAlpaka3<TDev, TQueueKind>, aV2P::detail::TaskSetAlpaka3<TView, TExtents>>
         {
             ALPAKA_FN_HOST static auto enqueue(
-                QueueAlpaka3CpuNonBlocking<TDev>& queue,
-                aV2P::detail::TaskSetAlpaka3<TView, TExtents> task) -> void
-            {
-                ALPAKA_DEBUG_FULL_LOG_SCOPE;
-
-                alpaka::onHost::memset(queue.getAlpaka3(), task.m_dest, task.m_value, task.m_extents);
-            }
-        };
-
-        template<typename TDev, typename TView, typename TExtents>
-        struct Enqueue<QueueAlpaka3CpuBlocking<TDev>, aV2P::detail::TaskSetAlpaka3<TView, TExtents>>
-        {
-            ALPAKA_FN_HOST static auto enqueue(
-                QueueAlpaka3CpuBlocking<TDev>& queue,
+                QueueAlpaka3<TDev, TQueueKind>& queue,
                 aV2P::detail::TaskSetAlpaka3<TView, TExtents> task) -> void
             {
                 ALPAKA_DEBUG_FULL_LOG_SCOPE;

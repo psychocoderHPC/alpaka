@@ -1,7 +1,7 @@
 // Copyright 2023 Bernhard Manfred Gruber
 // SPDX-License-Identifier: ISC
 
-#include "alpaka/test/acc/TestAccs.hpp"
+#include "aV2P/test/acc/TestAccs.hpp"
 
 #include <aV2P/aV2P.hpp>
 

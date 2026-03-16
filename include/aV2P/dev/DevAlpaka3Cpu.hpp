@@ -10,8 +10,7 @@
 #include "aV2P/mem/buf/Traits.hpp"
 #include "aV2P/platform/Traits.hpp"
 #include "aV2P/queue/Properties.hpp"
-#include "aV2P/queue/QueueAlpaka3CpuBlocking.hpp"
-#include "aV2P/queue/QueueAlpaka3CpuNonBlocking.hpp"
+#include "aV2P/queue/QueueAlpaka3.hpp"
 #include "aV2P/queue/Traits.hpp"
 #include "aV2P/traits/Traits.hpp"
 #include "aV2P/wait/Traits.hpp"
@@ -170,13 +169,13 @@ namespace aV2P
         template<alpaka::onHost::concepts::DeviceSpec TDevSpec>
         struct QueueType<DevAlpaka3<TDevSpec>, Blocking>
         {
-            using type = QueueAlpaka3CpuBlocking<DevAlpaka3<TDevSpec>>;
+            using type = QueueAlpaka3<DevAlpaka3<TDevSpec>, alpaka::queueKind::Blocking>;
         };
 
         template<alpaka::onHost::concepts::DeviceSpec TDevSpec>
         struct QueueType<DevAlpaka3<TDevSpec>, NonBlocking>
         {
-            using type = QueueAlpaka3CpuNonBlocking<DevAlpaka3<TDevSpec>>;
+            using type = QueueAlpaka3<DevAlpaka3<TDevSpec>, alpaka::queueKind::NonBlocking>;
         };
     } // namespace trait
 } // namespace aV2P

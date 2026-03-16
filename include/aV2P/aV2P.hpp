@@ -141,8 +141,7 @@
 #include "aV2P/idx/Traits.hpp"
 // queue
 #include "aV2P/queue/Properties.hpp"
-#include "aV2P/queue/QueueAlpaka3CpuBlocking.hpp"
-#include "aV2P/queue/QueueAlpaka3CpuNonBlocking.hpp"
+#include "aV2P/queue/QueueAlpaka3.hpp"
 #include "aV2P/queue/Traits.hpp"
 // traits
 #include "aV2P/traits/Traits.hpp"

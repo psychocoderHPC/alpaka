@@ -134,25 +134,17 @@ namespace aV2P
             }
         };
 
-        template<typename TDev, typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
-        struct Enqueue<QueueAlpaka3CpuNonBlocking<TDev>, TaskKernelAlpaka3<TDim, TIdx, TKernelFnObj, TArgs...>>
+        template<
+            typename TDev,
+            typename TDim,
+            typename TIdx,
+            typename TKernelFnObj,
+            typename TQueueKind,
+            typename... TArgs>
+        struct Enqueue<QueueAlpaka3<TDev, TQueueKind>, TaskKernelAlpaka3<TDim, TIdx, TKernelFnObj, TArgs...>>
         {
             ALPAKA_FN_HOST static auto enqueue(
-                QueueAlpaka3CpuNonBlocking<TDev>& queue,
-                TaskKernelAlpaka3<TDim, TIdx, TKernelFnObj, TArgs...> const& task) -> void
-            {
-                auto tSpec = alpaka::onHost::ThreadSpec{
-                    task.m_gridBlockExtent.getAlpaka3(),
-                    task.m_blockThreadExtent.getAlpaka3()};
-                queue.getAlpaka3().enqueue(task.getExecutor(), tSpec, task.m_kernelBundle);
-            }
-        };
-
-        template<typename TDev, typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
-        struct Enqueue<QueueAlpaka3CpuBlocking<TDev>, TaskKernelAlpaka3<TDim, TIdx, TKernelFnObj, TArgs...>>
-        {
-            ALPAKA_FN_HOST static auto enqueue(
-                QueueAlpaka3CpuBlocking<TDev>& queue,
+                QueueAlpaka3<TDev, TQueueKind>& queue,
                 TaskKernelAlpaka3<TDim, TIdx, TKernelFnObj, TArgs...> const& task) -> void
             {
                 auto tSpec = alpaka::onHost::ThreadSpec{

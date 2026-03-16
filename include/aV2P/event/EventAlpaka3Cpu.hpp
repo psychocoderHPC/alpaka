@@ -8,8 +8,7 @@
 #include "aV2P/core/Utility.hpp"
 #include "aV2P/dev/Traits.hpp"
 #include "aV2P/event/Traits.hpp"
-#include "aV2P/queue/QueueAlpaka3CpuBlocking.hpp"
-#include "aV2P/queue/QueueAlpaka3CpuNonBlocking.hpp"
+#include "aV2P/queue/QueueAlpaka3.hpp"
 #include "aV2P/wait/Traits.hpp"
 
 #include <condition_variable>
@@ -90,23 +89,10 @@ namespace aV2P
         };
 
         //! The CPU non-blocking device queue enqueue trait specialization.
-        template<typename TDev>
-        struct Enqueue<QueueAlpaka3CpuNonBlocking<TDev>, EventAlpaka3Cpu<TDev>>
+        template<typename TDev, typename TQueueKind>
+        struct Enqueue<QueueAlpaka3<TDev, TQueueKind>, EventAlpaka3Cpu<TDev>>
         {
-            ALPAKA_FN_HOST static auto enqueue(
-                [[maybe_unused]] aV2P::QueueAlpaka3CpuNonBlocking<TDev>& queue,
-                EventAlpaka3Cpu<TDev>& event) -> void
-            {
-                ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
-                queue.m_queueImpl.enqueue(event.m_queueImpl);
-            }
-        };
-
-        //! The CPU non-blocking device queue enqueue trait specialization.
-        template<typename TDev>
-        struct Enqueue<QueueAlpaka3CpuBlocking<TDev>, EventAlpaka3Cpu<TDev>>
-        {
-            ALPAKA_FN_HOST static auto enqueue(QueueAlpaka3CpuBlocking<TDev>& queue, EventAlpaka3Cpu<TDev>& event)
+            ALPAKA_FN_HOST static auto enqueue(QueueAlpaka3<TDev, TQueueKind>& queue, EventAlpaka3Cpu<TDev>& event)
                 -> void
             {
                 ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
@@ -132,23 +118,11 @@ namespace aV2P
         };
 
         //! The CPU non-blocking device queue event wait trait specialization.
-        template<typename TDev>
-        struct WaiterWaitFor<QueueAlpaka3CpuNonBlocking<TDev>, EventAlpaka3Cpu<TDev>>
+        template<typename TDev, typename TQueueKind>
+        struct WaiterWaitFor<QueueAlpaka3<TDev, TQueueKind>, EventAlpaka3Cpu<TDev>>
         {
             ALPAKA_FN_HOST static auto waiterWaitFor(
-                QueueAlpaka3CpuNonBlocking<TDev>& queue,
-                EventAlpaka3Cpu<TDev> const& event) -> void
-            {
-                queue.getAlpaka3().waitFor(event.m_eventImpl);
-            }
-        };
-
-        //! The CPU non-blocking device queue event wait trait specialization.
-        template<typename TDev>
-        struct WaiterWaitFor<QueueAlpaka3CpuBlocking<TDev>, EventAlpaka3Cpu<TDev>>
-        {
-            ALPAKA_FN_HOST static auto waiterWaitFor(
-                QueueAlpaka3CpuBlocking<TDev>& queue,
+                QueueAlpaka3<TDev, TQueueKind>& queue,
                 EventAlpaka3Cpu<TDev> const& event) -> void
             {
                 queue.getAlpaka3().waitFor(event.m_eventImpl);

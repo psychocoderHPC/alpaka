@@ -69,24 +69,11 @@ namespace aV2P
             }
         };
 
-        template<typename TDev, typename TViewDst, typename TViewSrc, typename TExtent>
-        struct Enqueue<QueueAlpaka3CpuNonBlocking<TDev>, aV2P::detail::TaskCopyAlpaka3Cpu<TViewDst, TViewSrc, TExtent>>
+        template<typename TDev, typename TViewDst, typename TViewSrc, typename TExtent, typename TQueueKind>
+        struct Enqueue<QueueAlpaka3<TDev, TQueueKind>, aV2P::detail::TaskCopyAlpaka3Cpu<TViewDst, TViewSrc, TExtent>>
         {
             ALPAKA_FN_HOST static auto enqueue(
-                QueueAlpaka3CpuNonBlocking<TDev>& queue,
-                aV2P::detail::TaskCopyAlpaka3Cpu<TViewDst, TViewSrc, TExtent> task) -> void
-            {
-                ALPAKA_DEBUG_FULL_LOG_SCOPE;
-
-                alpaka::onHost::memcpy(queue.getAlpaka3(), task.m_dest, task.m_src, task.m_extents);
-            }
-        };
-
-        template<typename TDev, typename TViewDst, typename TViewSrc, typename TExtent>
-        struct Enqueue<QueueAlpaka3CpuBlocking<TDev>, aV2P::detail::TaskCopyAlpaka3Cpu<TViewDst, TViewSrc, TExtent>>
-        {
-            ALPAKA_FN_HOST static auto enqueue(
-                QueueAlpaka3CpuBlocking<TDev>& queue,
+                QueueAlpaka3<TDev, TQueueKind>& queue,
                 aV2P::detail::TaskCopyAlpaka3Cpu<TViewDst, TViewSrc, TExtent> task) -> void
             {
                 ALPAKA_DEBUG_FULL_LOG_SCOPE;
