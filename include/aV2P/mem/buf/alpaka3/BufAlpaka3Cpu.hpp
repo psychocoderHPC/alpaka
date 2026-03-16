@@ -94,9 +94,9 @@ namespace aV2P
 } // namespace aV2P
 
 #include "aV2P/mem/buf/alpaka3/Copy.hpp"
+#include "aV2P/mem/buf/alpaka3/Set.hpp"
 #if 0
 #    include "aV2P/mem/buf/alpaka3/Fill.hpp"
-#    include "aV2P/mem/buf/alpaka3/Set.hpp"
 #endif
 #include "aV2P/mem/buf/alpaka3/traits/BufAlpaka3CpuTraits.hpp"
 #include "aV2P/mem/buf/alpaka3/traits/ConstBufAlpaka3CpuTraits.hpp"

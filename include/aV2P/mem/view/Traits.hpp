@@ -162,13 +162,13 @@ namespace aV2P
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
-                    return getExtents(view)[idx] * GetPitchBytes<DimInt<idx + 1>, TView>::getPitchBytes(view);
+                    return aV2P::getExtents(view)[idx] * GetPitchBytes<DimInt<idx + 1>, TView>::getPitchBytes(view);
 #if ALPAKA_COMP_CLANG || ALPAKA_COMP_GNUC
 #    pragma GCC diagnostic pop
 #endif
                 }
                 else if constexpr(idx == viewDim - 1)
-                    return getExtents(view)[viewDim - 1] * static_cast<ViewIdx>(sizeof(Elem<TView>));
+                    return aV2P::getExtents(view)[viewDim - 1] * static_cast<ViewIdx>(sizeof(Elem<TView>));
                 else
                     return static_cast<ViewIdx>(sizeof(Elem<TView>));
                 ALPAKA_UNREACHABLE({});
@@ -182,7 +182,7 @@ namespace aV2P
         {
             ALPAKA_FN_HOST_ACC constexpr auto operator()(TView const& view) const
             {
-                return aV2P::detail::calculatePitchesFromExtents<Elem<TView>>(getExtents(view));
+                return aV2P::detail::calculatePitchesFromExtents<Elem<TView>>(aV2P::getExtents(view));
             }
         };
 
@@ -294,7 +294,9 @@ namespace aV2P
             Dim<TView>::value == Dim<TExtent>::value,
             "The view and the extent are required to have the same dimensionality!");
 
-        assert((extent <= getExtents(view)).all() && "The memset extent must not be larger than the view's extent!");
+        assert(
+            (extent <= aV2P::getExtents(view)).all()
+            && "The memset extent must not be larger than the view's extent!");
 
         return trait::CreateTaskMemset<Dim<TView>, Dev<TView>>::createTaskMemset(
             std::forward<TViewFwd>(view),
@@ -311,7 +313,8 @@ namespace aV2P
             Dim<TView>::value == Dim<TExtent>::value,
             "The view and the extent are required to have the same dimensionality!");
 
-        assert((extent <= getExtents(view)).all() && "The fill extent must not be larger than the view's extent!");
+        assert(
+            (extent <= aV2P::getExtents(view)).all() && "The fill extent must not be larger than the view's extent!");
 
         return trait::CreateTaskFill<Dim<TView>, Dev<TView>>::createTaskFill(
             std::forward<TViewFwd>(view),
@@ -339,13 +342,13 @@ namespace aV2P
     template<typename TViewFwd, typename TQueue>
     ALPAKA_FN_HOST auto memset(TQueue& queue, TViewFwd&& view, std::uint8_t const& byte) -> void
     {
-        enqueue(queue, createTaskMemset(std::forward<TViewFwd>(view), byte, getExtents(view)));
+        enqueue(queue, createTaskMemset(std::forward<TViewFwd>(view), byte, aV2P::getExtents(view)));
     }
 
     template<typename TViewFwd, typename TValue, typename TQueue>
     ALPAKA_FN_HOST auto fill(TQueue& queue, TViewFwd&& view, TValue const& value) -> void
     {
-        enqueue(queue, createTaskFill(std::forward<TViewFwd>(view), value, getExtents(view)));
+        enqueue(queue, createTaskFill(std::forward<TViewFwd>(view), value, aV2P::getExtents(view)));
     }
 
     template<typename TExtent, typename TViewFwd, typename TValue, typename TQueue>
@@ -414,7 +417,7 @@ namespace aV2P
     template<typename TViewSrc, typename TViewDstFwd, typename TQueue>
     ALPAKA_FN_HOST auto memcpy(TQueue& queue, TViewDstFwd&& viewDst, TViewSrc const& viewSrc) -> void
     {
-        enqueue(queue, createTaskMemcpy(std::forward<TViewDstFwd>(viewDst), viewSrc, getExtents(viewSrc)));
+        enqueue(queue, createTaskMemcpy(std::forward<TViewDstFwd>(viewDst), viewSrc, aV2P::getExtents(viewSrc)));
     }
 
     namespace detail
@@ -507,7 +510,7 @@ namespace aV2P
         detail::Print<DimInt<0u>, TView>::print(
             view,
             getPtrNative(view),
-            getExtents(view),
+            aV2P::getExtents(view),
             os,
             elementSeparator,
             rowSeparator,
@@ -575,7 +578,7 @@ namespace aV2P
     template<typename TDev, typename TContainer>
     auto createView(TDev const& dev, TContainer& con)
     {
-        return createView(dev, std::data(con), getExtents(con));
+        return createView(dev, std::data(con), aV2P::getExtents(con));
     }
 
     //! Creates a view to a contiguous container of device-accessible memory.
@@ -638,7 +641,7 @@ namespace aV2P
                 template<typename TView, std::size_t... Is>
                 ALPAKA_FN_HOST auto makeExtents(TView const& view, std::index_sequence<Is...>)
                 {
-                    auto const ex = getExtents(view);
+                    auto const ex = aV2P::getExtents(view);
                     return dextents<Idx<TView>, Dim<TView>::value>{ex[Is]...};
                 }
             } // namespace detail
