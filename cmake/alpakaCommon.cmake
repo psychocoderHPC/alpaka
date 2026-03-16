@@ -147,12 +147,15 @@ checkCompilerCXXSupport(CXX ${alpaka_MIN_CXX_STANDARD})
 
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../thirdParty/alpaka3" "${CMAKE_BINARY_DIR}/alpaka3")
 
-if(NOT TARGET alpaka)
-    add_library(alpaka INTERFACE)
+if(NOT TARGET aV2P)
+    add_library(aV2P INTERFACE)
 
-    target_compile_features(alpaka INTERFACE cxx_std_${alpaka_CXX_STANDARD})
-
-    add_library(aV2P::alpaka ALIAS alpaka)
+    target_compile_features(aV2P INTERFACE cxx_std_${alpaka_CXX_STANDARD})
+    target_include_directories(
+            aV2P
+            INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
+    add_library(aV2P::alpaka ALIAS aV2P)
 endif()
 
 set(alpaka_BLOCK_SHARED_DYN_MEMBER_ALLOC_KIB "47" CACHE STRING "Kibibytes (1024B) of memory to allocate for block shared memory for backends requiring static allocation (includes CPU_B_OMP2_T_SEQ, CPU_B_TBB_T_SEQ, CPU_B_SEQ_T_SEQ, SYCL)")
@@ -161,13 +164,13 @@ alpaka_compiler_option(RELOCATABLE_DEVICE_CODE "Enable relocatable device code f
 # Random number generators
 option(alpaka_DISABLE_VENDOR_RNG "Disable the vendor specific random number generators (NVIDIA cuRAND, AMD rocRAND, Intel DPL)" OFF)
 if(alpaka_DISABLE_VENDOR_RNG)
-    target_compile_definitions(alpaka INTERFACE "ALPAKA_DISABLE_VENDOR_RNG")
+    target_compile_definitions(aV2P INTERFACE "ALPAKA_DISABLE_VENDOR_RNG")
 endif()
 
 # Device side assert
 option(alpaka_ASSERT_ACC_ENABLE "Enable device side asserts. In case  value is OFF device side asserts will be disabled even if NDEBUG is not defined." ON)
 if(!alpaka_ASSERT_ACC_ENABLE)
-    target_compile_definitions(alpaka INTERFACE "ALPAKA_DISABLE_ASSERT_ACC")
+    target_compile_definitions(aV2P INTERFACE "ALPAKA_DISABLE_ASSERT_ACC")
 endif()
 
 #-------------------------------------------------------------------------------
@@ -196,7 +199,7 @@ endif()
 if(MSVC)
     # warning C4505: '__cudaUnregisterBinaryUtil': unreferenced local function has been removed
     if(alpaka_ACC_GPU_CUDA_ONLY_MODE)
-        target_compile_options(alpaka INTERFACE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler /wd4505>")
+        target_compile_options(aV2P INTERFACE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler /wd4505>")
     endif()
 else()
     # For std::future we need to pass the correct pthread flag for the compiler and the linker:
@@ -208,24 +211,24 @@ else()
     endif()
 
     find_package(Threads REQUIRED)
-    target_link_libraries(alpaka INTERFACE Threads::Threads)
+    target_link_libraries(aV2P INTERFACE Threads::Threads)
 
     if(NOT APPLE)
         # librt: undefined reference to `clock_gettime'
         find_library(RT_LIBRARY rt)
         if(RT_LIBRARY)
-            target_link_libraries(alpaka INTERFACE ${RT_LIBRARY})
+            target_link_libraries(aV2P INTERFACE ${RT_LIBRARY})
         endif()
     endif()
 
     # Add debug optimization levels. CMake doesn't do this by default.
     # Note that -Og is the recommended gcc optimization level for debug mode but is equivalent to -O1 for clang (and its derivates).
-    alpaka_set_compiler_options(HOST_DEVICE target alpaka "$<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:GNU>,$<COMPILE_LANGUAGE:CXX>>:SHELL:-Og>"
+    alpaka_set_compiler_options(HOST_DEVICE target aV2P "$<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:GNU>,$<COMPILE_LANGUAGE:CXX>>:SHELL:-Og>"
                                                           "$<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:GNU>,$<COMPILE_LANGUAGE:CUDA>>:SHELL:-Xcompiler -Og>"
                                                           "$<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:Clang,AppleClang,IntelLLVM>>:SHELL:-O0>"
                                                           "$<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:MSVC>>:SHELL:/Od>")
 
-    target_link_options(alpaka INTERFACE "$<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:GNU>>:SHELL:-Og>"
+    target_link_options(aV2P INTERFACE "$<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:GNU>>:SHELL:-Og>"
                                          "$<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:Clang,AppleClang,IntelLLVM>>:SHELL:-O0>")
 endif()
 
@@ -246,7 +249,7 @@ if(alpaka_ACC_CPU_B_SEQ_T_SEQ_ENABLE OR
                         CXX_EXTENSIONS FALSE)
             if(alpaka_HAS_STD_ATOMIC_REF AND (NOT alpaka_ACC_CPU_DISABLE_ATOMIC_REF))
                 message(STATUS "std::atomic_ref<T> found")
-                target_compile_definitions(alpaka INTERFACE ALPAKA_HAS_STD_ATOMIC_REF)
+                target_compile_definitions(aV2P INTERFACE ALPAKA_HAS_STD_ATOMIC_REF)
             else()
                 message(STATUS "std::atomic_ref<T> NOT found")
             endif()
@@ -257,11 +260,11 @@ if(alpaka_ACC_CPU_B_SEQ_T_SEQ_ENABLE OR
             set(_alpaka_BOOST_MIN_VER "1.74.0")
             find_package(Boost ${_alpaka_BOOST_MIN_VER} REQUIRED CONFIG
                     OPTIONAL_COMPONENTS atomic)
-            target_link_libraries(alpaka INTERFACE Boost::headers)
+            target_link_libraries(aV2P INTERFACE Boost::headers)
 
             if (Boost_ATOMIC_FOUND)
                 message(STATUS "boost::atomic_ref<T> found")
-                target_link_libraries(alpaka INTERFACE Boost::atomic)
+                target_link_libraries(aV2P INTERFACE Boost::atomic)
             else ()
                 message(STATUS "boost::atomic_ref<T> NOT found")
             endif ()
@@ -270,7 +273,7 @@ if(alpaka_ACC_CPU_B_SEQ_T_SEQ_ENABLE OR
 
     if(alpaka_ACC_CPU_DISABLE_ATOMIC_REF OR ((NOT alpaka_HAS_STD_ATOMIC_REF) AND (NOT Boost_ATOMIC_FOUND)))
         message(STATUS "atomic_ref<T> was not found or manually disabled. Falling back to lock-based CPU atomics.")
-        target_compile_definitions(alpaka INTERFACE ALPAKA_DISABLE_ATOMIC_ATOMICREF)
+        target_compile_definitions(aV2P INTERFACE ALPAKA_DISABLE_ATOMIC_ATOMICREF)
     endif()
 endif()
 
@@ -290,14 +293,14 @@ endif()
 if(NOT alpaka_HAS_STD_MATH_CONSTANTS)
     message(STATUS "C++20 math constants not found. Falling back to non-standard constants.")
     # Enable non-standard constants for MSVC.
-    target_compile_definitions(alpaka INTERFACE "$<$<OR:$<CXX_COMPILER_ID:MSVC>,$<AND:$<COMPILE_LANGUAGE:CUDA>,$<PLATFORM_ID:Windows>>>:_USE_MATH_DEFINES>")
+    target_compile_definitions(aV2P INTERFACE "$<$<OR:$<CXX_COMPILER_ID:MSVC>,$<AND:$<COMPILE_LANGUAGE:CUDA>,$<PLATFORM_ID:Windows>>>:_USE_MATH_DEFINES>")
 endif()
 
 #-------------------------------------------------------------------------------
 # Find TBB.
 if(alpaka_ACC_CPU_B_TBB_T_SEQ_ENABLE)
     find_package(TBB 2021.4.0.0 REQUIRED)
-    target_link_libraries(alpaka INTERFACE TBB::tbb)
+    target_link_libraries(aV2P INTERFACE TBB::tbb)
 endif()
 
 #-------------------------------------------------------------------------------
@@ -316,14 +319,14 @@ if(alpaka_ACC_CPU_B_OMP2_T_SEQ_ENABLE OR alpaka_ACC_CPU_B_SEQ_T_OMP2_ENABLE)
 
             find_package(OpenMP REQUIRED COMPONENTS CXX)
         endif()
-        target_link_libraries(alpaka INTERFACE OpenMP::OpenMP_CXX)
+        target_link_libraries(aV2P INTERFACE OpenMP::OpenMP_CXX)
     else()
         find_package(OpenMP REQUIRED COMPONENTS CXX)
-        target_link_libraries(alpaka INTERFACE OpenMP::OpenMP_CXX)
+        target_link_libraries(aV2P INTERFACE OpenMP::OpenMP_CXX)
         # shown with CMake 3.29 and cray clang 17
         # workaround: cmake is missing to add '-fopenmp' to the linker flags
         if(CMAKE_CXX_COMPILER_ID STREQUAL "CrayClang")
-            target_link_libraries(alpaka INTERFACE -fopenmp)
+            target_link_libraries(aV2P INTERFACE -fopenmp)
         endif()
     endif()
 endif()
@@ -389,7 +392,7 @@ if(alpaka_ACC_GPU_CUDA_ENABLE)
 
         find_package(CUDAToolkit REQUIRED)
 
-        target_compile_features(alpaka INTERFACE cuda_std_${alpaka_CXX_STANDARD})
+        target_compile_features(aV2P INTERFACE cuda_std_${alpaka_CXX_STANDARD})
 
         alpaka_compiler_option(CUDA_SHOW_REGISTER "Show kernel registers and create device ASM" DEFAULT)
         alpaka_compiler_option(CUDA_KEEP_FILES "Keep all intermediate files that are generated during internal compilation steps 'CMakeFiles/<targetname>.dir'" DEFAULT)
@@ -406,35 +409,35 @@ if(alpaka_ACC_GPU_CUDA_ENABLE)
             # workaround: ISA code parsing when compiling as debug with clang as CUDA compiler
             # https://github.com/llvm/llvm-project/issues/58491
             if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-                alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-g -Xarch_device -g0>")
+                alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-g -Xarch_device -g0>")
             endif()
 
             if(alpaka_ACC_CPU_B_OMP2_T_SEQ_ENABLE OR alpaka_ACC_CPU_B_SEQ_T_OMP2_ENABLE)
                 message(FATAL_ERROR "Clang as a CUDA compiler does not support OpenMP 2!")
             endif()
 
-            target_compile_options(alpaka INTERFACE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Wno-unknown-cuda-version>")
+            target_compile_options(aV2P INTERFACE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Wno-unknown-cuda-version>")
 
             # This flag silences the warning produced by the Dummy.cpp files:
             # clang: warning: argument unused during compilation: '--cuda-gpu-arch=sm_XX'
             # This seems to be a false positive as all flags are 'unused' for an empty file.
-            alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Qunused-arguments>")
+            alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Qunused-arguments>")
 
             if(alpaka_FAST_MATH STREQUAL ON)
                 # -ffp-contract=fast enables the usage of FMA
-                alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-ffast-math -ffp-contract=fast>")
+                alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-ffast-math -ffp-contract=fast>")
             endif()
 
             if(alpaka_FTZ STREQUAL ON)
-                alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-fcuda-flush-denormals-to-zero>")
+                alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-fcuda-flush-denormals-to-zero>")
             endif()
 
             if(alpaka_CUDA_SHOW_REGISTER STREQUAL ON)
-                alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcuda-ptxas=-v>")
+                alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcuda-ptxas=-v>")
             endif()
 
             if(alpaka_CUDA_KEEP_FILES STREQUAL ON)
-                alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-save-temps>")
+                alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-save-temps>")
             endif()
 
         elseif(CMAKE_CUDA_COMPILER_ID STREQUAL "NVIDIA")
@@ -444,65 +447,65 @@ if(alpaka_ACC_GPU_CUDA_ENABLE)
             # nvidia bug id: 2448610
             if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
                 if(CMAKE_SYSTEM_PROCESSOR STREQUAL "ppc64le")
-                    alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Dlinux>")
+                    alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Dlinux>")
                 endif()
             endif()
 
             if(alpaka_CUDA_EXPT_EXTENDED_LAMBDA STREQUAL ON)
-                alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--extended-lambda>")
+                alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--extended-lambda>")
             endif()
             # This is mandatory because with C++20 many standard library functions we rely on are constexpr (std::min, std::multiplies, ...)
-            alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--expt-relaxed-constexpr>")
+            alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--expt-relaxed-constexpr>")
 
             # CMake automatically sets '-g' in debug mode
-            alpaka_set_compiler_options(DEVICE target alpaka "$<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CUDA>>:SHELL:-G>" # -G overrides -lineinfo
+            alpaka_set_compiler_options(DEVICE target aV2P "$<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CUDA>>:SHELL:-G>" # -G overrides -lineinfo
                                                              "$<$<AND:$<CONFIG:RelWithDebInfo>,$<COMPILE_LANGUAGE:CUDA>>:SHELL:-g -lineinfo>")
 
             if(alpaka_FAST_MATH STREQUAL ON)
-                alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--use_fast_math>")
+                alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--use_fast_math>")
             endif()
 
             if(alpaka_FTZ STREQUAL ON)
-                alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--ftz=true>")
+                alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--ftz=true>")
             elseif(alpaka_FTZ STREQUAL OFF)
-                alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--ftz=false>")
+                alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--ftz=false>")
             endif()
 
             if(alpaka_CUDA_SHOW_REGISTER STREQUAL ON)
-                alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xptxas -v>")
+                alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xptxas -v>")
             endif()
 
             if(alpaka_ACC_CPU_B_OMP2_T_SEQ_ENABLE OR alpaka_ACC_CPU_B_SEQ_T_OMP2_ENABLE)
                 if(NOT MSVC)
-                    alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -fopenmp>")
+                    alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -fopenmp>")
 
                     # See https://github.com/alpaka-group/alpaka/issues/1755
                     if((${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang") AND
                        (${CMAKE_CXX_COMPILER_VERSION} VERSION_GREATER_EQUAL 13))
                        message(STATUS "clang >= 13 detected. Force-setting OpenMP to version 4.5.")
-                       alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -fopenmp-version=45>")
+                       alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -fopenmp-version=45>")
                     endif()
                 else()
-                    alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler /openmp>")
+                    alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler /openmp>")
                 endif()
             endif()
 
             # Always add warning/error numbers which can be used for suppressions
             set(ALPAKA_CUDA_DISPLAY_ERROR_NUM "$<IF:$<VERSION_LESS:$<CUDA_COMPILER_VERSION>,11.2.0>,-Xcudafe=--display_error_number,--display-error-number>")
-            alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:${ALPAKA_CUDA_DISPLAY_ERROR_NUM}>")
+            alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:${ALPAKA_CUDA_DISPLAY_ERROR_NUM}>")
 
             if(alpaka_CUDA_KEEP_FILES STREQUAL ON)
-                alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--keep>")
+                alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--keep>")
             endif()
 
             option(alpaka_CUDA_SHOW_CODELINES "Show kernel lines in cuda-gdb and cuda-memcheck. If alpaka_CUDA_KEEP_FILES is enabled source code will be inlined in ptx." OFF)
             if(alpaka_CUDA_SHOW_CODELINES)
-                alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--source-in-ptx -lineinfo>")
+                alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--source-in-ptx -lineinfo>")
 
                 # This is shaky - We currently don't have a way of checking for the host compiler ID.
                 # See https://gitlab.kitware.com/cmake/cmake/-/issues/20901
                 if(NOT MSVC)
-                    alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -rdynamic>")
+                    alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -rdynamic>")
                 endif()
                 set(alpaka_CUDA_KEEP_FILES ON CACHE BOOL "activate keep files" FORCE)
             endif()
@@ -515,9 +518,9 @@ if(alpaka_ACC_GPU_CUDA_ENABLE)
 
         # Link the CUDA Runtime library
         if(CMAKE_CUDA_RUNTIME_LIBRARY STREQUAL "Shared")
-            target_link_libraries(alpaka INTERFACE CUDA::cudart)
+            target_link_libraries(aV2P INTERFACE CUDA::cudart)
         elseif(CMAKE_CUDA_RUNTIME_LIBRARY STREQUAL "Static")
-            target_link_libraries(alpaka INTERFACE CUDA::cudart_static)
+            target_link_libraries(aV2P INTERFACE CUDA::cudart_static)
         elseif(CMAKE_CUDA_RUNTIME_LIBRARY STREQUAL "None")
             message(WARNING "Building alpaka applications with CMAKE_CUDA_RUNTIME_LIBRARY=None is not supported.")
         else()
@@ -527,9 +530,9 @@ if(alpaka_ACC_GPU_CUDA_ENABLE)
         if(NOT alpaka_DISABLE_VENDOR_RNG)
             # Use cuRAND random number generators
             if(CMAKE_CUDA_RUNTIME_LIBRARY STREQUAL "Shared")
-                target_link_libraries(alpaka INTERFACE CUDA::curand)
+                target_link_libraries(aV2P INTERFACE CUDA::curand)
             elseif(CMAKE_CUDA_RUNTIME_LIBRARY STREQUAL "Static")
-                target_link_libraries(alpaka INTERFACE CUDA::curand_static)
+                target_link_libraries(aV2P INTERFACE CUDA::curand_static)
             elseif(CMAKE_CUDA_RUNTIME_LIBRARY STREQUAL "None")
                 message(FATAL_ERROR "cuRAND requires the CUDA runtime library.")
             endif()
@@ -565,18 +568,18 @@ if(alpaka_ACC_GPU_HIP_ENABLE)
         endif()
 
         # let the compiler find the HIP headers also when building host-only code
-        target_include_directories(alpaka SYSTEM INTERFACE ${hip_INCLUDE_DIR})
+        target_include_directories(aV2P SYSTEM INTERFACE ${hip_INCLUDE_DIR})
 
-        target_link_libraries(alpaka INTERFACE "$<$<LINK_LANGUAGE:CXX>:hip::host>")
-        alpaka_set_compiler_options(HOST_DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CXX>:-D__HIP_PLATFORM_AMD__>")
+        target_link_libraries(aV2P INTERFACE "$<$<LINK_LANGUAGE:CXX>:hip::host>")
+        alpaka_set_compiler_options(HOST_DEVICE target aV2P "$<$<COMPILE_LANGUAGE:CXX>:-D__HIP_PLATFORM_AMD__>")
 
         alpaka_compiler_option(HIP_KEEP_FILES "Keep all intermediate files that are generated during internal compilation steps 'CMakeFiles/<targetname>.dir'" OFF)
         if(alpaka_HIP_KEEP_FILES)
-            alpaka_set_compiler_options(HOST_DEVICE target alpaka "$<$<COMPILE_LANGUAGE:HIP>:SHELL:-save-temps>")
+            alpaka_set_compiler_options(HOST_DEVICE target aV2P "$<$<COMPILE_LANGUAGE:HIP>:SHELL:-save-temps>")
         endif()
 
         if(alpaka_FAST_MATH STREQUAL ON)
-            alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:HIP>:SHELL:-ffast-math>")
+            alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:HIP>:SHELL:-ffast-math>")
         endif()
 
         if(NOT alpaka_DISABLE_VENDOR_RNG)
@@ -586,7 +589,7 @@ if(alpaka_ACC_GPU_HIP_ENABLE)
                     HINTS "${ROCM_ROOT_DIR}/rocrand"
                     HINTS "/opt/rocm/rocrand")
             if(rocrand_FOUND)
-                target_link_libraries(alpaka INTERFACE roc::rocrand)
+                target_link_libraries(aV2P INTERFACE roc::rocrand)
             else()
                 MESSAGE(FATAL_ERROR "Could not find rocRAND (also searched in: ROCM_ROOT_DIR=${ROCM_ROOT_DIR}/rocrand).")
             endif()
@@ -596,17 +599,17 @@ if(alpaka_ACC_GPU_HIP_ENABLE)
                     HINTS "${HIP_ROOT_DIR}/hiprand"
                     HINTS "/opt/rocm/hiprand")
             if(hiprand_FOUND)
-                target_link_libraries(alpaka INTERFACE hip::hiprand)
+                target_link_libraries(aV2P INTERFACE hip::hiprand)
             else()
                 MESSAGE(FATAL_ERROR "Could not find hipRAND (also searched in: HIP_ROOT_DIR=${HIP_ROOT_DIR}/hiprand).")
             endif()
         endif()
 
         if(alpaka_RELOCATABLE_DEVICE_CODE STREQUAL ON)
-            alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:HIP>:SHELL:-fgpu-rdc>")
-            target_link_options(alpaka INTERFACE "$<$<LINK_LANGUAGE:HIP>:SHELL:-fgpu-rdc --hip-link>")
+            alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:HIP>:SHELL:-fgpu-rdc>")
+            target_link_options(aV2P INTERFACE "$<$<LINK_LANGUAGE:HIP>:SHELL:-fgpu-rdc --hip-link>")
         elseif(alpaka_RELOCATABLE_DEVICE_CODE STREQUAL OFF)
-            alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:HIP>:SHELL:-fno-gpu-rdc>")
+            alpaka_set_compiler_options(DEVICE target aV2P "$<$<COMPILE_LANGUAGE:HIP>:SHELL:-fno-gpu-rdc>")
         endif()
     else()
         message(FATAL_ERROR "Optional alpaka dependency HIP could not be found!")
@@ -629,9 +632,9 @@ if(alpaka_ACC_SYCL_ENABLE)
             set_property(CACHE alpaka_SYCL_ONEAPI_FPGA_MODE PROPERTY STRINGS "emulation;simulation;hardware")
         endif()
 
-        alpaka_set_compiler_options(HOST_DEVICE target alpaka "-fsycl")
-        target_link_options(alpaka INTERFACE "-fsycl")
-        alpaka_set_compiler_options(HOST_DEVICE target alpaka "-sycl-std=2020")
+        alpaka_set_compiler_options(HOST_DEVICE target aV2P "-fsycl")
+        target_link_options(aV2P INTERFACE "-fsycl")
+        alpaka_set_compiler_options(HOST_DEVICE target aV2P "-sycl-std=2020")
 
         #-----------------------------------------------------------------------------------------------------------------
         # Determine SYCL targets
@@ -656,8 +659,8 @@ if(alpaka_ACC_SYCL_ENABLE)
         endif()
 
         list(JOIN alpaka_SYCL_TARGETS "," alpaka_SYCL_TARGETS_CONCAT)
-        alpaka_set_compiler_options(HOST_DEVICE target alpaka "-fsycl-targets=${alpaka_SYCL_TARGETS_CONCAT}")
-        target_link_options(alpaka INTERFACE "-fsycl-targets=${alpaka_SYCL_TARGETS_CONCAT}")
+        alpaka_set_compiler_options(HOST_DEVICE target aV2P "-fsycl-targets=${alpaka_SYCL_TARGETS_CONCAT}")
+        target_link_options(aV2P INTERFACE "-fsycl-targets=${alpaka_SYCL_TARGETS_CONCAT}")
 
         #-----------------------------------------------------------------------------------------------------------------
         # Determine actual hardware to compile for
@@ -665,23 +668,23 @@ if(alpaka_ACC_SYCL_ENABLE)
             set(alpaka_SYCL_ONEAPI_CPU_ISA "avx2" CACHE STRING "Intel ISA to compile for")
             set_property(CACHE alpaka_SYCL_ONEAPI_CPU_ISA PROPERTY STRINGS "sse4.2;avx;avx2;avx512")
 
-            target_compile_definitions(alpaka INTERFACE "ALPAKA_SYCL_ONEAPI_CPU")
-            target_link_options(alpaka INTERFACE "SHELL:-Xsycl-target-backend=${alpaka_SYCL_ONEAPI_CPU_TARGET} \"-march=${alpaka_SYCL_ONEAPI_CPU_ISA}\"")
+            target_compile_definitions(aV2P INTERFACE "ALPAKA_SYCL_ONEAPI_CPU")
+            target_link_options(aV2P INTERFACE "SHELL:-Xsycl-target-backend=${alpaka_SYCL_ONEAPI_CPU_TARGET} \"-march=${alpaka_SYCL_ONEAPI_CPU_ISA}\"")
         endif()
 
         if(alpaka_SYCL_ONEAPI_FPGA)
-            target_compile_definitions(alpaka INTERFACE "ALPAKA_SYCL_ONEAPI_FPGA")
+            target_compile_definitions(aV2P INTERFACE "ALPAKA_SYCL_ONEAPI_FPGA")
 
             if(alpaka_SYCL_ONEAPI_FPGA_MODE STREQUAL "emulation")
-                target_compile_definitions(alpaka INTERFACE "ALPAKA_FPGA_EMULATION")
+                target_compile_definitions(aV2P INTERFACE "ALPAKA_FPGA_EMULATION")
                 alpaka_set_compiler_options(DEVICE target alpaka "-Xsycl-target-backend=${alpaka_SYCL_ONEAPI_FPGA_TARGET}" "-emulator")
-                target_link_options(alpaka INTERFACE "-Xsycl-target-backend=${alpaka_SYCL_ONEAPI_FPGA_TARGET}" "-emulator")
+                target_link_options(aV2P INTERFACE "-Xsycl-target-backend=${alpaka_SYCL_ONEAPI_FPGA_TARGET}" "-emulator")
             elseif(alpaka_SYCL_ONEAPI_FPGA_MODE STREQUAL "simulation")
                 alpaka_set_compiler_options(DEVICE target alpaka "-Xsycl-target-backend=${alpaka_SYCL_ONEAPI_FPGA_TARGET}" "-simulation")
-                target_link_options(alpaka INTERFACE "-Xsycl-target-backend=${alpaka_SYCL_ONEAPI_FPGA_TARGET}" "-simulation")
+                target_link_options(aV2P INTERFACE "-Xsycl-target-backend=${alpaka_SYCL_ONEAPI_FPGA_TARGET}" "-simulation")
             elseif(alpaka_SYCL_ONEAPI_FPGA_MODE STREQUAL "hardware")
                 alpaka_set_compiler_options(DEVICE target alpaka "-Xsycl-target-backend=${alpaka_SYCL_ONEAPI_FPGA_TARGET}" "-hardware")
-                target_link_options(alpaka INTERFACE "-Xsycl-target-backend=${alpaka_SYCL_ONEAPI_FPGA_TARGET}" "-hardware")
+                target_link_options(aV2P INTERFACE "-Xsycl-target-backend=${alpaka_SYCL_ONEAPI_FPGA_TARGET}" "-hardware")
             endif()
 
             if(NOT alpaka_SYCL_ONEAPI_FPGA_MODE STREQUAL "emulation")
@@ -690,7 +693,7 @@ if(alpaka_ACC_SYCL_ENABLE)
 
                 set(alpaka_SYCL_ONEAPI_FPGA_BSP "intel_a10gx_pac" CACHE STRING "Path to or name of the Intel FPGA board support package")
                 set_property(CACHE alpaka_SYCL_ONEAPI_FPGA_BSP PROPERTY STRINGS "intel_a10gx_pac;intel_s10sx_pac")
-                target_link_options(alpaka INTERFACE "-Xsycl-target-backend=${alpaka_SYCL_ONEAPI_FPGA_TARGET}" "-board=${alpaka_SYCL_ONEAPI_FPGA_BSP}:${alpaka_SYCL_ONEAPI_FPGA_BOARD}")
+                target_link_options(aV2P INTERFACE "-Xsycl-target-backend=${alpaka_SYCL_ONEAPI_FPGA_TARGET}" "-board=${alpaka_SYCL_ONEAPI_FPGA_BSP}:${alpaka_SYCL_ONEAPI_FPGA_BOARD}")
             endif()
         endif()
 
@@ -703,7 +706,7 @@ if(alpaka_ACC_SYCL_ENABLE)
             # If the user has given us a list turn all ';' into ',' to pacify the Intel OpenCL compiler.
             string(REPLACE ";" "," alpaka_SYCL_ONEAPI_GPU_DEVICES "${alpaka_SYCL_ONEAPI_GPU_DEVICES}")
 
-            target_compile_definitions(alpaka INTERFACE "ALPAKA_SYCL_ONEAPI_GPU")
+            target_compile_definitions(aV2P INTERFACE "ALPAKA_SYCL_ONEAPI_GPU")
         endif()
 
         if(alpaka_SYCL_ONEAPI_GPU_NVIDIA)
@@ -715,7 +718,7 @@ if(alpaka_ACC_SYCL_ENABLE)
             # If the user has given us a list turn all ';' into ',' to pacify the Intel OpenCL compiler.
             string(REPLACE ";" "," alpaka_SYCL_ONEAPI_GPU_DEVICES "${alpaka_SYCL_ONEAPI_GPU_DEVICES}")
 
-            target_compile_definitions(alpaka INTERFACE "ALPAKA_SYCL_ONEAPI_GPU_NVIDIA")
+            target_compile_definitions(aV2P INTERFACE "ALPAKA_SYCL_ONEAPI_GPU_NVIDIA")
         endif()
 
         if(alpaka_SYCL_ONEAPI_GPU_AMD)
@@ -727,19 +730,19 @@ if(alpaka_ACC_SYCL_ENABLE)
             # If the user has given us a list turn all ';' into ',' to pacify the Intel OpenCL compiler.
             string(REPLACE ";" "," alpaka_SYCL_ONEAPI_GPU_DEVICES "${alpaka_SYCL_ONEAPI_GPU_DEVICES}")
 
-            target_compile_definitions(alpaka INTERFACE "ALPAKA_SYCL_ONEAPI_GPU_AMD")
+            target_compile_definitions(aV2P INTERFACE "ALPAKA_SYCL_ONEAPI_GPU_AMD")
         endif()
 
         #-----------------------------------------------------------------------------------------------------------------
         # Generic SYCL options
-        alpaka_set_compiler_options(DEVICE target alpaka "-fsycl-unnamed-lambda") # Compiler default but made explicit here
+        alpaka_set_compiler_options(DEVICE target aV2P "-fsycl-unnamed-lambda") # Compiler default but made explicit here
 
         if(alpaka_RELOCATABLE_DEVICE_CODE STREQUAL ON)
-            alpaka_set_compiler_options(DEVICE target alpaka "-fsycl-rdc")
-            target_link_options(alpaka INTERFACE "-fsycl-rdc")
+            alpaka_set_compiler_options(DEVICE target aV2P "-fsycl-rdc")
+            target_link_options(aV2P INTERFACE "-fsycl-rdc")
         elseif(alpaka_RELOCATABLE_DEVICE_CODE STREQUAL OFF)
-            alpaka_set_compiler_options(DEVICE target alpaka "-fno-sycl-rdc")
-            target_link_options(alpaka INTERFACE "-fno-sycl-rdc")
+            alpaka_set_compiler_options(DEVICE target aV2P "-fno-sycl-rdc")
+            target_link_options(aV2P INTERFACE "-fno-sycl-rdc")
         endif()
     else()
         message(FATAL_ERROR "alpaka currently does not support SYCL implementations other than oneAPI: ${CMAKE_CXX_COMPILER_ID}.")
@@ -748,80 +751,80 @@ if(alpaka_ACC_SYCL_ENABLE)
     if(NOT alpaka_DISABLE_VENDOR_RNG)
         # Use oneDPL random number generators
         find_package(oneDPL REQUIRED)
-        target_link_libraries(alpaka INTERFACE oneDPL)
+        target_link_libraries(aV2P INTERFACE oneDPL)
     endif()
 endif()
 
 #-------------------------------------------------------------------------------
 # alpaka.
 if(alpaka_ACC_GPU_CUDA_ONLY_MODE)
-    target_compile_definitions(alpaka INTERFACE "ALPAKA_ACC_GPU_CUDA_ONLY_MODE")
+    target_compile_definitions(aV2P INTERFACE "ALPAKA_ACC_GPU_CUDA_ONLY_MODE")
     message(STATUS alpaka_ACC_GPU_CUDA_ONLY_MODE)
 endif()
 
 if(alpaka_ACC_GPU_HIP_ONLY_MODE)
-    target_compile_definitions(alpaka INTERFACE "ALPAKA_ACC_GPU_HIP_ONLY_MODE")
+    target_compile_definitions(aV2P INTERFACE "ALPAKA_ACC_GPU_HIP_ONLY_MODE")
     message(STATUS alpaka_ACC_GPU_HIP_ONLY_MODE)
 endif()
 
 if(alpaka_ACC_CPU_B_SEQ_T_SEQ_ENABLE)
-    target_compile_definitions(alpaka INTERFACE "ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED")
+    target_compile_definitions(aV2P INTERFACE "ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED")
     message(STATUS alpaka_ACC_CPU_B_SEQ_T_SEQ_ENABLED)
 endif()
 
 if(alpaka_ACC_CPU_B_SEQ_T_THREADS_ENABLE)
-    target_compile_definitions(alpaka INTERFACE "ALPAKA_ACC_CPU_B_SEQ_T_THREADS_ENABLED")
+    target_compile_definitions(aV2P INTERFACE "ALPAKA_ACC_CPU_B_SEQ_T_THREADS_ENABLED")
     message(STATUS alpaka_ACC_CPU_B_SEQ_T_THREADS_ENABLED)
 endif()
 if(alpaka_ACC_CPU_B_TBB_T_SEQ_ENABLE)
-    target_compile_definitions(alpaka INTERFACE "ALPAKA_ACC_CPU_B_TBB_T_SEQ_ENABLED")
+    target_compile_definitions(aV2P INTERFACE "ALPAKA_ACC_CPU_B_TBB_T_SEQ_ENABLED")
     message(STATUS alpaka_ACC_CPU_B_TBB_T_SEQ_ENABLED)
 endif()
 if(alpaka_ACC_CPU_B_OMP2_T_SEQ_ENABLE)
-    target_compile_definitions(alpaka INTERFACE "ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLED")
+    target_compile_definitions(aV2P INTERFACE "ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLED")
     message(STATUS alpaka_ACC_CPU_B_OMP2_T_SEQ_ENABLED)
 endif()
 if(alpaka_ACC_CPU_B_SEQ_T_OMP2_ENABLE)
-    target_compile_definitions(alpaka INTERFACE "ALPAKA_ACC_CPU_B_SEQ_T_OMP2_ENABLED")
+    target_compile_definitions(aV2P INTERFACE "ALPAKA_ACC_CPU_B_SEQ_T_OMP2_ENABLED")
     message(STATUS alpaka_ACC_CPU_B_SEQ_T_OMP2_ENABLED)
 endif()
 if(alpaka_ACC_GPU_CUDA_ENABLE)
-    target_compile_definitions(alpaka INTERFACE "ALPAKA_ACC_GPU_CUDA_ENABLED")
+    target_compile_definitions(aV2P INTERFACE "ALPAKA_ACC_GPU_CUDA_ENABLED")
     message(STATUS alpaka_ACC_GPU_CUDA_ENABLED)
 endif()
 if(alpaka_ACC_GPU_HIP_ENABLE)
-    target_compile_definitions(alpaka INTERFACE "ALPAKA_ACC_GPU_HIP_ENABLED")
+    target_compile_definitions(aV2P INTERFACE "ALPAKA_ACC_GPU_HIP_ENABLED")
     message(STATUS alpaka_ACC_GPU_HIP_ENABLED)
 endif()
 
 if(alpaka_ACC_SYCL_ENABLE)
-    target_compile_definitions(alpaka INTERFACE "ALPAKA_ACC_SYCL_ENABLED")
+    target_compile_definitions(aV2P INTERFACE "ALPAKA_ACC_SYCL_ENABLED")
 
     if(alpaka_SYCL_ONEAPI_CPU)
-        target_compile_definitions(alpaka INTERFACE "ALPAKA_SYCL_TARGET_CPU")
+        target_compile_definitions(aV2P INTERFACE "ALPAKA_SYCL_TARGET_CPU")
     endif()
     if(alpaka_SYCL_ONEAPI_FPGA)
-        target_compile_definitions(alpaka INTERFACE "ALPAKA_SYCL_TARGET_FPGA")
+        target_compile_definitions(aV2P INTERFACE "ALPAKA_SYCL_TARGET_FPGA")
     endif()
     if(alpaka_SYCL_ONEAPI_GPU)
-        target_compile_definitions(alpaka INTERFACE "ALPAKA_SYCL_TARGET_GPU")
+        target_compile_definitions(aV2P INTERFACE "ALPAKA_SYCL_TARGET_GPU")
     endif()
     if(alpaka_SYCL_ONEAPI_GPU_NVIDIA)
-        target_compile_definitions(alpaka INTERFACE "ALPAKA_SYCL_TARGET_GPU_NVIDIA")
+        target_compile_definitions(aV2P INTERFACE "ALPAKA_SYCL_TARGET_GPU_NVIDIA")
     endif()
     if(alpaka_SYCL_ONEAPI_GPU_AMD)
-        target_compile_definitions(alpaka INTERFACE "ALPAKA_SYCL_TARGET_GPU_AMD")
+        target_compile_definitions(aV2P INTERFACE "ALPAKA_SYCL_TARGET_GPU_AMD")
     endif()
 
     message(STATUS alpaka_ACC_SYCL_ENABLED)
 endif()
 
-target_compile_definitions(alpaka INTERFACE "ALPAKA_DEBUG=${alpaka_DEBUG}")
+target_compile_definitions(aV2P INTERFACE "ALPAKA_DEBUG=${alpaka_DEBUG}")
 
-target_compile_definitions(alpaka INTERFACE "ALPAKA_BLOCK_SHARED_DYN_MEMBER_ALLOC_KIB=${alpaka_BLOCK_SHARED_DYN_MEMBER_ALLOC_KIB}")
+target_compile_definitions(aV2P INTERFACE "ALPAKA_BLOCK_SHARED_DYN_MEMBER_ALLOC_KIB=${alpaka_BLOCK_SHARED_DYN_MEMBER_ALLOC_KIB}")
 
 if(alpaka_CI)
-    target_compile_definitions(alpaka INTERFACE "ALPAKA_CI")
+    target_compile_definitions(aV2P INTERFACE "ALPAKA_CI")
 endif()
 
 #-------------------------------------------------------------------------------
@@ -831,19 +834,19 @@ if(TARGET alpaka)
     if(${alpaka_DEBUG} GREATER 1)
         # Compile options.
         get_property(_alpaka_COMPILE_OPTIONS_PUBLIC
-                     TARGET alpaka
+                     TARGET aV2P
                      PROPERTY INTERFACE_COMPILE_OPTIONS)
         cmake_print_variables(_alpaka_COMPILE_OPTIONS_PUBLIC)
 
         # Compile definitions
         get_property(_alpaka_COMPILE_DEFINITIONS_PUBLIC
-                     TARGET alpaka
+                     TARGET aV2P
                      PROPERTY INTERFACE_COMPILE_DEFINITIONS)
         cmake_print_variables(_alpaka_COMPILE_DEFINITIONS_PUBLIC)
 
         # Include directories.
         get_property(_alpaka_INCLUDE_DIRECTORIES_PUBLIC
-                     TARGET alpaka
+                     TARGET aV2P
                      PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
         cmake_print_variables(_alpaka_INCLUDE_DIRECTORIES_PUBLIC)
     endif()
@@ -851,12 +854,12 @@ if(TARGET alpaka)
     # the alpaka library itself
     # SYSTEM voids showing warnings produced by alpaka when used in user applications.
     if(BUILD_TESTING)
-        target_include_directories(alpaka
+        target_include_directories(aV2P
           INTERFACE
             $<BUILD_INTERFACE:${_alpaka_INCLUDE_DIRECTORY}>
             $<INSTALL_INTERFACE:include>)
     else()
-        target_include_directories(alpaka
+        target_include_directories(aV2P
           SYSTEM INTERFACE
             $<BUILD_INTERFACE:${_alpaka_INCLUDE_DIRECTORY}>
             $<INSTALL_INTERFACE:include>)
@@ -867,12 +870,12 @@ if(TARGET alpaka)
         # There are no PUBLIC_LINK_FLAGS in CMAKE:
         # http://stackoverflow.com/questions/26850889/cmake-keeping-link-flags-of-internal-libs
         get_property(_alpaka_LINK_LIBRARIES_PUBLIC
-                     TARGET alpaka
+                     TARGET aV2P
                      PROPERTY INTERFACE_LINK_LIBRARIES)
         cmake_print_variables(_alpaka_LINK_LIBRARIES_PUBLIC)
 
         get_property(_alpaka_LINK_FLAGS_PUBLIC
-                     TARGET alpaka
+                     TARGET aV2P
                      PROPERTY INTERFACE_LINK_OPTIONS)
         cmake_print_variables(_alpaka_LINK_FLAGS_PUBLIC)
     endif()
@@ -901,8 +904,8 @@ set_property(CACHE alpaka_USE_MDSPAN PROPERTY STRINGS "SYSTEM;FETCH;OFF")
 
 if (alpaka_USE_MDSPAN STREQUAL "SYSTEM")
     find_package(mdspan REQUIRED)
-    target_link_libraries(alpaka INTERFACE std::mdspan)
-    target_compile_definitions(alpaka INTERFACE ALPAKA_USE_MDSPAN)
+    target_link_libraries(aV2P INTERFACE std::mdspan)
+    target_compile_definitions(aV2P INTERFACE ALPAKA_USE_MDSPAN)
 elseif (alpaka_USE_MDSPAN STREQUAL "FETCH")
     include(FetchContent)
     FetchContent_Declare(
@@ -924,11 +927,11 @@ elseif (alpaka_USE_MDSPAN STREQUAL "FETCH")
     endif()
     if(${CMAKE_VERSION} VERSION_LESS "3.25.0")
         get_target_property(mdspan_include_dir mdspan::mdspan INTERFACE_INCLUDE_DIRECTORIES)
-        target_include_directories(alpaka SYSTEM INTERFACE ${mdspan_include_dir})
+        target_include_directories(aV2P SYSTEM INTERFACE ${mdspan_include_dir})
     else()
-        target_link_libraries(alpaka INTERFACE mdspan::mdspan)
+        target_link_libraries(aV2P INTERFACE mdspan::mdspan)
     endif()
-    target_compile_definitions(alpaka INTERFACE ALPAKA_USE_MDSPAN)
+    target_compile_definitions(aV2P INTERFACE ALPAKA_USE_MDSPAN)
 elseif (alpaka_USE_MDSPAN STREQUAL "OFF")
 else()
     message(FATAL_ERROR "Invalid option for alpaka_USE_MDSPAN")

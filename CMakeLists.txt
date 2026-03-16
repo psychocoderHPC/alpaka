@@ -79,7 +79,7 @@ include(${_alpaka_ADD_LIBRARY_FILE})
 
 # Set include directories
 set(_alpaka_INCLUDE_DIRECTORY "${_alpaka_ROOT_DIR}/include")
-set(_alpaka_SUFFIXED_INCLUDE_DIR "${_alpaka_INCLUDE_DIRECTORY}/alpaka")
+set(_alpaka_SUFFIXED_INCLUDE_DIR "${_alpaka_INCLUDE_DIRECTORY}/aV2P")
 
 # the sequential accelerator is required for the tests and examples
 if(alpaka_BUILD_EXAMPLES OR alpaka_BUILD_BENCHMARKS OR BUILD_TESTING)
@@ -167,7 +167,7 @@ include(GNUInstallDirs)
 
 set(_alpaka_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/alpaka")
 
-install(TARGETS alpaka
+install(TARGETS aV2P
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -203,5 +203,5 @@ install(FILES "${_alpaka_ROOT_DIR}/cmake/addExecutable.cmake"
 install(DIRECTORY "${_alpaka_ROOT_DIR}/cmake/tests"
         DESTINATION "${_alpaka_INSTALL_CMAKEDIR}")
 
-install(TARGETS alpaka EXPORT alpakaTargets)
-install(EXPORT alpakaTargets DESTINATION "${_alpaka_INSTALL_CMAKEDIR}" NAMESPACE alpaka::)
+install(TARGETS aV2P EXPORT alpakaTargets)
+install(EXPORT alpakaTargets DESTINATION "${_alpaka_INSTALL_CMAKEDIR}" NAMESPACE aV2P::)
