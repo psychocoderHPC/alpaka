@@ -53,6 +53,8 @@ namespace aV2P
         EventType m_eventImpl;
     };
 
+    using EventCpu = EventAlpaka3Cpu<DevCpu>;
+
     namespace trait
     {
         //! The CPU device event device type trait specialization.

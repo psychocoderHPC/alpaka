@@ -8,7 +8,6 @@
 #include "aV2P/core/Assert.hpp"
 #include "aV2P/dim/DimIntegralConst.hpp"
 #include "aV2P/extent/Traits.hpp"
-#include "aV2P/mem/buf/alpaka3/alpakaContainer.hpp"
 #include "aV2P/mem/view/Traits.hpp"
 #include "aV2P/meta/Integral.hpp"
 #include "aV2P/meta/NdLoop.hpp"
@@ -64,50 +63,6 @@ namespace aV2P
                     viewDst.getAlpaka3().getView(),
                     viewSrc.getAlpaka3().getView(),
                     extent.getAlpaka3()};
-            }
-        };
-
-        template<alpaka::onHost::concepts::DeviceSpec TDevSpec, typename TDim>
-        struct CreateTaskMemcpy<TDim, DevAlpaka3<TDevSpec>, DevCpu>
-        {
-            template<typename TExtent, typename TViewSrc, typename TViewDstFwd>
-            ALPAKA_FN_HOST static auto createTaskMemcpy(
-                TViewDstFwd&& viewDst,
-                TViewSrc const& viewSrc,
-                TExtent const& extent)
-            {
-                if constexpr(std::is_integral_v<TExtent>)
-                    return aV2P::detail::TaskCopyAlpaka3Cpu{
-                        viewDst.getAlpaka3().getView(),
-                        makeView(viewSrc),
-                        alpaka::Vec{extent}};
-                else
-                    return aV2P::detail::TaskCopyAlpaka3Cpu{
-                        viewDst.getAlpaka3().getView(),
-                        alpaka::makeView(viewSrc),
-                        extent.getAlpaka3()};
-            }
-        };
-
-        template<alpaka::onHost::concepts::DeviceSpec TDevSpec, typename TDim>
-        struct CreateTaskMemcpy<TDim, DevCpu, DevAlpaka3<TDevSpec>>
-        {
-            template<typename TExtent, typename TViewSrc, typename TViewDstFwd>
-            ALPAKA_FN_HOST static auto createTaskMemcpy(
-                TViewDstFwd&& viewDst,
-                TViewSrc const& viewSrc,
-                TExtent const& extent)
-            {
-                if constexpr(std::is_integral_v<TExtent>)
-                    return aV2P::detail::TaskCopyAlpaka3Cpu{
-                        makeView(std::forward<TViewDstFwd>(viewDst)),
-                        viewSrc.getAlpaka3().getView(),
-                        alpaka::Vec{extent}};
-                else
-                    return aV2P::detail::TaskCopyAlpaka3Cpu{
-                        alpaka::makeView(std::forward<TViewDstFwd>(viewDst)),
-                        viewSrc.getAlpaka3().getView(),
-                        extent.getAlpaka3()};
             }
         };
 

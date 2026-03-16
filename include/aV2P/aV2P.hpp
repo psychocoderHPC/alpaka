@@ -12,7 +12,6 @@
 #include "aV2P/version.hpp"
 // acc
 #include "aV2P/acc/AccAlpaka3Cpu.hpp"
-#include "aV2P/acc/AccCpuSerial.hpp"
 #include "aV2P/acc/AccDevProps.hpp"
 #include "aV2P/acc/Tag.hpp"
 #include "aV2P/acc/TagAccIsEnabled.hpp"
@@ -71,16 +70,13 @@
 #include "aV2P/core/Vectorize.hpp"
 // dev
 #include "aV2P/dev/DevAlpaka3Cpu.hpp"
-#include "aV2P/dev/DevCpu.hpp"
 #include "aV2P/dev/Traits.hpp"
-#include "aV2P/dev/cpu/Wait.hpp"
 // dim
 #include "aV2P/dim/DimArithmetic.hpp"
 #include "aV2P/dim/DimIntegralConst.hpp"
 #include "aV2P/dim/Traits.hpp"
 // event
 #include "aV2P/event/EventAlpaka3Cpu.hpp"
-#include "aV2P/event/EventCpu.hpp"
 #include "aV2P/event/Traits.hpp"
 // exec
 #include "aV2P/exec/ElementIndex.hpp"
@@ -103,7 +99,6 @@
 #include "aV2P/idx/gb/IdxGbUniformCudaHipBuiltIn.hpp"
 // kernel
 #include "aV2P/kernel/TaskKernelAlpaka3.hpp"
-#include "aV2P/kernel/TaskKernelCpuSerial.hpp"
 #include "aV2P/kernel/Traits.hpp"
 // math
 #include "aV2P/math/Complex.hpp"
@@ -116,7 +111,6 @@
 #include "aV2P/mem/alloc/Traits.hpp"
 #include "aV2P/mem/buf/Traits.hpp"
 #include "aV2P/mem/buf/alpaka3/BufAlpaka3Cpu.hpp"
-#include "aV2P/mem/buf/cpu/BufCpu.hpp"
 #include "aV2P/mem/fence/MemFenceCpu.hpp"
 #include "aV2P/mem/fence/MemFenceCpuSerial.hpp"
 #include "aV2P/mem/fence/MemFenceGenericSycl.hpp"
@@ -154,7 +148,6 @@
 #include "aV2P/offset/Traits.hpp"
 // platform
 #include "aV2P/platform/PlatformAlpaka3Cpu.hpp"
-#include "aV2P/platform/PlatformCpu.hpp"
 #include "aV2P/platform/Traits.hpp"
 // rand
 #include "aV2P/rand/RandDefault.hpp"
@@ -167,8 +160,6 @@
 #include "aV2P/queue/Properties.hpp"
 #include "aV2P/queue/QueueAlpaka3CpuBlocking.hpp"
 #include "aV2P/queue/QueueAlpaka3CpuNonBlocking.hpp"
-#include "aV2P/queue/QueueCpuBlocking.hpp"
-#include "aV2P/queue/QueueCpuNonBlocking.hpp"
 #include "aV2P/queue/Traits.hpp"
 // traits
 #include "aV2P/traits/Traits.hpp"

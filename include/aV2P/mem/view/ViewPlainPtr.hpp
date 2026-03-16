@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "aV2P/dev/DevCpu.hpp"
+#include "aV2P/dev/DevAlpaka3Cpu.hpp"
 #include "aV2P/mem/view/Traits.hpp"
 #include "aV2P/mem/view/ViewAccessOps.hpp"
 #include "aV2P/meta/DependentFalseType.hpp"

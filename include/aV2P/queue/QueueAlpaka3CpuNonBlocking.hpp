@@ -58,6 +58,8 @@ namespace aV2P
         QueueType m_queueImpl;
     };
 
+    using QueueCpuNonBlocking = QueueAlpaka3CpuNonBlocking<DevCpu>;
+
     namespace trait
     {
         //! The CPU non-blocking device queue device type trait specialization.

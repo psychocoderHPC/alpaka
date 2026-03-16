@@ -5,6 +5,7 @@
 #pragma once
 
 #include "aV2P/core/Common.hpp"
+#include "aV2P/vec/Vec.hpp"
 
 namespace aV2P
 {

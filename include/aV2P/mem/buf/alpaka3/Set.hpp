@@ -15,8 +15,6 @@
 
 namespace aV2P
 {
-    class DevCpu;
-
     namespace detail
     {
         template<typename TView, typename TExtents>

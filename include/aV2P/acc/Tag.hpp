@@ -29,8 +29,6 @@ namespace aV2P
 namespace aV2P
 {
     CREATE_ACC_TAG(TagCpuSerial);
-
-    CREATE_ACC_TAG(TagAlpaka3Cpu);
     CREATE_ACC_TAG(TagAlpaka3Omp);
 
     namespace concepts
@@ -70,7 +68,7 @@ namespace aV2P
     inline constexpr bool accMatchesTags = (std::is_same_v<aV2P::AccToTag<TAcc>, TTag> || ...);
 
     //! list of all available tags
-    using AccTags = std::tuple<aV2P::TagCpuSerial, aV2P::TagAlpaka3Cpu, TagAlpaka3Omp>;
+    using AccTags = std::tuple<aV2P::TagCpuSerial, TagAlpaka3Omp>;
 
     //!  \brief Function to print the names of each tag in the given tuple of tags
     //!  \tparam TTuple is the type of the tuple of tags

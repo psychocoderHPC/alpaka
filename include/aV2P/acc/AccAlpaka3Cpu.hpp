@@ -4,8 +4,6 @@
 
 #pragma once
 
-// Base classes.
-#include "aV2P/dev/DevAlpaka3Cpu.hpp"
 
 // Specialized traits.
 #include "aV2P/acc/Traits.hpp"
@@ -17,7 +15,6 @@
 // Implementation details.
 #include "aV2P/acc/Tag.hpp"
 #include "aV2P/core/Interface.hpp"
-#include "aV2P/dev/DevAlpaka3Cpu.hpp"
 
 #ifdef __cpp_lib_format
 #    include <format>
@@ -31,6 +28,16 @@ namespace aV2P
 {
     template<typename TAcc, typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
     class TaskKernelAlpaka3;
+
+    template<alpaka::onHost::concepts::DeviceSpec TDevSpec>
+    class DevAlpaka3;
+
+
+    using DevCpu = DevAlpaka3<alpaka::onHost::DeviceSpec<alpaka::api::Host, alpaka::deviceKind::Cpu>>;
+
+
+    template<alpaka::onHost::concepts::DeviceSpec TDevSpec>
+    struct PlatformAlpaka3;
 
     //! The CPU serial accelerator.
     //!
@@ -66,7 +73,7 @@ namespace aV2P
     };
 
     template<typename TDim, typename TIdx>
-    using AccAlpaka3Cpu = AccAlpaka3<TDim, TIdx, alpaka::api::Host, alpaka::deviceKind::Cpu, alpaka::exec::CpuSerial>;
+    using AccCpuSerial = AccAlpaka3<TDim, TIdx, alpaka::api::Host, alpaka::deviceKind::Cpu, alpaka::exec::CpuSerial>;
 
     template<typename TDim, typename TIdx>
     using AccAlpaka3Omp
@@ -75,17 +82,18 @@ namespace aV2P
     namespace trait
     {
         template<typename TDim, typename TIdx>
-        struct TagToAcc<aV2P::TagAlpaka3Cpu, TDim, TIdx>
+        struct TagToAcc<aV2P::TagCpuSerial, TDim, TIdx>
         {
-            using type = aV2P::AccAlpaka3Cpu<TDim, TIdx>;
+            using type = aV2P::AccCpuSerial<TDim, TIdx>;
         };
 
         template<typename TDim, typename TIdx>
-        struct AccToTag<aV2P::AccAlpaka3Cpu<TDim, TIdx>>
+        struct AccToTag<aV2P::AccCpuSerial<TDim, TIdx>>
         {
-            using type = aV2P::TagAlpaka3Cpu;
+            using type = aV2P::TagCpuSerial;
         };
 
+#    ifdef ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLED
         template<typename TDim, typename TIdx>
         struct TagToAcc<aV2P::TagAlpaka3Omp, TDim, TIdx>
         {
@@ -97,7 +105,7 @@ namespace aV2P
         {
             using type = aV2P::TagAlpaka3Omp;
         };
-
+#    endif
         //! The CPU serial accelerator accelerator type trait specialization.
         template<
             typename TDim,

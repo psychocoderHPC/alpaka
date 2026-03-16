@@ -5,13 +5,12 @@
 #pragma once
 
 #include "aV2P/core/Vectorize.hpp"
-#include "aV2P/dev/DevAlpaka3Cpu.hpp"
 #include "aV2P/dev/Traits.hpp"
 #include "aV2P/mem/buf/Traits.hpp"
 #include "aV2P/mem/buf/alpaka3/BufAlpaka3Cpu.hpp"
 #include "aV2P/mem/view/ViewAccessOps.hpp"
 #include "aV2P/meta/DependentFalseType.hpp"
-#include "aV2P/platform/PlatformCpu.hpp"
+#include "aV2P/platform/PlatformAlpaka3Cpu.hpp"
 
 #include <alpaka/alpaka.hpp>
 

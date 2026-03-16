@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "aV2P/acc/AccAlpaka3Cpu.hpp"
 #include "aV2P/acc/Tag.hpp"
 #include "aV2P/extent/Traits.hpp"
 #include "aV2P/mem/view/Traits.hpp"
@@ -14,11 +15,6 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
-
-namespace aV2P
-{
-    class DevCpu;
-} // namespace aV2P
 
 namespace aV2P::internal
 {

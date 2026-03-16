@@ -7,7 +7,6 @@
 #include "aV2P/core/AlignedAlloc.hpp"
 #include "aV2P/core/Common.hpp"
 #include "aV2P/core/Interface.hpp"
-#include "aV2P/dev/cpu/SysInfo.hpp"
 #include "aV2P/mem/alloc/Traits.hpp"
 
 #include <algorithm>

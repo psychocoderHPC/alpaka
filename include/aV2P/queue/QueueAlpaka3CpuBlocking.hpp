@@ -5,6 +5,7 @@
 #pragma once
 
 #include "aV2P/core/Config.hpp"
+#include "aV2P/dev/DevAlpaka3Cpu.hpp"
 #include "aV2P/dev/Traits.hpp"
 #include "aV2P/event/Traits.hpp"
 #include "aV2P/queue/Traits.hpp"
@@ -58,6 +59,8 @@ namespace aV2P
     public:
         QueueType m_queueImpl;
     };
+
+    using QueueCpuBlocking = QueueAlpaka3CpuBlocking<DevCpu>;
 
     namespace trait
     {
