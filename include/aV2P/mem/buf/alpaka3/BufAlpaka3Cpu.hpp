@@ -74,11 +74,23 @@ namespace aV2P
             return m_memImpl.data();
         }
 
-
     public:
         BufType m_memImpl;
         DevAlpaka3<TDevSpec> m_dev;
     };
+
+    namespace trait
+    {
+        template<alpaka::onHost::concepts::DeviceSpec TDevSpec, typename TElem, typename TDim, typename TIdx>
+        struct GetPitchesInBytes<BufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
+        {
+            ALPAKA_FN_HOST_ACC constexpr auto operator()(BufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf) const
+            {
+                using Alpaka3Buf = BufAlpaka3<TDevSpec, TElem, TDim, TIdx>;
+                return Vec<TDim, TIdx>{buf.getAlpaka3().getPitches()};
+            }
+        };
+    } // namespace trait
 } // namespace aV2P
 
 #include "aV2P/mem/buf/alpaka3/Copy.hpp"
