@@ -127,47 +127,6 @@ namespace aV2P
             }
         };
 
-#if defined(ALPAKA_ACC_GPU_CUDA_ENABLED) || defined(ALPAKA_ACC_GPU_HIP_ENABLED)
-        //! The CUDA/HIP RT device CreateViewPlainPtr trait specialization.
-        template<typename TApi>
-        struct CreateViewPlainPtr<DevUniformCudaHipRt<TApi>>
-        {
-            template<typename TElem, typename TExtent, typename TPitch>
-            static auto createViewPlainPtr(
-                DevUniformCudaHipRt<TApi> const& dev,
-                TElem* pMem,
-                TExtent const& extent,
-                TPitch pitch)
-            {
-                return aV2P::ViewPlainPtr<DevUniformCudaHipRt<TApi>, TElem, aV2P::Dim<TExtent>, aV2P::Idx<TExtent>>(
-                    pMem,
-                    dev,
-                    extent,
-                    pitch);
-            }
-        };
-#endif
-
-#if defined(ALPAKA_ACC_SYCL_ENABLED)
-        //! The SYCL device CreateViewPlainPtr trait specialization.
-        template<concepts::Tag TTag>
-        struct CreateViewPlainPtr<DevGenericSycl<TTag>>
-        {
-            template<typename TElem, typename TExtent, typename TPitch>
-            static auto createViewPlainPtr(
-                DevGenericSycl<TTag> const& dev,
-                TElem* pMem,
-                TExtent const& extent,
-                TPitch pitch)
-            {
-                return aV2P::ViewPlainPtr<DevGenericSycl<TTag>, TElem, aV2P::Dim<TExtent>, aV2P::Idx<TExtent>>(
-                    pMem,
-                    dev,
-                    extent,
-                    pitch);
-            }
-        };
-#endif
         //! The ViewPlainPtr offset get trait specialization.
         template<typename TDev, typename TElem, typename TDim, typename TIdx>
         struct GetOffsets<ViewPlainPtr<TDev, TElem, TDim, TIdx>>

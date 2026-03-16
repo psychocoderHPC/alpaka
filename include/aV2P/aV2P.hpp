@@ -19,11 +19,6 @@
 // algo
 #include "aV2P/algo/Transform.hpp"
 // atomic
-#include "aV2P/atomic/AtomicCpu.hpp"
-#include "aV2P/atomic/AtomicGenericSycl.hpp"
-#include "aV2P/atomic/AtomicNoOp.hpp"
-#include "aV2P/atomic/AtomicOmpBuiltIn.hpp"
-#include "aV2P/atomic/AtomicUniformCudaHipBuiltIn.hpp"
 #include "aV2P/atomic/Op.hpp"
 #include "aV2P/atomic/Traits.hpp"
 // block

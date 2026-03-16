@@ -36,6 +36,10 @@ namespace aV2P
     using DevCpu = DevAlpaka3<alpaka::onHost::DeviceSpec<alpaka::api::Host, alpaka::deviceKind::Cpu>>;
 
 
+#    ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
+    using DevCudaRt = DevAlpaka3<alpaka::onHost::DeviceSpec<alpaka::api::Cuda, alpaka::deviceKind::NvidiaGpu>>;
+#    endif
+
     template<alpaka::onHost::concepts::DeviceSpec TDevSpec>
     struct PlatformAlpaka3;
 
@@ -58,7 +62,7 @@ namespace aV2P
 
     public:
         // Partial specialization with the correct TDim and TIdx is not allowed.
-        template<typename TDim2, typename TIdx2, typename TKernelFnObj, typename... TArgs>
+        template<typename TAcc, typename TDim2, typename TIdx2, typename TKernelFnObj, typename... TArgs>
         friend class ::aV2P::TaskKernelAlpaka3;
 
         using DevSpec = alpaka::onHost::DeviceSpec<TApi, TDeviceKind>;
@@ -106,6 +110,21 @@ namespace aV2P
             using type = aV2P::TagAlpaka3Omp;
         };
 #    endif
+
+#    ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
+        template<typename TDim, typename TIdx>
+        struct TagToAcc<aV2P::TagAlpaka3Omp, TDim, TIdx>
+        {
+            using type = aV2P::AccAlpaka3Omp<TDim, TIdx>;
+        };
+
+        template<typename TDim, typename TIdx>
+        struct AccToTag<aV2P::AccAlpaka3Omp<TDim, TIdx>>
+        {
+            using type = aV2P::TagAlpaka3Omp;
+        };
+#    endif
+
         //! The CPU serial accelerator accelerator type trait specialization.
         template<
             typename TDim,

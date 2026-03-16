@@ -24,6 +24,11 @@ namespace aV2P
 
     using PlatformCpu = PlatformAlpaka3<alpaka::onHost::DeviceSpec<alpaka::api::Host, alpaka::deviceKind::Cpu>>;
 
+#ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
+    using PlatformCudaRt
+        = PlatformAlpaka3<alpaka::onHost::DeviceSpec<alpaka::api::Cuda, alpaka::deviceKind::NvidiaGpu>>;
+#endif
+
     namespace trait
     {
         //! The CPU device device type trait specialization.

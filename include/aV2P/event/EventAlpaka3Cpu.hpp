@@ -55,6 +55,10 @@ namespace aV2P
 
     using EventCpu = EventAlpaka3Cpu<DevCpu>;
 
+#ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
+    using EventCudaRt = EventAlpaka3Cpu<DevCudaRt>;
+#endif
+
     namespace trait
     {
         //! The CPU device event device type trait specialization.

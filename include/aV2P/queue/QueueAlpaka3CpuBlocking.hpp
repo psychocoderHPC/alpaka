@@ -62,6 +62,10 @@ namespace aV2P
 
     using QueueCpuBlocking = QueueAlpaka3CpuBlocking<DevCpu>;
 
+#ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
+    using QueueCudaRtBlocking = QueueAlpaka3CpuBlocking<DevCudaRt>;
+#endif
+
     namespace trait
     {
         //! The CPU non-blocking device queue device type trait specialization.
@@ -77,7 +81,7 @@ namespace aV2P
         {
             ALPAKA_FN_HOST static auto getDev(QueueAlpaka3CpuBlocking<TDev> const& queue) -> TDev
             {
-                return queue.m_spQueueImpl.m_dev;
+                return queue.getAlpaka3().m_dev;
             }
         };
 
@@ -95,7 +99,7 @@ namespace aV2P
         {
             ALPAKA_FN_HOST static auto enqueue(QueueAlpaka3CpuBlocking<TDev>& queue, TTask const& task) -> void
             {
-                queue.m_queueImpl.enqueueHostFn(task);
+                queue.getAlpaka3().enqueueHostFn(task);
             }
         };
 

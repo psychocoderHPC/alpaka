@@ -60,6 +60,10 @@ namespace aV2P
 
     using QueueCpuNonBlocking = QueueAlpaka3CpuNonBlocking<DevCpu>;
 
+#ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
+    using QueueCudaRtNonBlocking = QueueAlpaka3CpuNonBlocking<DevCudaRt>;
+#endif
+
     namespace trait
     {
         //! The CPU non-blocking device queue device type trait specialization.
