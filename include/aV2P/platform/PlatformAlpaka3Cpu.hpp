@@ -42,7 +42,7 @@ namespace aV2P
         template<alpaka::onHost::concepts::DeviceSpec TDevSpec>
         struct GetDevCount<PlatformAlpaka3<TDevSpec>>
         {
-            ALPAKA_FN_HOST static auto getDevCount(PlatformCpu const&) -> std::size_t
+            ALPAKA_FN_HOST static auto getDevCount(PlatformAlpaka3<TDevSpec> const&) -> std::size_t
             {
                 ALPAKA_DEBUG_FULL_LOG_SCOPE;
 
@@ -54,7 +54,7 @@ namespace aV2P
         template<alpaka::onHost::concepts::DeviceSpec TDevSpec>
         struct GetDevByIdx<PlatformAlpaka3<TDevSpec>>
         {
-            ALPAKA_FN_HOST static auto getDevByIdx(PlatformCpu const&, std::size_t const& devIdx)
+            ALPAKA_FN_HOST static auto getDevByIdx(PlatformAlpaka3<TDevSpec> const&, std::size_t const& devIdx)
                 -> DevAlpaka3<TDevSpec>
             {
                 ALPAKA_DEBUG_FULL_LOG_SCOPE;

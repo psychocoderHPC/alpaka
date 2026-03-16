@@ -50,8 +50,11 @@ namespace aV2P
         //! The CPU device memory copy trait specialization.
         //!
         //! Copies from CPU memory into CPU memory.
-        template<alpaka::onHost::concepts::DeviceSpec TDevSpec, typename TDim>
-        struct CreateTaskMemcpy<TDim, DevAlpaka3<TDevSpec>, DevAlpaka3<TDevSpec>>
+        template<
+            alpaka::onHost::concepts::DeviceSpec TDevSpecDst,
+            alpaka::onHost::concepts::DeviceSpec TDevSpecSrc,
+            typename TDim>
+        struct CreateTaskMemcpy<TDim, DevAlpaka3<TDevSpecDst>, DevAlpaka3<TDevSpecSrc>>
         {
             template<typename TExtent, typename TViewSrc, typename TViewDstFwd>
             ALPAKA_FN_HOST static auto createTaskMemcpy(

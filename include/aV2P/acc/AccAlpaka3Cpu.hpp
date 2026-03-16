@@ -83,6 +83,10 @@ namespace aV2P
     using AccAlpaka3Omp
         = AccAlpaka3<TDim, TIdx, alpaka::api::Host, alpaka::deviceKind::Cpu, alpaka::exec::CpuOmpBlocks>;
 
+    template<typename TDim, typename TIdx>
+    using AccAlpaka3Cuda
+        = AccAlpaka3<TDim, TIdx, alpaka::api::Cuda, alpaka::deviceKind::NvidiaGpu, alpaka::exec::GpuCuda>;
+
     namespace trait
     {
         template<typename TDim, typename TIdx>
@@ -113,15 +117,15 @@ namespace aV2P
 
 #    ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
         template<typename TDim, typename TIdx>
-        struct TagToAcc<aV2P::TagAlpaka3Omp, TDim, TIdx>
+        struct TagToAcc<aV2P::TagGpuHipRt, TDim, TIdx>
         {
-            using type = aV2P::AccAlpaka3Omp<TDim, TIdx>;
+            using type = aV2P::AccAlpaka3Cuda<TDim, TIdx>;
         };
 
         template<typename TDim, typename TIdx>
-        struct AccToTag<aV2P::AccAlpaka3Omp<TDim, TIdx>>
+        struct AccToTag<aV2P::AccAlpaka3Cuda<TDim, TIdx>>
         {
-            using type = aV2P::TagAlpaka3Omp;
+            using type = aV2P::TagGpuHipRt;
         };
 #    endif
 
