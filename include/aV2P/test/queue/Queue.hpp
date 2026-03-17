@@ -26,16 +26,30 @@ namespace aV2P::test
 #endif
         };
 
-#if defined(ALPAKA_ACC_GPU_CUDA_ENABLED) || defined(ALPAKA_ACC_GPU_HIP_ENABLED)
+#if defined(ALPAKA_ACC_GPU_CUDA_ENABLED)
 
         //! The default queue type trait specialization for the CUDA/HIP device.
-        template<typename TApi>
-        struct DefaultQueueType<DevUniformCudaHipRt<TApi>>
+        template<>
+        struct DefaultQueueType<DevCudaRt>
         {
 #    if(ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL)
-            using type = QueueUniformCudaHipRtBlocking<TApi>;
+            using type = QueueCudaRtBlocking;
 #    else
-            using type = QueueUniformCudaHipRtNonBlocking<TApi>;
+            using type = QueueCudaNonBlocking;
+#    endif
+        };
+#endif
+
+#if defined(ALPAKA_ACC_GPU_HIP_ENABLED)
+
+        //! The default queue type trait specialization for the CUDA/HIP device.
+        template<>
+        struct DefaultQueueType<DevHipRt>
+        {
+#    if(ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL)
+            using type = QueueHipRtBlocking;
+#    else
+            using type = QueueHipNonBlocking;
 #    endif
         };
 #endif
@@ -58,31 +72,48 @@ namespace aV2P::test
         struct IsBlockingQueue;
 
         //! The blocking queue trait specialization for a blocking CPU queue.
-        template<typename TDev>
-        struct IsBlockingQueue<QueueGenericThreadsBlocking<TDev>>
+        template<>
+        struct IsBlockingQueue<QueueCpuBlocking>
         {
             static constexpr bool value = true;
         };
 
         //! The blocking queue trait specialization for a non-blocking CPU queue.
-        template<typename TDev>
-        struct IsBlockingQueue<QueueGenericThreadsNonBlocking<TDev>>
+        template<>
+        struct IsBlockingQueue<QueueCpuNonBlocking>
         {
             static constexpr bool value = false;
         };
 
-#if defined(ALPAKA_ACC_GPU_CUDA_ENABLED) || defined(ALPAKA_ACC_GPU_HIP_ENABLED)
+#if defined(ALPAKA_ACC_GPU_CUDA_ENABLED)
 
         //! The blocking queue trait specialization for a blocking CUDA/HIP RT queue.
-        template<typename TApi>
-        struct IsBlockingQueue<QueueUniformCudaHipRtBlocking<TApi>>
+        template<>
+        struct IsBlockingQueue<QueueCudaRtBlocking<TApi>>
         {
             static constexpr bool value = true;
         };
 
         //! The blocking queue trait specialization for a non-blocking CUDA/HIP RT queue.
         template<typename TApi>
-        struct IsBlockingQueue<QueueUniformCudaHipRtNonBlocking<TApi>>
+        struct IsBlockingQueue<QueueCudaRtNonBlocking<TApi>>
+        {
+            static constexpr bool value = false;
+        };
+#endif
+
+#if defined(ALPAKA_ACC_GPU_HIP_ENABLED)
+
+        //! The blocking queue trait specialization for a blocking CUDA/HIP RT queue.
+        template<>
+        struct IsBlockingQueue<QueueHipRtBlocking<TApi>>
+        {
+            static constexpr bool value = true;
+        };
+
+        //! The blocking queue trait specialization for a non-blocking CUDA/HIP RT queue.
+        template<typename TApi>
+        struct IsBlockingQueue<QueueHipRtNonBlocking<TApi>>
         {
             static constexpr bool value = false;
         };

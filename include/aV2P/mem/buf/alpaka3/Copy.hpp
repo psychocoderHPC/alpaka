@@ -62,16 +62,20 @@ namespace aV2P
                 TViewSrc const& viewSrc,
                 TExtent const& extent)
             {
+                auto dst = alpaka::makeView(
+                    alpaka::getApi(viewDst),
+                    alpaka::onHost::data(viewDst),
+                    alpaka::onHost::getExtents(viewDst),
+                    alpaka::onHost::getPitches(viewDst));
+                auto src = alpaka::makeView(
+                    alpaka::getApi(viewSrc),
+                    alpaka::onHost::data(viewSrc),
+                    alpaka::onHost::getExtents(viewSrc),
+                    alpaka::onHost::getPitches(viewSrc));
                 if constexpr(std::is_integral_v<TExtent>)
-                    return aV2P::detail::TaskCopyAlpaka3Cpu{
-                        viewDst.getAlpaka3(),
-                        viewSrc.getAlpaka3(),
-                        alpaka::Vec{extent}};
+                    return aV2P::detail::TaskCopyAlpaka3Cpu{dst, src, alpaka::Vec{extent}};
                 else
-                    return aV2P::detail::TaskCopyAlpaka3Cpu{
-                        viewDst.getAlpaka3(),
-                        viewSrc.getAlpaka3(),
-                        extent.getAlpaka3()};
+                    return aV2P::detail::TaskCopyAlpaka3Cpu{dst, src, extent.getAlpaka3()};
             }
         };
 

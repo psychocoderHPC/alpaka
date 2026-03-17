@@ -48,7 +48,8 @@ namespace aV2P
         friend struct trait::GetDevByIdx<PlatformAlpaka3<TDevSpec>>;
 
     protected:
-        DevAlpaka3(size_t devIdx) : m_devImpl{alpaka::onHost::makeDeviceSelector(DevSpec{}).makeDevice(devIdx)}
+        DevAlpaka3(size_t devIdx)
+            : m_devImpl{alpaka::onHost::makeDeviceSelector(DevSpec{}).makeDevice(static_cast<uint32_t>(devIdx))}
         {
         }
 

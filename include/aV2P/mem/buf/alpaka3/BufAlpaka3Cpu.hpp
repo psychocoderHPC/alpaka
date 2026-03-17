@@ -99,12 +99,50 @@ namespace aV2P
         {
             ALPAKA_FN_HOST_ACC constexpr auto operator()(BufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf) const
             {
-                using Alpaka3Buf = BufAlpaka3<TDevSpec, TElem, TDim, TIdx>;
                 return Vec<TDim, TIdx>{buf.getAlpaka3().getPitches()};
             }
         };
     } // namespace trait
 } // namespace aV2P
+
+namespace alpaka
+{
+    namespace internal
+    {
+        template<alpaka::onHost::concepts::DeviceSpec TDevSpec, typename TElem, typename TDim, typename TIdx>
+        struct GetApi::Op<aV2P::BufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
+        {
+            inline constexpr auto operator()(auto&& buff) const
+            {
+                alpaka::unused(buff);
+                return alpaka::getApi(buff.getAlpaka3());
+            }
+        };
+    } // namespace internal
+
+    namespace onHost::internal
+    {
+        template<alpaka::onHost::concepts::DeviceSpec TDevSpec, typename TElem, typename TDim, typename TIdx>
+        struct GetExtents::Op<aV2P::BufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
+        {
+            inline constexpr auto operator()(auto&& buff) const
+            {
+                alpaka::unused(buff);
+                return alpaka::onHost::getExtents(buff.getAlpaka3());
+            }
+        };
+
+        template<alpaka::onHost::concepts::DeviceSpec TDevSpec, typename TElem, typename TDim, typename TIdx>
+        struct GetPitches::Op<aV2P::BufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
+        {
+            inline constexpr auto operator()(auto&& buff) const
+            {
+                alpaka::unused(buff);
+                return alpaka::onHost::getPitches(buff.getAlpaka3());
+            }
+        };
+    } // namespace onHost::internal
+} // namespace alpaka
 
 #include "aV2P/mem/buf/alpaka3/Copy.hpp"
 #include "aV2P/mem/buf/alpaka3/Set.hpp"

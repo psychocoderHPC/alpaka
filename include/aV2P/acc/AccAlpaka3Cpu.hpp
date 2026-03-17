@@ -7,13 +7,17 @@
 
 // Specialized traits.
 #include "aV2P/acc/Traits.hpp"
+#include "aV2P/atomic/Traits.hpp"
 #include "aV2P/block/shared/dyn/Traits.hpp"
 #include "aV2P/block/shared/st/Traits.hpp"
 #include "aV2P/block/sync/Traits.hpp"
+#include "aV2P/core/Positioning.hpp"
 #include "aV2P/dev/Traits.hpp"
 #include "aV2P/idx/Traits.hpp"
 #include "aV2P/kernel/Traits.hpp"
 #include "aV2P/platform/Traits.hpp"
+#include "aV2P/rand/RandDefault.hpp"
+#include "aV2P/rand/Traits.hpp"
 
 // Implementation details.
 #include "aV2P/acc/Tag.hpp"
@@ -296,11 +300,11 @@ namespace aV2P
                                          std::forward<TArgs>(args)...);
                              })
                 {
-                    uint32_t dynSharedMemBytes = getBlockSharedMemDynSizeBytes<Acc>(
+                    uint32_t dynSharedMemBytes = static_cast<uint32_t>(getBlockSharedMemDynSizeBytes<Acc>(
                         kernelFnObj,
                         workDiv.m_gridBlockExtent,
                         workDiv.m_blockThreadExtent,
-                        std::forward<TArgs>(args)...);
+                        std::forward<TArgs>(args)...));
 
                     // wrapp the kernel to provide the shared memroy as member for alpaka3
                     auto kernelWithSharedMem = DynSharedMemWrapper(kernelFnObj, dynSharedMemBytes);
@@ -403,7 +407,7 @@ namespace aV2P
         {
             //! \return The index of the current thread in the block.
             template<typename TWorkDiv>
-            static constexpr auto getIdx(alpaka::onAcc::Acc<TDict> const& acc, TWorkDiv const& workDiv)
+            static constexpr auto getIdx(alpaka::onAcc::Acc<TDict> const& acc, TWorkDiv const&)
             {
                 using Dim = typename DimType<ALPAKA_TYPEOF(acc)>::type;
                 using Idx = typename IdxType<ALPAKA_TYPEOF(acc)>::type;
@@ -440,17 +444,17 @@ namespace aV2P
         template<alpaka::onAcc::concepts::Acc TAlpakaAcc>
         struct SyncBlockThreads<TAlpakaAcc>
         {
-            ALPAKA_NO_HOST_ACC_WARNING
-            ALPAKA_FN_ACC static auto syncBlockThreads(TAlpakaAcc const& acc) -> void
+            static constexpr auto syncBlockThreads(TAlpakaAcc const& acc) -> void
             {
                 alpaka::onAcc::syncBlockThreads(acc);
             }
         };
 
+        // shared mem
         template<typename T, std::size_t TuniqueId, alpaka::onAcc::concepts::Acc TAlpakaAcc>
         struct DeclareSharedVar<T, TuniqueId, TAlpakaAcc>
         {
-            static auto declareVar(TAlpakaAcc const& acc) -> T&
+            static constexpr auto declareVar(TAlpakaAcc const& acc) -> T&
             {
                 return alpaka::onAcc::declareSharedVar<T, TuniqueId>(acc);
             }
@@ -459,11 +463,110 @@ namespace aV2P
         template<alpaka::onAcc::concepts::Acc TAlpakaAcc>
         struct FreeSharedVars<TAlpakaAcc>
         {
-            static auto freeVars(TAlpakaAcc const& acc) -> void
+            static constexpr auto freeVars(TAlpakaAcc const& acc) -> void
             {
             }
         };
+
+        // atomic
+        template<typename T, typename TAtomicOp, typename THierarchy, alpaka::onAcc::concepts::Acc TAlpakaAcc>
+        struct AtomicOp<TAtomicOp, TAlpakaAcc, T, THierarchy>
+        {
+            static constexpr auto atomicOp(TAlpakaAcc const& acc, T* const addr, T const& value) -> T
+            {
+                // attention alpaka::onAcc::scope::system is currently not supported therefor we use device whcih will
+                // be equal to alpaka v2
+                if constexpr(std::same_as<THierarchy, hierarchy::Grids>)
+                    return alpaka::onAcc::atomicOp<TAtomicOp>(acc, addr, value, alpaka::onAcc::scope::device);
+                else if constexpr(std::same_as<THierarchy, hierarchy::Blocks>)
+                    return alpaka::onAcc::atomicOp<TAtomicOp>(acc, addr, value, alpaka::onAcc::scope::device);
+                else if constexpr(std::same_as<THierarchy, hierarchy::Threads>)
+                    return alpaka::onAcc::atomicOp<TAtomicOp>(acc, addr, value, alpaka::onAcc::scope::block);
+
+                ALPAKA_UNREACHABLE(T{});
+            }
+
+            static auto atomicOp(TAlpakaAcc const& acc, T* const addr, T const& expected, T const& desired) -> T
+            {
+                // attention alpaka::onAcc::scope::system is currently not supported therefor we use device whcih will
+                // be equal to alpaka v2
+                if constexpr(std::same_as<THierarchy, hierarchy::Grids>)
+                    return alpaka::onAcc::atomicOp<TAtomicOp>(
+                        acc,
+                        addr,
+                        expected,
+                        desired,
+                        alpaka::onAcc::scope::device);
+                else if constexpr(std::same_as<THierarchy, hierarchy::Blocks>)
+                    return alpaka::onAcc::atomicOp<TAtomicOp>(
+                        acc,
+                        addr,
+                        expected,
+                        desired,
+                        alpaka::onAcc::scope::device);
+                else if constexpr(std::same_as<THierarchy, hierarchy::Threads>)
+                    return alpaka::onAcc::atomicOp<TAtomicOp>(
+                        acc,
+                        addr,
+                        expected,
+                        desired,
+                        alpaka::onAcc::scope::block);
+
+                ALPAKA_UNREACHABLE(T{});
+            }
+        };
     } // namespace trait
+
+    namespace rand::distribution::trait
+    {
+        //! The GPU device random number float normal distribution get trait specialization.
+        template<typename T, alpaka::onAcc::concepts::Acc TAlpakaAcc>
+        struct CreateNormalReal<TAlpakaAcc, T, std::enable_if_t<std::is_floating_point_v<T>>>
+        {
+            ALPAKA_FN_HOST_ACC static auto createNormalReal(TAlpakaAcc const& acc) -> gpu::NormalReal<TAlpakaAcc, T>
+            {
+                return {acc};
+            }
+        };
+
+        //! The GPU device random number float uniform distribution get trait specialization.
+        template<typename T, alpaka::onAcc::concepts::Acc TAlpakaAcc>
+        struct CreateUniformReal<TAlpakaAcc, T, std::enable_if_t<std::is_floating_point_v<T>>>
+        {
+            ALPAKA_FN_HOST_ACC static auto createUniformReal(TAlpakaAcc const& /* acc */) -> gpu::UniformReal<T>
+            {
+                return {};
+            }
+        };
+
+        //! The GPU device random number integer uniform distribution get trait specialization.
+        template<typename T, alpaka::onAcc::concepts::Acc TAlpakaAcc>
+        struct CreateUniformUint<TAlpakaAcc, T, std::enable_if_t<std::is_integral_v<T>>>
+        {
+            ALPAKA_FN_HOST_ACC static auto createUniformUint(TAlpakaAcc const& /* acc */) -> gpu::UniformUint<T>
+            {
+                return {};
+            }
+        };
+    } // namespace rand::distribution::trait
+
+    namespace rand::engine::trait
+    {
+        //! The GPU device random number default generator get trait specialization.
+        template<alpaka::onAcc::concepts::Acc TAlpakaAcc>
+        struct CreateDefault<TAlpakaAcc>
+        {
+            template<typename TAcc>
+            ALPAKA_FN_HOST_ACC static auto createDefault(
+                TAcc const& /* acc */,
+                std::uint32_t const& seed,
+                std::uint32_t const& subsequence,
+                std::uint32_t const& offset) -> Philox4x32x10
+            {
+                return {seed, subsequence, offset};
+            }
+        };
+    } // namespace rand::engine::trait
 
     namespace interface
     {

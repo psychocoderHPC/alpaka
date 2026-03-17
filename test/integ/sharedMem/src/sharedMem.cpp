@@ -21,6 +21,7 @@ class SharedMemKernel
 {
 public:
     ALPAKA_NO_HOST_ACC_WARNING
+
     template<typename TAcc>
     ALPAKA_FN_ACC auto operator()(TAcc const& acc, Val* const puiBlockRetVals) const -> void
     {
@@ -93,11 +94,11 @@ namespace aV2P::trait
         template<typename TVec, typename... TArgs>
         ALPAKA_FN_HOST_ACC static auto getBlockSharedMemDynSizeBytes(
             SharedMemKernel<TnumUselessWork, Val> const& /* sharedMemKernel */,
-            TVec const& blockThreadExtent,
+            TVec const& /* blockThreadExtent */,
             TVec const& threadElemExtent,
             TArgs&&...) -> std::size_t
         {
-            return static_cast<std::size_t>(blockThreadExtent.prod() * threadElemExtent.prod()) * sizeof(Val);
+            return static_cast<std::size_t>(threadElemExtent.prod()) * sizeof(Val);
         }
     };
 } // namespace aV2P::trait

@@ -64,17 +64,12 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wstrict-overflow=2")
     list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wtrampolines")
     list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wfloat-equal")
-    list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wundef")
-    list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wshadow")
-    list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wcast-qual")
-    list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wcast-align")
     list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wwrite-strings")
     # Too noisy as it warns for every operation using numeric types smaller than int.
     # Such values are converted to int implicitly before the calculation is done.
     # E.g.: uint16_t = uint16_t * uint16_t will trigger the following warning:
     # conversion to ‘short unsigned int’ from ‘int’ may alter its value
     #list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wconversion")
-    list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wsign-conversion")
     list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wvector-operation-performance")
     list(APPEND alpaka_DEV_COMPILE_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:SHELL:-Wzero-as-null-pointer-constant>") # occurs in nvcc-generated code
     list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wdate-time")
@@ -105,7 +100,6 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Woverloaded-virtual")
     list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wsign-promo")
     list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wconditionally-supported")
-    list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wnoexcept")
     list(APPEND alpaka_DEV_COMPILE_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:SHELL:-Wold-style-cast>") # occurs in nvcc-generated code
     list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wsuggest-final-types")
     list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wsuggest-final-methods")
@@ -122,7 +116,6 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     #list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wduplicated-branches")
     list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Walloc-zero")
     list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Walloca")
-    list(APPEND alpaka_DEV_COMPILE_OPTIONS "-Wcast-align=strict")
     list(APPEND alpaka_DEV_COMPILE_OPTIONS "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-unused-value>") # occurs in nvcc-generated code
 endif()
 
