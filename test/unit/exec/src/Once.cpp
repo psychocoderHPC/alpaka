@@ -22,11 +22,11 @@ public:
     ALPAKA_FN_ACC auto operator()(TAcc const& acc, bool* status, int32_t* value) const -> void
     {
         // Only one thread in the whole grid should increment the conter.
-        if(alpaka::oncePerGrid(acc))
+        if(aV2P::oncePerGrid(acc))
         {
             ALPAKA_CHECK(*status, *value == 0);
 
-            alpaka::atomicAdd(acc, value, 1, alpaka::hierarchy::Grids{});
+            aV2P::atomicAdd(acc, value, 1, aV2P::hierarchy::Grids{});
 
             ALPAKA_CHECK(*status, *value == 1);
         }
@@ -40,38 +40,38 @@ inline void fixBooleanValue(bool& value)
     value = reinterpret_cast<char const&>(value) == 0x00 ? false : true;
 }
 
-TEMPLATE_LIST_TEST_CASE("oncePerGrid", "[exec]", alpaka::test::TestAccs)
+TEMPLATE_LIST_TEST_CASE("oncePerGrid", "[exec]", aV2P::test::TestAccs)
 {
-    using Host = alpaka::DevCpu;
-    Host host = alpaka::getDevByIdx(alpaka::PlatformCpu{}, 0);
+    using Host = aV2P::DevCpu;
+    Host host = aV2P::getDevByIdx(aV2P::PlatformCpu{}, 0);
 
     using Acc = TestType;
-    using Dim = alpaka::Dim<Acc>;
-    using Idx = alpaka::Idx<Acc>;
-    using Platform = alpaka::Platform<Acc>;
-    using Device = alpaka::Dev<Platform>;
-    using Queue = alpaka::Queue<Device, alpaka::NonBlocking>;
+    using Dim = aV2P::Dim<Acc>;
+    using Idx = aV2P::Idx<Acc>;
+    using Platform = aV2P::Platform<Acc>;
+    using Device = aV2P::Dev<Platform>;
+    using Queue = aV2P::Queue<Device, aV2P::NonBlocking>;
 
     Platform platform;
-    Device device = alpaka::getDevByIdx(platform, 0);
+    Device device = aV2P::getDevByIdx(platform, 0);
     Queue queue{device};
 
-    using Scalar = alpaka::Vec<alpaka::DimInt<0u>, Idx>;
-    auto value = alpaka::allocMappedBuf<int32_t, Idx>(host, platform, Scalar{});
+    using Scalar = aV2P::Vec<aV2P::DimInt<0u>, Idx>;
+    auto value = aV2P::allocMappedBuf<int32_t, Idx>(host, platform, Scalar{});
     *value = 0;
 
-    auto status = alpaka::allocMappedBuf<bool, Idx>(host, platform, Scalar{});
+    auto status = aV2P::allocMappedBuf<bool, Idx>(host, platform, Scalar{});
     *status = true;
 
-    auto const extent = alpaka::Vec<Dim, Idx>::all(32);
-    auto const elems = alpaka::Vec<Dim, Idx>::all(4);
+    auto const extent = aV2P::Vec<Dim, Idx>::all(32);
+    auto const elems = aV2P::Vec<Dim, Idx>::all(4);
 
     KernelOncePerGrid kernel;
-    alpaka::KernelCfg<Acc> const config = {extent, elems, false};
-    auto const workDiv = alpaka::getValidWorkDiv(config, device, kernel, std::data(status), std::data(value));
+    aV2P::KernelCfg<Acc> const config = {extent, elems, false};
+    auto const workDiv = aV2P::getValidWorkDiv(config, device, kernel, std::data(status), std::data(value));
 
-    alpaka::exec<Acc>(queue, workDiv, kernel, std::data(status), std::data(value));
-    alpaka::wait(queue);
+    aV2P::exec<Acc>(queue, workDiv, kernel, std::data(status), std::data(value));
+    aV2P::wait(queue);
 
     fixBooleanValue(*status);
     REQUIRE(*status == true);
@@ -84,59 +84,59 @@ public:
     template<typename TAcc>
     ALPAKA_FN_ACC auto operator()(TAcc const& acc, bool* status, int32_t* value) const -> void
     {
-        const int32_t blocks = static_cast<int32_t>(alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc).prod());
+        const int32_t blocks = static_cast<int32_t>(aV2P::getWorkDiv<aV2P::Grid, aV2P::Blocks>(acc).prod());
 
         // Only one thread in each block should increment the conter.
-        if(alpaka::oncePerBlock(acc))
+        if(aV2P::oncePerBlock(acc))
         {
-            // FIXME: implement alpaka::atomicLoad and use it here
-            int before = alpaka::atomicAdd(acc, value, 0, alpaka::hierarchy::Grids{});
+            // FIXME: implement aV2P::atomicLoad and use it here
+            int before = aV2P::atomicAdd(acc, value, 0, aV2P::hierarchy::Grids{});
             ALPAKA_CHECK(*status, before >= 0);
             ALPAKA_CHECK(*status, before < blocks);
 
-            alpaka::atomicAdd(acc, value, 1, alpaka::hierarchy::Grids{});
+            aV2P::atomicAdd(acc, value, 1, aV2P::hierarchy::Grids{});
 
-            // FIXME: implement alpaka::atomicLoad and use it here
-            int after = alpaka::atomicAdd(acc, value, 0, alpaka::hierarchy::Grids{});
+            // FIXME: implement aV2P::atomicLoad and use it here
+            int after = aV2P::atomicAdd(acc, value, 0, aV2P::hierarchy::Grids{});
             ALPAKA_CHECK(*status, after > 0);
             ALPAKA_CHECK(*status, after <= blocks);
         }
     }
 };
 
-TEMPLATE_LIST_TEST_CASE("oncePerBlock", "[exec]", alpaka::test::TestAccs)
+TEMPLATE_LIST_TEST_CASE("oncePerBlock", "[exec]", aV2P::test::TestAccs)
 {
-    using Host = alpaka::DevCpu;
-    Host host = alpaka::getDevByIdx(alpaka::PlatformCpu{}, 0);
+    using Host = aV2P::DevCpu;
+    Host host = aV2P::getDevByIdx(aV2P::PlatformCpu{}, 0);
 
     using Acc = TestType;
-    using Dim = alpaka::Dim<Acc>;
-    using Idx = alpaka::Idx<Acc>;
-    using Platform = alpaka::Platform<Acc>;
-    using Device = alpaka::Dev<Platform>;
-    using Queue = alpaka::Queue<Device, alpaka::NonBlocking>;
+    using Dim = aV2P::Dim<Acc>;
+    using Idx = aV2P::Idx<Acc>;
+    using Platform = aV2P::Platform<Acc>;
+    using Device = aV2P::Dev<Platform>;
+    using Queue = aV2P::Queue<Device, aV2P::NonBlocking>;
 
     Platform platform;
-    Device device = alpaka::getDevByIdx(platform, 0);
+    Device device = aV2P::getDevByIdx(platform, 0);
     Queue queue{device};
 
-    using Scalar = alpaka::Vec<alpaka::DimInt<0u>, Idx>;
-    auto value = alpaka::allocMappedBuf<int32_t, Idx>(host, platform, Scalar{});
-    alpaka::memset(queue, value, 0x00);
+    using Scalar = aV2P::Vec<aV2P::DimInt<0u>, Idx>;
+    auto value = aV2P::allocMappedBuf<int32_t, Idx>(host, platform, Scalar{});
+    aV2P::memset(queue, value, 0x00);
 
-    auto status = alpaka::allocMappedBuf<bool, Idx>(host, platform, Scalar{});
-    alpaka::memset(queue, status, 0xff);
+    auto status = aV2P::allocMappedBuf<bool, Idx>(host, platform, Scalar{});
+    aV2P::memset(queue, status, 0xff);
 
-    auto const extent = alpaka::Vec<Dim, Idx>::all(32);
-    auto const elems = alpaka::Vec<Dim, Idx>::all(4);
+    auto const extent = aV2P::Vec<Dim, Idx>::all(32);
+    auto const elems = aV2P::Vec<Dim, Idx>::all(4);
 
     KernelOncePerBlock kernel;
-    alpaka::KernelCfg<Acc> const config = {extent, elems, false};
-    auto const workDiv = alpaka::getValidWorkDiv(config, device, kernel, std::data(status), std::data(value));
-    const int32_t blocks = static_cast<int32_t>(alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(workDiv).prod());
+    aV2P::KernelCfg<Acc> const config = {extent, elems, false};
+    auto const workDiv = aV2P::getValidWorkDiv(config, device, kernel, std::data(status), std::data(value));
+    const int32_t blocks = static_cast<int32_t>(aV2P::getWorkDiv<aV2P::Grid, aV2P::Blocks>(workDiv).prod());
 
-    alpaka::exec<Acc>(queue, workDiv, kernel, std::data(status), std::data(value));
-    alpaka::wait(queue);
+    aV2P::exec<Acc>(queue, workDiv, kernel, std::data(status), std::data(value));
+    aV2P::wait(queue);
 
     fixBooleanValue(*status);
     REQUIRE(*status == true);

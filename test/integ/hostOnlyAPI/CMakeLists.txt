@@ -13,6 +13,10 @@ add_executable(
 target_link_libraries(
     ${_TARGET_NAME}
     PRIVATE common)
+target_link_libraries(
+        ${_TARGET_NAME}
+        PRIVATE alpaka3)
+alpaka_finalize(${_TARGET_NAME})
 
 target_compile_definitions(${_TARGET_NAME} PRIVATE ALPAKA_HOST_ONLY)
 

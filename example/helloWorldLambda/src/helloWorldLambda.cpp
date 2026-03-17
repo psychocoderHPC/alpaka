@@ -97,7 +97,8 @@ auto example(TAccTag const&) -> int
     // auto. The Nvidia nvcc does not support generic lambdas, so the
     // type is set to Acc.
 
-    auto kernelLambda = [] ALPAKA_FN_ACC(Acc const& acc, size_t const nExclamationMarksAsArg) -> void
+    auto kernelLambda
+        = [] ALPAKA_FN_ACC(alpaka::onAcc::concepts::Acc auto const& acc, size_t const nExclamationMarksAsArg) -> void
     {
         auto globalThreadIdx = aV2P::getIdx<aV2P::Grid, aV2P::Threads>(acc);
         auto globalThreadExtent = aV2P::getWorkDiv<aV2P::Grid, aV2P::Threads>(acc);

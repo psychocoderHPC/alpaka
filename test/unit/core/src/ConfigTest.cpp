@@ -2,8 +2,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-#include <alpaka/core/Config.hpp>
-
+#include <aV2P/core/Config.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 #include <iostream>

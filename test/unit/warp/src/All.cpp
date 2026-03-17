@@ -2,11 +2,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-#include <alpaka/test/KernelExecutionFixture.hpp>
-#include <alpaka/test/acc/TestAccs.hpp>
-#include <alpaka/test/queue/Queue.hpp>
-#include <alpaka/warp/Traits.hpp>
-
+#include <aV2P/test/KernelExecutionFixture.hpp>
+#include <aV2P/test/acc/TestAccs.hpp>
+#include <aV2P/test/queue/Queue.hpp>
+#include <aV2P/warp/Traits.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -18,10 +17,10 @@ struct AllSingleThreadWarpTestKernel
     template<typename TAcc>
     ALPAKA_FN_ACC auto operator()(TAcc const& acc, bool* success) const -> void
     {
-        if constexpr(alpaka::Dim<TAcc>::value > 0)
-            ALPAKA_CHECK(*success, alpaka::warp::getSize(acc) == 1);
-        ALPAKA_CHECK(*success, alpaka::warp::all(acc, 42) != 0);
-        ALPAKA_CHECK(*success, alpaka::warp::all(acc, 0) == 0);
+        if constexpr(aV2P::Dim<TAcc>::value > 0)
+            ALPAKA_CHECK(*success, aV2P::warp::getSize(acc) == 1);
+        ALPAKA_CHECK(*success, aV2P::warp::all(acc, 42) != 0);
+        ALPAKA_CHECK(*success, aV2P::warp::all(acc, 0) == 0);
     }
 };
 
@@ -32,17 +31,17 @@ struct AllMultipleThreadWarpTestKernel
     template<typename TAcc>
     ALPAKA_FN_ACC auto operator()(TAcc const& acc, bool* success) const -> void
     {
-        std::int32_t const warpExtent = alpaka::warp::getSize(acc);
+        std::int32_t const warpExtent = aV2P::warp::getSize(acc);
         ALPAKA_CHECK(*success, warpExtent > 1);
 
-        ALPAKA_CHECK(*success, alpaka::warp::all(acc, 0) == 0);
-        ALPAKA_CHECK(*success, alpaka::warp::all(acc, 42) != 0);
+        ALPAKA_CHECK(*success, aV2P::warp::all(acc, 0) == 0);
+        ALPAKA_CHECK(*success, aV2P::warp::all(acc, 42) != 0);
 
         // Test relies on having a single warp per thread block
-        auto const blockExtent = alpaka::getWorkDiv<alpaka::Block, alpaka::Threads>(acc);
+        auto const blockExtent = aV2P::getWorkDiv<aV2P::Block, aV2P::Threads>(acc);
         ALPAKA_CHECK(*success, static_cast<std::int32_t>(blockExtent.prod()) == warpExtent);
-        auto const localThreadIdx = alpaka::getIdx<alpaka::Block, alpaka::Threads>(acc);
-        auto const threadIdxInWarp = static_cast<std::int32_t>(alpaka::mapIdx<1u>(localThreadIdx, blockExtent)[0]);
+        auto const localThreadIdx = aV2P::getIdx<aV2P::Block, aV2P::Threads>(acc);
+        auto const threadIdxInWarp = static_cast<std::int32_t>(aV2P::mapIdx<1u>(localThreadIdx, blockExtent)[0]);
 
         // Some threads quit the kernel to test that the warp operations
         // properly operate on the active threads only
@@ -51,59 +50,59 @@ struct AllMultipleThreadWarpTestKernel
 
         for(auto idx = 0; idx < warpExtent; idx++)
         {
-            ALPAKA_CHECK(*success, alpaka::warp::all(acc, threadIdxInWarp == idx ? 1 : 0) == 0);
+            ALPAKA_CHECK(*success, aV2P::warp::all(acc, threadIdxInWarp == idx ? 1 : 0) == 0);
             std::int32_t const expected = idx % 3 ? 1 : 0;
-            ALPAKA_CHECK(*success, alpaka::warp::all(acc, threadIdxInWarp == idx ? 0 : 1) == expected);
+            ALPAKA_CHECK(*success, aV2P::warp::all(acc, threadIdxInWarp == idx ? 0 : 1) == expected);
         }
     }
 };
 
 template<std::uint32_t TWarpSize, typename TAcc>
-struct alpaka::trait::WarpSize<AllMultipleThreadWarpTestKernel<TWarpSize>, TAcc>
+struct aV2P::trait::WarpSize<AllMultipleThreadWarpTestKernel<TWarpSize>, TAcc>
     : std::integral_constant<std::uint32_t, TWarpSize>
 {
 };
 
-TEMPLATE_LIST_TEST_CASE("all", "[warp]", alpaka::test::TestAccs)
+TEMPLATE_LIST_TEST_CASE("all", "[warp]", aV2P::test::TestAccs)
 {
     using Acc = TestType;
 
 #if defined(ALPAKA_ACC_SYCL_ENABLED) && defined(__INTEL_LLVM_COMPILER) && __INTEL_LLVM_COMPILER < 20'250'300
-    if constexpr(alpaka::accMatchesTags<
+    if constexpr(aV2P::accMatchesTags<
                      Acc,
-                     alpaka::TagCpuSycl,
-                     alpaka::TagGpuSyclIntel,
-                     alpaka::TagGpuSyclNvidia,
-                     alpaka::TagGpuSyclAmd,
-                     alpaka::TagFpgaSyclIntel,
-                     alpaka::TagGenericSycl>)
+                     aV2P::TagCpuSycl,
+                     aV2P::TagGpuSyclIntel,
+                     aV2P::TagGpuSyclNvidia,
+                     aV2P::TagGpuSyclAmd,
+                     aV2P::TagFpgaSyclIntel,
+                     aV2P::TagGenericSycl>)
     {
         WARN("Test disabled for SYCL");
         return;
     }
 #else
-    using Dim = alpaka::Dim<Acc>;
-    using Idx = alpaka::Idx<Acc>;
+    using Dim = aV2P::Dim<Acc>;
+    using Idx = aV2P::Idx<Acc>;
 
-    auto const platform = alpaka::Platform<Acc>{};
-    auto const dev = alpaka::getDevByIdx(platform, 0);
-    auto const warpExtents = alpaka::getWarpSizes(dev);
+    auto const platform = aV2P::Platform<Acc>{};
+    auto const dev = aV2P::getDevByIdx(platform, 0);
+    auto const warpExtents = aV2P::getWarpSizes(dev);
     for(auto const warpExtent : warpExtents)
     {
         auto const scalar = Dim::value == 0 || warpExtent == 1;
         if(scalar)
         {
-            alpaka::test::KernelExecutionFixture<Acc> fixture(alpaka::Vec<Dim, Idx>::all(4));
+            aV2P::test::KernelExecutionFixture<Acc> fixture(aV2P::Vec<Dim, Idx>::all(4));
             REQUIRE(fixture(AllSingleThreadWarpTestKernel{}));
         }
         else
         {
-            using ExecutionFixture = alpaka::test::KernelExecutionFixture<Acc>;
-            auto const gridBlockExtent = alpaka::Vec<Dim, Idx>::all(2);
+            using ExecutionFixture = aV2P::test::KernelExecutionFixture<Acc>;
+            auto const gridBlockExtent = aV2P::Vec<Dim, Idx>::all(2);
             // Enforce one warp per thread block
-            auto blockThreadExtent = alpaka::Vec<Dim, Idx>::ones();
+            auto blockThreadExtent = aV2P::Vec<Dim, Idx>::ones();
             blockThreadExtent[0] = static_cast<Idx>(warpExtent);
-            auto const threadElementExtent = alpaka::Vec<Dim, Idx>::ones();
+            auto const threadElementExtent = aV2P::Vec<Dim, Idx>::ones();
             auto workDiv = typename ExecutionFixture::WorkDiv{gridBlockExtent, blockThreadExtent, threadElementExtent};
             auto fixture = ExecutionFixture{workDiv};
             if(warpExtent == 4)

@@ -62,10 +62,16 @@ namespace aV2P
                 TViewSrc const& viewSrc,
                 TExtent const& extent)
             {
-                return aV2P::detail::TaskCopyAlpaka3Cpu{
-                    viewDst.getAlpaka3().getView(),
-                    viewSrc.getAlpaka3().getView(),
-                    extent.getAlpaka3()};
+                if constexpr(std::is_integral_v<TExtent>)
+                    return aV2P::detail::TaskCopyAlpaka3Cpu{
+                        viewDst.getAlpaka3(),
+                        viewSrc.getAlpaka3(),
+                        alpaka::Vec{extent}};
+                else
+                    return aV2P::detail::TaskCopyAlpaka3Cpu{
+                        viewDst.getAlpaka3(),
+                        viewSrc.getAlpaka3(),
+                        extent.getAlpaka3()};
             }
         };
 

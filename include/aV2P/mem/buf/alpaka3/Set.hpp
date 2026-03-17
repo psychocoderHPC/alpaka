@@ -44,7 +44,10 @@ namespace aV2P
                 std::uint8_t const& byte,
                 TExtents const& extent)
             {
-                return aV2P::detail::TaskSetAlpaka3{viewDst.getAlpaka3().getView(), byte, extent.getAlpaka3()};
+                if constexpr(std::is_integral_v<TExtents>)
+                    return aV2P::detail::TaskSetAlpaka3{viewDst.getAlpaka3(), byte, alpaka::Vec{extent}};
+                else
+                    return aV2P::detail::TaskSetAlpaka3{viewDst.getAlpaka3(), byte, extent.getAlpaka3()};
             }
         };
 

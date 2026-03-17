@@ -9,15 +9,15 @@
 #include <type_traits>
 
 // Create an accelerator-dependent work division for 1-dimensional kernels.
-template<alpaka::concepts::Acc TAcc>
-requires(alpaka::Dim<TAcc>::value == 1)
-inline auto makeWorkDiv(alpaka::Idx<TAcc> blocks, alpaka::Idx<TAcc> elements)
-    -> alpaka::WorkDivMembers<alpaka::Dim<TAcc>, alpaka::Idx<TAcc>>
+template<aV2P::concepts::Acc TAcc>
+requires(aV2P::Dim<TAcc>::value == 1)
+inline auto makeWorkDiv(aV2P::Idx<TAcc> blocks, aV2P::Idx<TAcc> elements)
+    -> aV2P::WorkDivMembers<aV2P::Dim<TAcc>, aV2P::Idx<TAcc>>
 {
-    using Dim = alpaka::Dim<TAcc>;
-    using Idx = alpaka::Idx<TAcc>;
-    using WorkDiv = alpaka::WorkDivMembers<Dim, Idx>;
-    if constexpr(alpaka::isMultiThreadAcc<TAcc>)
+    using Dim = aV2P::Dim<TAcc>;
+    using Idx = aV2P::Idx<TAcc>;
+    using WorkDiv = aV2P::WorkDivMembers<Dim, Idx>;
+    if constexpr(aV2P::isMultiThreadAcc<TAcc>)
     {
         // On thread-parallel backends, each thread is looking at a single element:
         //   - the number of threads per block is "elements";   - the number of elements per thread is always 1.
@@ -34,17 +34,17 @@ inline auto makeWorkDiv(alpaka::Idx<TAcc> blocks, alpaka::Idx<TAcc> elements)
 }
 
 // Create the accelerator-dependent workdiv for N-dimensional kernels.
-template<alpaka::concepts::Acc TAcc>
+template<aV2P::concepts::Acc TAcc>
 inline auto makeWorkDiv(
-    alpaka::Vec<alpaka::Dim<TAcc>, alpaka::Idx<TAcc>> const& blocks,
-    alpaka::Vec<alpaka::Dim<TAcc>, alpaka::Idx<TAcc>> const& elements)
-    -> alpaka::WorkDivMembers<alpaka::Dim<TAcc>, alpaka::Idx<TAcc>>
+    aV2P::Vec<aV2P::Dim<TAcc>, aV2P::Idx<TAcc>> const& blocks,
+    aV2P::Vec<aV2P::Dim<TAcc>, aV2P::Idx<TAcc>> const& elements)
+    -> aV2P::WorkDivMembers<aV2P::Dim<TAcc>, aV2P::Idx<TAcc>>
 {
-    using Dim = alpaka::Dim<TAcc>;
-    using Idx = alpaka::Idx<TAcc>;
-    using Vec = alpaka::Vec<Dim, Idx>;
-    using WorkDiv = alpaka::WorkDivMembers<Dim, Idx>;
-    if constexpr(alpaka::isMultiThreadAcc<TAcc>)
+    using Dim = aV2P::Dim<TAcc>;
+    using Idx = aV2P::Idx<TAcc>;
+    using Vec = aV2P::Vec<Dim, Idx>;
+    using WorkDiv = aV2P::WorkDivMembers<Dim, Idx>;
+    if constexpr(aV2P::isMultiThreadAcc<TAcc>)
     {
         // On thread-parallel backends, each thread is looking at a single element:
         //   - the number of threads per block is "elements";   - the number of elements per thread is always 1.

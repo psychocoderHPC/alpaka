@@ -36,6 +36,15 @@ namespace aV2P
         {
         }
 
+        auto getAlpaka3() const
+        {
+            return alpaka::makeView(
+                alpaka::getApi(m_dev.getAlpaka3()),
+                m_pMem,
+                m_extentElements.getAlpaka3(),
+                m_pitchBytes.getAlpaka3());
+        }
+
         TElem* m_pMem;
         TDev m_dev;
         Vec<TDim, TIdx> m_extentElements;

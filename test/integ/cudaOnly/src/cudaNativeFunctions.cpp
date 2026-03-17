@@ -2,9 +2,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-#include <alpaka/alpaka.hpp>
-#include <alpaka/test/KernelExecutionFixture.hpp>
-
+#include <aV2P/aV2P.hpp>
+#include <aV2P/test/KernelExecutionFixture.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 #if defined(ALPAKA_ACC_GPU_CUDA_ONLY_MODE) && defined(ALPAKA_ACC_GPU_CUDA_ENABLED) && ALPAKA_LANG_CUDA
@@ -39,11 +38,11 @@ public:
 
 TEST_CASE("cudaOnlyModeWorking", "[cudaOnly]")
 {
-    using TAcc = alpaka::AccGpuCudaRt<alpaka::DimInt<1u>, std::uint32_t>;
-    using Dim = alpaka::Dim<TAcc>;
-    using Idx = alpaka::Idx<TAcc>;
+    using TAcc = aV2P::AccGpuCudaRt<aV2P::DimInt<1u>, std::uint32_t>;
+    using Dim = aV2P::Dim<TAcc>;
+    using Idx = aV2P::Idx<TAcc>;
 
-    alpaka::test::KernelExecutionFixture<TAcc> fixture(alpaka::Vec<Dim, Idx>::ones());
+    aV2P::test::KernelExecutionFixture<TAcc> fixture(aV2P::Vec<Dim, Idx>::ones());
 
     CudaOnlyTestKernel kernel;
 

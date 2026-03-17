@@ -2,18 +2,17 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-#include <alpaka/acc/Traits.hpp>
-#include <alpaka/atomic/Traits.hpp>
-#include <alpaka/block/shared/dyn/Traits.hpp>
-#include <alpaka/block/shared/st/Traits.hpp>
-#include <alpaka/block/sync/Traits.hpp>
-#include <alpaka/test/Array.hpp>
-#include <alpaka/test/KernelExecutionFixture.hpp>
-#include <alpaka/test/acc/TestAccs.hpp>
-#include <alpaka/test/queue/Queue.hpp>
-#include <alpaka/workdiv/Traits.hpp>
-#include <alpaka/workdiv/WorkDivMembers.hpp>
-
+#include <aV2P/acc/Traits.hpp>
+#include <aV2P/atomic/Traits.hpp>
+#include <aV2P/block/shared/dyn/Traits.hpp>
+#include <aV2P/block/shared/st/Traits.hpp>
+#include <aV2P/block/sync/Traits.hpp>
+#include <aV2P/test/Array.hpp>
+#include <aV2P/test/KernelExecutionFixture.hpp>
+#include <aV2P/test/acc/TestAccs.hpp>
+#include <aV2P/test/queue/Queue.hpp>
+#include <aV2P/workdiv/Traits.hpp>
+#include <aV2P/workdiv/WorkDivMembers.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -27,20 +26,20 @@
 template<typename TAcc>
 ALPAKA_FN_ACC void blockSharedMemSharingTestKernelHelper(TAcc const& acc, std::uint32_t* sums, std::uint32_t& shared)
 {
-    auto const blockThreadIdx = alpaka::getIdx<alpaka::Block, alpaka::Threads>(acc)[0u];
-    auto const gridBlockIdx = alpaka::getIdx<alpaka::Grid, alpaka::Blocks>(acc)[0u];
+    auto const blockThreadIdx = aV2P::getIdx<aV2P::Block, aV2P::Threads>(acc)[0u];
+    auto const gridBlockIdx = aV2P::getIdx<aV2P::Grid, aV2P::Blocks>(acc)[0u];
 
     if(blockThreadIdx == 0u)
         shared = 0u;
 
-    alpaka::syncBlockThreads(acc);
+    aV2P::syncBlockThreads(acc);
 
     // In the expected case we only need `hierarchy::Blocks` here, but in
     // case shared memory is shared between blocks we need atomicity
     // between blocks to get the correct result telling us so.
-    alpaka::atomicAdd(acc, &shared, 1u, alpaka::hierarchy::Blocks());
+    aV2P::atomicAdd(acc, &shared, 1u, aV2P::hierarchy::Blocks());
 
-    alpaka::syncBlockThreads(acc);
+    aV2P::syncBlockThreads(acc);
 
     if(blockThreadIdx == 0u)
         sums[gridBlockIdx] = shared;
@@ -49,31 +48,31 @@ ALPAKA_FN_ACC void blockSharedMemSharingTestKernelHelper(TAcc const& acc, std::u
 template<class TAcc, class TKernel>
 void BlockSharedMemSharingTest(TKernel kernel)
 {
-    using Dim = alpaka::Dim<TAcc>;
-    using Idx = alpaka::Idx<TAcc>;
-    using Vec = alpaka::Vec<Dim, Idx>;
+    using Dim = aV2P::Dim<TAcc>;
+    using Idx = aV2P::Idx<TAcc>;
+    using Vec = aV2P::Vec<Dim, Idx>;
 
-    auto const platformAcc = alpaka::Platform<TAcc>{};
-    auto const devAcc = alpaka::getDevByIdx(platformAcc, 0);
+    auto const platformAcc = aV2P::Platform<TAcc>{};
+    auto const devAcc = aV2P::getDevByIdx(platformAcc, 0);
 
-    auto const accDevProps = alpaka::getAccDevProps<TAcc>(devAcc);
+    auto const accDevProps = aV2P::getAccDevProps<TAcc>(devAcc);
     const Idx gridBlockCount = 2u;
     const Idx blockThreadCount = accDevProps.m_blockThreadCountMax;
 
     auto const workDiv
-        = alpaka::WorkDivMembers<Dim, Idx>(Vec(gridBlockCount), Vec(blockThreadCount), Vec(static_cast<Idx>(1u)));
+        = aV2P::WorkDivMembers<Dim, Idx>(Vec(gridBlockCount), Vec(blockThreadCount), Vec(static_cast<Idx>(1u)));
 
-    auto queue = alpaka::Queue<TAcc, alpaka::Blocking>(devAcc);
+    auto queue = aV2P::Queue<TAcc, aV2P::Blocking>(devAcc);
 
-    auto bufAcc = alpaka::allocBuf<std::uint32_t, Idx>(devAcc, gridBlockCount);
+    auto bufAcc = aV2P::allocBuf<std::uint32_t, Idx>(devAcc, gridBlockCount);
 
-    alpaka::exec<TAcc>(queue, workDiv, kernel, std::data(bufAcc));
+    aV2P::exec<TAcc>(queue, workDiv, kernel, std::data(bufAcc));
 
-    auto const platformHost = alpaka::PlatformCpu{};
-    auto const devHost = alpaka::getDevByIdx(platformHost, 0);
-    auto bufHost = alpaka::allocBuf<std::uint32_t, Idx>(devHost, gridBlockCount);
+    auto const platformHost = aV2P::PlatformCpu{};
+    auto const devHost = aV2P::getDevByIdx(platformHost, 0);
+    auto bufHost = aV2P::allocBuf<std::uint32_t, Idx>(devHost, gridBlockCount);
 
-    alpaka::memcpy(queue, bufHost, bufAcc);
+    aV2P::memcpy(queue, bufHost, bufAcc);
 
     auto pBufHost = std::data(bufHost);
     for(Idx a = 0u; a < gridBlockCount; ++a)
@@ -89,13 +88,13 @@ public:
     template<typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc, std::uint32_t* sums) const
     {
-        auto& shared = alpaka::declareSharedVar<std::uint32_t, __COUNTER__>(acc);
+        auto& shared = aV2P::declareSharedVar<std::uint32_t, __COUNTER__>(acc);
 
         blockSharedMemSharingTestKernelHelper(acc, sums, shared);
     }
 };
 
-using TestAccs = alpaka::test::EnabledAccs<alpaka::DimInt<1u>, std::uint32_t>;
+using TestAccs = aV2P::test::EnabledAccs<aV2P::DimInt<1u>, std::uint32_t>;
 
 TEMPLATE_LIST_TEST_CASE("blockSharedMemSt", "[blockSharedMemSharing]", TestAccs)
 {
@@ -113,13 +112,13 @@ public:
     template<typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc, std::uint32_t* sums) const
     {
-        auto& shared = *alpaka::getDynSharedMem<std::uint32_t>(acc);
+        auto& shared = *aV2P::getDynSharedMem<std::uint32_t>(acc);
 
         blockSharedMemSharingTestKernelHelper(acc, sums, shared);
     }
 };
 
-namespace alpaka::trait
+namespace aV2P::trait
 {
     //! The trait for getting the size of the block shared dynamic memory for a kernel.
     template<typename TAcc>
@@ -136,7 +135,7 @@ namespace alpaka::trait
             return sizeof(std::uint32_t);
         }
     };
-} // namespace alpaka::trait
+} // namespace aV2P::trait
 
 TEMPLATE_LIST_TEST_CASE("blockSharedMemDyn", "[blockSharedMemSharing]", TestAccs)
 {

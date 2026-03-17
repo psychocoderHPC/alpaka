@@ -2,13 +2,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-#include <alpaka/core/CallbackThread.hpp>
-
+#include <aV2P/core/CallbackThread.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("callbackthread", "[core]")
 {
-    alpaka::core::CallbackThread cbt;
+    aV2P::core::CallbackThread cbt;
 
     auto f1 = cbt.submit([] { throw std::runtime_error("42"); });
     auto f2 = cbt.submit([] { throw 42; });
@@ -30,7 +29,7 @@ TEST_CASE("callbackthread", "[core]")
 
 TEST_CASE("callbackthread_copyable_task", "[core]")
 {
-    alpaka::core::CallbackThread cbt;
+    aV2P::core::CallbackThread cbt;
 
     bool flag = false;
     auto task = [&] { flag = true; };
@@ -48,7 +47,7 @@ TEST_CASE("callbackthread_copyable_task", "[core]")
 
 TEST_CASE("callbackthread_non_copyable_task", "[core]")
 {
-    alpaka::core::CallbackThread cbt;
+    aV2P::core::CallbackThread cbt;
 
     bool flag = false;
     auto task = [&, dummy = std::unique_ptr<int>{nullptr}] { flag = true; };

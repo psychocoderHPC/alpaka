@@ -2,11 +2,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-#include <alpaka/kernel/Traits.hpp>
-#include <alpaka/meta/ForEachType.hpp>
-#include <alpaka/test/KernelExecutionFixture.hpp>
-#include <alpaka/test/acc/TestAccs.hpp>
-
+#include <aV2P/kernel/Traits.hpp>
+#include <aV2P/meta/ForEachType.hpp>
+#include <aV2P/test/KernelExecutionFixture.hpp>
+#include <aV2P/test/acc/TestAccs.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -28,26 +27,26 @@ private:
     std::int32_t m_val;
 };
 
-TEMPLATE_LIST_TEST_CASE("kernelWithConstructorAndMember", "[kernel]", alpaka::test::TestAccs)
+TEMPLATE_LIST_TEST_CASE("kernelWithConstructorAndMember", "[kernel]", aV2P::test::TestAccs)
 {
     using Acc = TestType;
-    using Dim = alpaka::Dim<Acc>;
-    using Idx = alpaka::Idx<Acc>;
+    using Dim = aV2P::Dim<Acc>;
+    using Idx = aV2P::Idx<Acc>;
 
-    alpaka::test::KernelExecutionFixture<Acc> fixture(alpaka::Vec<Dim, Idx>::ones());
+    aV2P::test::KernelExecutionFixture<Acc> fixture(aV2P::Vec<Dim, Idx>::ones());
 
     KernelWithConstructorAndMember kernel(42);
 
     REQUIRE(fixture(kernel));
 }
 
-TEMPLATE_LIST_TEST_CASE("kernelWithConstructorDefaultParamAndMember", "[kernel]", alpaka::test::TestAccs)
+TEMPLATE_LIST_TEST_CASE("kernelWithConstructorDefaultParamAndMember", "[kernel]", aV2P::test::TestAccs)
 {
     using Acc = TestType;
-    using Dim = alpaka::Dim<Acc>;
-    using Idx = alpaka::Idx<Acc>;
+    using Dim = aV2P::Dim<Acc>;
+    using Idx = aV2P::Idx<Acc>;
 
-    alpaka::test::KernelExecutionFixture<Acc> fixture(alpaka::Vec<Dim, Idx>::ones());
+    aV2P::test::KernelExecutionFixture<Acc> fixture(aV2P::Vec<Dim, Idx>::ones());
 
     KernelWithConstructorAndMember kernel;
 

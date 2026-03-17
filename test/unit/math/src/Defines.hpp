@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <alpaka/alpaka.hpp>
+#include <aV2P/aV2P.hpp>
 
 #include <cmath>
 #include <iomanip>
@@ -95,15 +95,15 @@ namespace mathtest
     {
         // the machine epsilon has to be scaled to the magnitude of the values used
         // and multiplied by the desired precision in ULPs (units in the last place)
-        return alpaka::math::abs(acc, x - y)
-                   <= std::numeric_limits<FP>::epsilon() * alpaka::math::abs(acc, x + y) * static_cast<FP>(ulp)
+        return aV2P::math::abs(acc, x - y)
+                   <= std::numeric_limits<FP>::epsilon() * aV2P::math::abs(acc, x + y) * static_cast<FP>(ulp)
                // unless the result is subnormal
-               || alpaka::math::abs(acc, x - y) < std::numeric_limits<FP>::min();
+               || aV2P::math::abs(acc, x - y) < std::numeric_limits<FP>::min();
     }
 
-    //! Version for alpaka::Complex
+    //! Version for aV2P::Complex
     template<typename TAcc, typename FP>
-    ALPAKA_FN_ACC bool almost_equal(TAcc const& acc, alpaka::Complex<FP> x, alpaka::Complex<FP> y, int ulp)
+    ALPAKA_FN_ACC bool almost_equal(TAcc const& acc, aV2P::Complex<FP> x, aV2P::Complex<FP> y, int ulp)
     {
         return almost_equal(acc, x.real(), y.real(), ulp) && almost_equal(acc, x.imag(), y.imag(), ulp);
     }

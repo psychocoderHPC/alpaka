@@ -93,7 +93,7 @@ namespace aV2P
         {
             ALPAKA_FN_HOST static auto getName(DevAlpaka3<TDevSpec> const& dev) -> std::string
             {
-                return dev.getAlpaka3.getName();
+                return dev.getAlpaka3().getName();
             }
         };
 
@@ -102,7 +102,7 @@ namespace aV2P
         {
             ALPAKA_FN_HOST static auto getMemBytes(DevAlpaka3<TDevSpec> const& dev) -> std::size_t
             {
-                return dev.getAlpaka3.getDeviceProperties().globalMemCapacityBytes;
+                return dev.getAlpaka3().getDeviceProperties().globalMemCapacityBytes;
             }
         };
 
@@ -111,7 +111,7 @@ namespace aV2P
         {
             ALPAKA_FN_HOST static auto getFreeMemBytes(DevAlpaka3<TDevSpec> const& dev) -> std::size_t
             {
-                return dev.getAlpaka3.getFreeGlobalMemBytes();
+                return dev.getAlpaka3().getFreeGlobalMemBytes();
             }
         };
 
@@ -120,7 +120,7 @@ namespace aV2P
         {
             ALPAKA_FN_HOST static auto getWarpSizes(DevAlpaka3<TDevSpec> const& dev) -> std::vector<std::size_t>
             {
-                return {dev.getAlpaka3.getDeviceProperties().warpSize};
+                return {dev.getAlpaka3().getDeviceProperties().warpSize};
             }
         };
 
@@ -129,7 +129,7 @@ namespace aV2P
         {
             ALPAKA_FN_HOST static auto getPreferredWarpSize(DevAlpaka3<TDevSpec> const& dev) -> std::size_t
             {
-                return dev.getAlpaka3.getDeviceProperties().warpSize;
+                return dev.getAlpaka3().getDeviceProperties().warpSize;
             }
         };
 

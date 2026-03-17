@@ -7,6 +7,9 @@
 
 // Specialized traits.
 #include "aV2P/acc/Traits.hpp"
+#include "aV2P/block/shared/dyn/Traits.hpp"
+#include "aV2P/block/shared/st/Traits.hpp"
+#include "aV2P/block/sync/Traits.hpp"
 #include "aV2P/dev/Traits.hpp"
 #include "aV2P/idx/Traits.hpp"
 #include "aV2P/kernel/Traits.hpp"
@@ -175,24 +178,30 @@ namespace aV2P
             ALPAKA_FN_HOST static auto getAccDevProps(DevAlpaka3<TDevSpec> const& dev) -> AccDevProps<TDim, TIdx>
             {
                 auto prop = dev.getAlpaka3().getDeviceProperties();
-                return {// m_multiProcessorCount
-                        prop.multiProcessorCount,
-                        // m_gridBlockExtentMax
-                        Vec<TDim, TIdx>::all(std::numeric_limits<TIdx>::max()),
-                        // m_gridBlockCountMax
-                        prop.maxThreadsPerBlock,
-                        // m_blockThreadExtentMax
-                        Vec<TDim, TIdx>::ones(),
-                        // m_blockThreadCountMax
-                        static_cast<TIdx>(1),
-                        // m_threadElemExtentMax
-                        Vec<TDim, TIdx>::all(std::numeric_limits<TIdx>::max()),
-                        // m_threadElemCountMax
-                        std::numeric_limits<TIdx>::max(),
-                        // m_sharedMemSizeBytes
-                        prop.sharedMemPerBlockBytes,
-                        // m_globalMemSizeBytes
-                        prop.globalMemCapacityBytes};
+                auto accProps = AccDevProps<TDim, TIdx>{// m_multiProcessorCount
+                                                        static_cast<TIdx>(prop.multiProcessorCount),
+                                                        // m_gridBlockExtentMax
+                                                        Vec<TDim, TIdx>::all(std::numeric_limits<TIdx>::max()),
+                                                        // m_gridBlockCountMax
+                                                        static_cast<TIdx>(std::numeric_limits<TIdx>::max()),
+                                                        // m_blockThreadExtentMax
+                                                        Vec<TDim, TIdx>::all(32u),
+                                                        // m_blockThreadCountMax
+                                                        static_cast<TIdx>(prop.maxThreadsPerBlock),
+                                                        // m_threadElemExtentMax
+                                                        Vec<TDim, TIdx>::all(std::numeric_limits<TIdx>::max()),
+                                                        // m_threadElemCountMax
+                                                        std::numeric_limits<TIdx>::max(),
+                                                        // m_sharedMemSizeBytes
+                                                        prop.sharedMemPerBlockBytes,
+                                                        // m_globalMemSizeBytes
+                                                        prop.globalMemCapacityBytes};
+                if constexpr(alpaka::exec::isSeqExecutor_v<TExecutor>)
+                {
+                    accProps.m_blockThreadCountMax = static_cast<TIdx>(1);
+                    accProps.m_blockThreadExtentMax = Vec<TDim, TIdx>::all(1);
+                }
+                return accProps;
             }
         };
 
@@ -233,6 +242,24 @@ namespace aV2P
             using type = TDim;
         };
 
+        template<typename TKernel>
+        struct DynSharedMemWrapper
+        {
+            TKernel kernel;
+            uint32_t dynSharedMemBytes = 0u;
+
+            constexpr DynSharedMemWrapper(TKernel const& kernelFunctor, uint32_t sharedMemBytes)
+                : kernel{kernelFunctor}
+                , dynSharedMemBytes{sharedMemBytes}
+            {
+            }
+
+            constexpr void operator()(alpaka::onAcc::concepts::Acc auto const& acc, auto&&... args) const
+            {
+                kernel(acc, ALPAKA_FORWARD(args)...);
+            }
+        };
+
         //! The CPU serial accelerator execution task type trait specialization.
         template<
             alpaka::concepts::Api TApi,
@@ -250,20 +277,45 @@ namespace aV2P
                 TKernelFnObj const& kernelFnObj,
                 TArgs&&... args)
             {
+                using Acc = AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>;
                 if(workDiv.m_blockThreadExtent.prod() != static_cast<TIdx>(1u))
                 {
                     throw std::runtime_error(
-                        "The given work division is not valid for a single thread Acc: "
-                        + getAccName<AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>>()
+                        "The given work division is not valid for a single thread Acc: " + getAccName<Acc>()
                         + ". Threads per block should be 1!");
                 }
 
-                return TaskKernelAlpaka3<
-                    AccAlpaka3<TDim, TIdx, TApi, TDeviceKind, TExecutor>,
-                    TDim,
-                    TIdx,
-                    TKernelFnObj,
-                    TArgs...>(workDiv, kernelFnObj, std::forward<TArgs>(args)...);
+
+                if constexpr(requires {
+                                 // we need to check for the trait because the function signature is always available
+                                 trait::BlockSharedMemDynSizeBytes<ALPAKA_TYPEOF(kernelFnObj), Acc>::
+                                     getBlockSharedMemDynSizeBytes(
+                                         kernelFnObj,
+                                         workDiv.m_gridBlockExtent,
+                                         workDiv.m_blockThreadExtent,
+                                         std::forward<TArgs>(args)...);
+                             })
+                {
+                    uint32_t dynSharedMemBytes = getBlockSharedMemDynSizeBytes<Acc>(
+                        kernelFnObj,
+                        workDiv.m_gridBlockExtent,
+                        workDiv.m_blockThreadExtent,
+                        std::forward<TArgs>(args)...);
+
+                    // wrapp the kernel to provide the shared memroy as member for alpaka3
+                    auto kernelWithSharedMem = DynSharedMemWrapper(kernelFnObj, dynSharedMemBytes);
+                    return TaskKernelAlpaka3<Acc, TDim, TIdx, ALPAKA_TYPEOF(kernelWithSharedMem), TArgs...>(
+                        workDiv,
+                        kernelWithSharedMem,
+                        std::forward<TArgs>(args)...);
+                }
+                else
+                {
+                    return TaskKernelAlpaka3<Acc, TDim, TIdx, TKernelFnObj, TArgs...>(
+                        workDiv,
+                        kernelFnObj,
+                        std::forward<TArgs>(args)...);
+                }
             }
         };
 
@@ -373,6 +425,42 @@ namespace aV2P
                 using VecType = Vec<Dim, Idx>;
                 auto result = acc.getIdxWithin(alpaka::onAcc::origin::grid, alpaka::onAcc::unit::blocks);
                 return VecType{result};
+            }
+        };
+
+        template<typename T, alpaka::onAcc::concepts::Acc TAlpakaAcc>
+        struct GetDynSharedMem<T, TAlpakaAcc>
+        {
+            static auto getMem(TAlpakaAcc const& acc) -> T*
+            {
+                return alpaka::onAcc::getDynSharedMem<T>(acc);
+            }
+        };
+
+        template<alpaka::onAcc::concepts::Acc TAlpakaAcc>
+        struct SyncBlockThreads<TAlpakaAcc>
+        {
+            ALPAKA_NO_HOST_ACC_WARNING
+            ALPAKA_FN_ACC static auto syncBlockThreads(TAlpakaAcc const& acc) -> void
+            {
+                alpaka::onAcc::syncBlockThreads(acc);
+            }
+        };
+
+        template<typename T, std::size_t TuniqueId, alpaka::onAcc::concepts::Acc TAlpakaAcc>
+        struct DeclareSharedVar<T, TuniqueId, TAlpakaAcc>
+        {
+            static auto declareVar(TAlpakaAcc const& acc) -> T&
+            {
+                return alpaka::onAcc::declareSharedVar<T, TuniqueId>(acc);
+            }
+        };
+
+        template<alpaka::onAcc::concepts::Acc TAlpakaAcc>
+        struct FreeSharedVars<TAlpakaAcc>
+        {
+            static auto freeVars(TAlpakaAcc const& acc) -> void
+            {
             }
         };
     } // namespace trait

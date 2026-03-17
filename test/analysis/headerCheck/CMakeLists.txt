@@ -26,7 +26,7 @@ if(alpaka_CHECK_HEADERS)
             _HEADER_FILE
             "${_HEADER_FILE}")
         set(_SOURCE_FILE "${_GENERATED_SOURCE_DIR}/${_HEADER_FILE}.cpp")
-        file(WRITE "${_SOURCE_FILE}" "#include <alpaka/${_HEADER_FILE}>\n#include <alpaka/${_HEADER_FILE}>\n")
+        file(WRITE "${_SOURCE_FILE}" "#include <aV2P/${_HEADER_FILE}>\n#include <aV2P/${_HEADER_FILE}>\n")
     endforeach()
 
     #---------------------------------------------------------------------------

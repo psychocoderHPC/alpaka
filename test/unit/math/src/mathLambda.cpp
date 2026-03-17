@@ -12,17 +12,16 @@
 #    include "Functor.hpp"
 #    include "TestTemplate.hpp"
 
-#    include <alpaka/core/Config.hpp>
-#    include <alpaka/math/Complex.hpp>
-#    include <alpaka/test/KernelExecutionFixture.hpp>
-#    include <alpaka/test/acc/TestAccs.hpp>
-
+#    include <aV2P/core/Config.hpp>
+#    include <aV2P/math/Complex.hpp>
+#    include <aV2P/test/KernelExecutionFixture.hpp>
+#    include <aV2P/test/acc/TestAccs.hpp>
 #    include <catch2/catch_template_test_macros.hpp>
 
 #    include <cstdint>
 #    include <tuple>
 
-using TestAccs = alpaka::test::EnabledAccs<alpaka::DimInt<1u>, std::size_t>;
+using TestAccs = aV2P::test::EnabledAccs<aV2P::DimInt<1u>, std::size_t>;
 
 //! Caller of test template with additional lambda wrapping the functor
 //! @tparam TAcc Accelerator.
@@ -69,7 +68,7 @@ TEMPLATE_LIST_TEST_CASE("mathOpsLambdaDouble", "[math] [operator]", TestAccs)
 TEMPLATE_LIST_TEST_CASE("mathOpsLambdaComplexFloat", "[math] [operator]", TestAccs)
 {
     using Acc = TestType;
-    auto testTemplate = LambdaMathTestTemplate<Acc, alpaka::Complex<float>>{};
+    auto testTemplate = LambdaMathTestTemplate<Acc, aV2P::Complex<float>>{};
     testTemplate.template operator()<mathtest::UnaryFunctorsComplex>();
     testTemplate.template operator()<mathtest::BinaryFunctorsComplex>();
 }
@@ -77,7 +76,7 @@ TEMPLATE_LIST_TEST_CASE("mathOpsLambdaComplexFloat", "[math] [operator]", TestAc
 TEMPLATE_LIST_TEST_CASE("mathOpsLambdaComplexDouble", "[math] [operator]", TestAccs)
 {
     using Acc = TestType;
-    auto testTemplate = LambdaMathTestTemplate<Acc, alpaka::Complex<double>>{};
+    auto testTemplate = LambdaMathTestTemplate<Acc, aV2P::Complex<double>>{};
     testTemplate.template operator()<mathtest::UnaryFunctorsComplex>();
     testTemplate.template operator()<mathtest::BinaryFunctorsComplex>();
 }

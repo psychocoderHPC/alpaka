@@ -126,9 +126,14 @@ namespace aV2P
             {
                 aV2P::KernelFunctionAttributes kernelFunctionAttributes;
                 kernelFunctionAttributes.maxThreadsPerBlock
-                    = dev.getAlpaka3().getDeviceProperties().maxThreadsPerBlock;
+                    = static_cast<TIdx>(dev.getAlpaka3().getDeviceProperties().maxThreadsPerBlock);
                 kernelFunctionAttributes.maxDynamicSharedSizeBytes
-                    = dev.getAlpaka3().getDeviceProperties().sharedMemPerBlockBytes;
+                    = static_cast<TIdx>(dev.getAlpaka3().getDeviceProperties().sharedMemPerBlockBytes);
+
+                if constexpr(alpaka::exec::isSeqExecutor_v<TExecutor>)
+                {
+                    kernelFunctionAttributes.maxThreadsPerBlock = static_cast<TIdx>(1);
+                }
 
                 return kernelFunctionAttributes;
             }

@@ -17,7 +17,6 @@ macro(alpaka_add_library In_Name)
     # add_library( <name> [STATIC | SHARED | MODULE] [EXCLUDE_FROM_ALL] [<source>...])
 
     add_library(${In_Name} ${ARGN})
-
     target_link_libraries(${In_Name} PUBLIC alpaka3::alpaka)
     alpaka_finalize(${In_Name})
 

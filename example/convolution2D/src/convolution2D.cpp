@@ -193,12 +193,14 @@ namespace aV2P::trait
             int32_t const, // matrixWidth
             int32_t const, // matrixHeight
             TElem const* const, // filter
-            int32_t const, // filter width
+            int32_t const filterWidth, // filter width
             int32_t const, // allocated input width
             int32_t const) // allocated filter width
         {
+            auto halfFilterWidth = filterWidth / 2;
             // Reserve the buffer, buffers size is the number of elements in a block (tile)
-            return static_cast<std::size_t>(blockThreadExtent.prod() * threadElemExtent.prod()) * sizeof(TElem);
+            return static_cast<std::size_t>(threadElemExtent.prod() * halfFilterWidth * halfFilterWidth)
+                   * sizeof(TElem);
         }
     };
 } // namespace aV2P::trait

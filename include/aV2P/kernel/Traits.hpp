@@ -42,34 +42,7 @@ namespace aV2P
         //!
         //! The default implementation returns 0.
         template<typename TKernelFnObj, typename TAcc, typename TSfinae = void>
-        struct BlockSharedMemDynSizeBytes
-        {
-#if ALPAKA_COMP_CLANG
-#    pragma clang diagnostic push
-#    pragma clang diagnostic ignored                                                                                  \
-        "-Wdocumentation" // clang does not support the syntax for variadic template arguments "args,..."
-#endif
-            //! \param kernelFnObj The kernel object for which the block shared memory size should be calculated.
-            //! \param blockThreadExtent The block thread extent.
-            //! \param threadElemExtent The thread element extent.
-            //! \tparam TArgs The kernel invocation argument types pack.
-            //! \param args,... The kernel invocation arguments.
-            //! \return The size of the shared memory allocated for a block in bytes.
-            //! The default version always returns zero.
-#if ALPAKA_COMP_CLANG
-#    pragma clang diagnostic pop
-#endif
-            ALPAKA_NO_HOST_ACC_WARNING
-            template<typename TDim, typename... TArgs>
-            ALPAKA_FN_HOST_ACC static auto getBlockSharedMemDynSizeBytes(
-                [[maybe_unused]] TKernelFnObj const& kernelFnObj,
-                [[maybe_unused]] Vec<TDim, Idx<TAcc>> const& blockThreadExtent,
-                [[maybe_unused]] Vec<TDim, Idx<TAcc>> const& threadElemExtent,
-                [[maybe_unused]] TArgs const&... args) -> std::size_t
-            {
-                return 0u;
-            }
-        };
+        struct BlockSharedMemDynSizeBytes;
 
         //! \brief The structure template to access to the functions attributes of a kernel function object.
         //! \tparam TAcc The accelerator type
@@ -332,9 +305,11 @@ namespace aV2P
     template<typename TAcc, typename TWorkDiv, typename TKernelFnObj, typename... TArgs>
     ALPAKA_FN_HOST auto createTaskKernel(TWorkDiv const& workDiv, TKernelFnObj const& kernelFnObj, TArgs&&... args)
     {
+        // this is not possible with alpaka3 because we do not know the accelerator type at this point
+#if 0
         // check for void return type
         detail::CheckFnReturnType<TAcc>{}(kernelFnObj, args...);
-
+#endif
 #if ALPAKA_COMP_NVCC
         static_assert(
             isKernelTriviallyCopyable<TKernelFnObj>,

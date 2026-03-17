@@ -2,20 +2,19 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-#include <alpaka/kernel/Traits.hpp>
-#include <alpaka/test/KernelExecutionFixture.hpp>
-
+#include <aV2P/kernel/Traits.hpp>
+#include <aV2P/test/KernelExecutionFixture.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-using Dim = alpaka::DimInt<2u>;
+using Dim = aV2P::DimInt<2u>;
 using Idx = std::uint32_t;
 #if defined(ALPAKA_ACC_CPU_SERIAL_ENABLED)
-using AccCpu = alpaka::AccCpuSerial<Dim, Idx>;
+using AccCpu = aV2P::AccCpuSerial<Dim, Idx>;
 #endif
 #if defined(ALPAKA_ACC_GPU_HIP_ENABLED) && ALPAKA_LANG_HIP
-using AccGpu = alpaka::AccGpuHipRt<Dim, Idx>;
+using AccGpu = aV2P::AccGpuHipRt<Dim, Idx>;
 #elif defined(ALPAKA_ACC_GPU_CUDA_ENABLED) && ALPAKA_LANG_CUDA
-using AccGpu = alpaka::AccGpuCudaRt<Dim, Idx>;
+using AccGpu = aV2P::AccGpuCudaRt<Dim, Idx>;
 #endif
 
 #if defined(ALPAKA_ACC_CPU_SERIAL_ENABLED)
@@ -25,13 +24,13 @@ struct KernelNoTemplateCpu
     {
         ALPAKA_CHECK(
             *success,
-            static_cast<alpaka::Idx<AccCpu>>(1) == (alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc)).prod());
+            static_cast<aV2P::Idx<AccCpu>>(1) == (aV2P::getWorkDiv<aV2P::Grid, aV2P::Threads>(acc)).prod());
     }
 };
 
 TEST_CASE("kernelNoTemplateCpu", "[kernel]")
 {
-    alpaka::test::KernelExecutionFixture<AccCpu> fixture(alpaka::Vec<Dim, Idx>::ones());
+    aV2P::test::KernelExecutionFixture<AccCpu> fixture(aV2P::Vec<Dim, Idx>::ones());
 
     KernelNoTemplateCpu kernel;
 
@@ -48,13 +47,13 @@ struct KernelNoTemplateGpu
     {
         ALPAKA_CHECK(
             *success,
-            static_cast<alpaka::Idx<AccGpu>>(1) == (alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc)).prod());
+            static_cast<aV2P::Idx<AccGpu>>(1) == (aV2P::getWorkDiv<aV2P::Grid, aV2P::Threads>(acc)).prod());
     }
 };
 
 TEST_CASE("kernelNoTemplateGpu", "[kernel]")
 {
-    alpaka::test::KernelExecutionFixture<AccGpu> fixture(alpaka::Vec<Dim, Idx>::ones());
+    aV2P::test::KernelExecutionFixture<AccGpu> fixture(aV2P::Vec<Dim, Idx>::ones());
 
     KernelNoTemplateGpu kernel;
 
@@ -70,13 +69,13 @@ struct KernelUnusedTemplateParamCpu
     {
         ALPAKA_CHECK(
             *success,
-            static_cast<alpaka::Idx<AccCpu>>(1) == (alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc)).prod());
+            static_cast<aV2P::Idx<AccCpu>>(1) == (aV2P::getWorkDiv<aV2P::Grid, aV2P::Threads>(acc)).prod());
     }
 };
 
 TEST_CASE("kernelUnusedTemplateParamCpu", "[kernel]")
 {
-    alpaka::test::KernelExecutionFixture<AccCpu> fixture(alpaka::Vec<Dim, Idx>::ones());
+    aV2P::test::KernelExecutionFixture<AccCpu> fixture(aV2P::Vec<Dim, Idx>::ones());
 
     KernelUnusedTemplateParamCpu kernel;
 
@@ -93,13 +92,13 @@ struct KernelUnusedTemplateParamGpu
     {
         ALPAKA_CHECK(
             *success,
-            static_cast<alpaka::Idx<AccGpu>>(1) == (alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc)).prod());
+            static_cast<aV2P::Idx<AccGpu>>(1) == (aV2P::getWorkDiv<aV2P::Grid, aV2P::Threads>(acc)).prod());
     }
 };
 
 TEST_CASE("kernelUnusedTemplateParamGpu", "[kernel]")
 {
-    alpaka::test::KernelExecutionFixture<AccGpu> fixture(alpaka::Vec<Dim, Idx>::ones());
+    aV2P::test::KernelExecutionFixture<AccGpu> fixture(aV2P::Vec<Dim, Idx>::ones());
 
     KernelUnusedTemplateParamGpu kernel;
 

@@ -5,24 +5,23 @@
 #include "Functor.hpp"
 #include "TestTemplate.hpp"
 
-#include <alpaka/test/KernelExecutionFixture.hpp>
-#include <alpaka/test/acc/TestAccs.hpp>
-
+#include <aV2P/test/KernelExecutionFixture.hpp>
+#include <aV2P/test/acc/TestAccs.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 
 #include <tuple>
 
-using TestAccs = alpaka::test::EnabledAccs<alpaka::DimInt<1u>, std::size_t>;
+using TestAccs = aV2P::test::EnabledAccs<aV2P::DimInt<1u>, std::size_t>;
 
 // This file only has unit tests for real numbers in order to split the tests between object files
-using FunctorsReal = alpaka::meta::
+using FunctorsReal = aV2P::meta::
     Concatenate<mathtest::UnaryFunctorsReal, mathtest::BinaryFunctorsReal, mathtest::TernaryFunctorsReal>;
-using TestAccFunctorTuplesReal = alpaka::meta::CartesianProduct<std::tuple, TestAccs, FunctorsReal>;
+using TestAccFunctorTuplesReal = aV2P::meta::CartesianProduct<std::tuple, TestAccs, FunctorsReal>;
 
 TEMPLATE_LIST_TEST_CASE("mathOpsFloat", "[math] [operator]", TestAccFunctorTuplesReal)
 {
     /*
-     * All alpaka::math:: functions are tested here except sincos.
+     * All aV2P::math:: functions are tested here except sincos.
      * The function will be called with a buffer from the custom Buffer class.
      * This argument Buffer contains ArgsItems from Defines.hpp and can be
      * accessed with the overloaded operator().
@@ -55,7 +54,7 @@ TEMPLATE_LIST_TEST_CASE("mathOpsFloat", "[math] [operator]", TestAccFunctorTuple
      * - tests the results against the std implementation ( catch REQUIRES)
      *
      * TestKernel
-     * - uses the alpaka::math:: option from the functor
+     * - uses the aV2P::math:: option from the functor
      * - uses the device-buffer  option from the args
      *
      * EXTENSIBILITY:
@@ -65,7 +64,7 @@ TEMPLATE_LIST_TEST_CASE("mathOpsFloat", "[math] [operator]", TestAccFunctorTuple
      * - Add a new Arity:: enum-type in Defines.hpp
      *     - add a matching operator() function in Functor.hpp,
      *     - add a new ...Functors tuple
-     *     - call alpaka::meta::forEachType with the tuple in ForEachFunctor
+     *     - call aV2P::meta::forEachType with the tuple in ForEachFunctor
      */
 
     using Acc = std::tuple_element_t<0u, TestType>;

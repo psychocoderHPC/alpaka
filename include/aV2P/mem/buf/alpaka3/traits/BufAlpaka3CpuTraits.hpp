@@ -173,7 +173,10 @@ namespace aV2P::trait
         {
             ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
 
-            return {alpaka::onHost::allocDeferred<TElem>(queue.getAlpaka3(), extent.getAlpaka3())};
+            if constexpr(std::is_integral_v<TExtent>)
+                return {alpaka::onHost::allocDeferred<TElem>(queue.getAlpaka3(), alpaka::Vec{extent})};
+            else
+                return {alpaka::onHost::allocDeferred<TElem>(queue.getAlpaka3(), extent.getAlpaka3())};
         }
     };
 
@@ -193,7 +196,10 @@ namespace aV2P::trait
             PlatformAlpaka3<TDevSpec> const& /*platform*/,
             TExtent const& extent) -> BufAlpaka3<TDevSpec, TElem, TDim, TIdx>
         {
-            return {alpaka::onHost::allocMapped<TElem>(dev.getAlpaka3(), extent.getAlpaka3())};
+            if constexpr(std::is_integral_v<TExtent>)
+                return {alpaka::onHost::allocMapped<TElem>(dev.getAlpaka3(), alpaka::Vec{extent})};
+            else
+                return {alpaka::onHost::allocMapped<TElem>(dev.getAlpaka3(), extent.getAlpaka3())};
         }
     };
 
@@ -207,7 +213,10 @@ namespace aV2P::trait
             PlatformAlpaka3<TDevSpec> const& /*platform*/,
             TExtent const& extent) -> BufAlpaka3<TDevSpec, TElem, TDim, TIdx>
         {
-            return {alpaka::onHost::allocUnified<TElem>(dev.getAlpaka3(), extent.getAlpaka3())};
+            if constexpr(std::is_integral_v<TExtent>)
+                return {alpaka::onHost::allocUnified<TElem>(dev.getAlpaka3(), alpaka::Vec{extent})};
+            else
+                return {alpaka::onHost::allocUnified<TElem>(dev.getAlpaka3(), extent.getAlpaka3())};
         }
     };
 } // namespace aV2P::trait
