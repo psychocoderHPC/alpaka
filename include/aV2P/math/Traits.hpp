@@ -191,10 +191,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find abs(TArg) in the namespace of your type.
-                using std::abs;
-                return abs(arg);
+                return alpaka::math::abs(arg);
             }
         };
 
@@ -204,10 +201,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find acos(TArg) in the namespace of your type.
-                using std::acos;
-                return acos(arg);
+                return alpaka::math::acos(arg);
             }
         };
 
@@ -217,10 +211,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find acosh(TArg) in the namespace of your type.
-                using std::acosh;
-                return acosh(arg);
+                return alpaka::math::acosh(arg);
             }
         };
 
@@ -233,10 +224,7 @@ namespace aV2P::math
             ALPAKA_NO_HOST_ACC_WARNING
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArgument const& argument)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find arg(TArgument) in the namespace of your type.
-                using std::arg;
-                return arg(argument);
+                return alpaka::math::arg(argument);
             }
         };
 
@@ -246,10 +234,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find asin(TArg) in the namespace of your type.
-                using std::asin;
-                return asin(arg);
+                return alpaka::math::asin(arg);
             }
         };
 
@@ -259,10 +244,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find asin(TArg) in the namespace of your type.
-                using std::asinh;
-                return asinh(arg);
+                return alpaka::math::asinh(arg);
             }
         };
 
@@ -272,10 +254,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find atan(TArg) in the namespace of your type.
-                using std::atan;
-                return atan(arg);
+                return alpaka::math::atan(arg);
             }
         };
 
@@ -285,10 +264,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find atanh(TArg) in the namespace of your type.
-                using std::atanh;
-                return atanh(arg);
+                return alpaka::math::atanh(arg);
             }
         };
 
@@ -298,10 +274,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, Ty const& y, Tx const& x)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find atan2(Tx, Ty) in the namespace of your type.
-                using std::atan2;
-                return atan2(y, x);
+                return alpaka::math::atan2(y, x);
             }
         };
 
@@ -311,10 +284,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find cbrt(TArg) in the namespace of your type.
-                using std::cbrt;
-                return cbrt(arg);
+                return alpaka::math::cbrt(arg);
             } //! The erf trait.
         };
 
@@ -324,10 +294,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find ceil(TArg) in the namespace of your type.
-                using std::ceil;
-                return ceil(arg);
+                return alpaka::math::ceil(arg);
             }
         };
 
@@ -337,10 +304,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find conj(TArg) in the namespace of your type.
-                using std::conj;
-                return conj(arg);
+                return alpaka::math::conj(arg);
             }
         };
 
@@ -350,10 +314,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TMag const& mag, TSgn const& sgn)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find copysign(TMag, TSgn) in the namespace of your type.
-                using std::copysign;
-                return copysign(mag, sgn);
+                return alpaka::math::copysign(mag, sgn);
             }
         };
 
@@ -363,10 +324,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find cos(TArg) in the namespace of your type.
-                using std::cos;
-                return cos(arg);
+                return alpaka::math::cos(arg);
             }
         };
 
@@ -376,10 +334,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find cos(TArg) in the namespace of your type.
-                using std::cosh;
-                return cosh(arg);
+                return alpaka::math::cosh(arg);
             }
         };
 
@@ -388,10 +343,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find erf(TArg) in the namespace of your type.
-                using std::erf;
-                return erf(arg);
+                return alpaka::math::erf(arg);
             }
         };
 
@@ -401,10 +353,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find exp(TArg) in the namespace of your type.
-                using std::exp;
-                return exp(arg);
+                return alpaka::math::exp(arg);
             }
         };
 
@@ -414,10 +363,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find floor(TArg) in the namespace of your type.
-                using std::floor;
-                return floor(arg);
+                return alpaka::math::floor(arg);
             }
         };
 
@@ -427,10 +373,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, Tx const& x, Ty const& y, Tz const& z)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find fma(Tx, Ty, Tz) in the namespace of your type.
-                using std::fma;
-                return fma(x, y, z);
+                return alpaka::math::fma(x, y, z);
             }
         };
 
@@ -440,10 +383,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, Tx const& x, Ty const& y)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find fmod(Tx, Ty) in the namespace of your type.
-                using std::fmod;
-                return fmod(x, y);
+                return alpaka::math::fmod(x, y);
             }
         };
 
@@ -453,10 +393,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find isfinite(TArg) in the namespace of your type.
-                using std::isfinite;
-                return isfinite(arg);
+                return alpaka::math::isfinite(arg);
             }
         };
 
@@ -466,10 +403,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find isinf(TArg) in the namespace of your type.
-                using std::isinf;
-                return isinf(arg);
+                return alpaka::math::isinf(arg);
             }
         };
 
@@ -479,10 +413,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find isnan(TArg) in the namespace of your type.
-                using std::isnan;
-                return isnan(arg);
+                return alpaka::math::isnan(arg);
             }
         };
 
@@ -492,10 +423,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find log(TArg) in the namespace of your type.
-                using std::log;
-                return log(arg);
+                return alpaka::math::log(arg);
             }
         };
 
@@ -505,10 +433,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find log2(TArg) in the namespace of your type.
-                using std::log2;
-                return log2(arg);
+                return alpaka::math::log2(arg);
             }
         };
 
@@ -518,10 +443,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find log10(TArg) in the namespace of your type.
-                using std::log10;
-                return log10(arg);
+                return alpaka::math::log10(arg);
             }
         };
 
@@ -531,10 +453,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, Tx const& x, Ty const& y)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find max(Tx, Ty) in the namespace of your type.
-                using std::max;
-                return max(x, y);
+                return alpaka::math::max(x, y);
             }
         };
 
@@ -544,10 +463,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, Tx const& x, Ty const& y)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find min(Tx, Ty) in the namespace of your type.
-                using std::min;
-                return min(x, y);
+                return alpaka::math::min(x, y);
             }
         };
 
@@ -557,10 +473,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TBase const& base, TExp const& exp)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find pow(base, exp) in the namespace of your type.
-                using std::pow;
-                return pow(base, exp);
+                return alpaka::math::pow(base, exp);
             }
         };
 
@@ -570,10 +483,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, Tx const& x, Ty const& y)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find remainder(Tx, Ty) in the namespace of your type.
-                using std::remainder;
-                return remainder(x, y);
+                return alpaka::math::remainder(x, y);
             }
         };
 
@@ -583,10 +493,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find round(TArg) in the namespace of your type.
-                using std::round;
-                return round(arg);
+                return alpaka::math::round(arg);
             }
         };
 
@@ -596,10 +503,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find lround(TArg) in the namespace of your type.
-                using std::lround;
-                return lround(arg);
+                return alpaka::math::lround(arg);
             }
         };
 
@@ -609,24 +513,9 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find llround(TArg) in the namespace of your type.
-                using std::llround;
-                return llround(arg);
+                return alpaka::math::llround(arg);
             }
         };
-
-        namespace detail
-        {
-            //! Fallback implementation when no better ADL match was found
-            template<typename TArg>
-            ALPAKA_FN_HOST_ACC auto rsqrt(TArg const& arg)
-            {
-                // Still use ADL to try find sqrt(arg)
-                using std::sqrt;
-                return static_cast<TArg>(1) / sqrt(arg);
-            }
-        } // namespace detail
 
         //! The rsqrt trait.
         template<typename T, typename TArg, typename TSfinae = void>
@@ -634,10 +523,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find rsqrt(TArg) in the namespace of your type.
-                using detail::rsqrt;
-                return rsqrt(arg);
+                return alpaka::math::rsqrt(arg);
             }
         };
 
@@ -647,10 +533,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find sin(TArg) in the namespace of your type.
-                using std::sin;
-                return sin(arg);
+                return alpaka::math::sin(arg);
             }
         };
 
@@ -660,26 +543,9 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find sin(TArg) in the namespace of your type.
-                using std::sinh;
-                return sinh(arg);
+                return alpaka::math::sinh(arg);
             }
         };
-
-        namespace detail
-        {
-            //! Fallback implementation when no better ADL match was found
-            template<typename TArg>
-            ALPAKA_FN_HOST_ACC auto sincos(TArg const& arg, TArg& result_sin, TArg& result_cos)
-            {
-                // Still use ADL to try find sin(arg) and cos(arg)
-                using std::sin;
-                result_sin = sin(arg);
-                using std::cos;
-                result_cos = cos(arg);
-            }
-        } // namespace detail
 
         //! The sincos trait.
         template<typename T, typename TArg, typename TSfinae = void>
@@ -687,10 +553,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg, TArg& result_sin, TArg& result_cos)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find sincos(TArg, TArg&, TArg&) in the namespace of your type.
-                using detail::sincos;
-                return sincos(arg, result_sin, result_cos);
+                return alpaka::math::sincos(arg, result_sin, result_cos);
             }
         };
 
@@ -700,10 +563,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find sqrt(TArg) in the namespace of your type.
-                using std::sqrt;
-                return sqrt(arg);
+                return alpaka::math::sqrt(arg);
             }
         };
 
@@ -713,10 +573,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find tan(TArg) in the namespace of your type.
-                using std::tan;
-                return tan(arg);
+                return alpaka::math::tan(arg);
             }
         };
 
@@ -726,10 +583,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find tanh(TArg) in the namespace of your type.
-                using std::tanh;
-                return tanh(arg);
+                return alpaka::math::tanh(arg);
             }
         };
 
@@ -739,10 +593,7 @@ namespace aV2P::math
         {
             ALPAKA_FN_HOST_ACC auto operator()(T const& /* ctx */, TArg const& arg)
             {
-                // This is an ADL call. If you get a compile error here then your type is not supported by the
-                // backend and we could not find trunc(TArg) in the namespace of your type.
-                using std::trunc;
-                return trunc(arg);
+                return alpaka::math::trunc(arg);
             }
         };
     } // namespace trait

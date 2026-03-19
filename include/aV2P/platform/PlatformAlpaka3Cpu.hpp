@@ -13,13 +13,28 @@
 
 namespace aV2P
 {
-
-
     //! The CPU device platform.
     template<alpaka::onHost::concepts::DeviceSpec TDevSpec>
     struct PlatformAlpaka3 : interface::Implements<ConceptPlatform, PlatformAlpaka3<TDevSpec>>
     {
         using DevSpec = alpaka::onHost::DeviceSpec<alpaka::api::Host, alpaka::deviceKind::Cpu>;
+        using DevSelectorType = decltype(alpaka::onHost::makeDeviceSelector(DevSpec{}));
+
+        ALPAKA_FN_HOST PlatformAlpaka3() : m_devSelectorImpl{alpaka::onHost::makeDeviceSelector(DevSpec{})}
+        {
+        }
+
+        ALPAKA_FN_HOST PlatformAlpaka3(DevSelectorType const& alpaka3Selector) : m_devSelectorImpl{alpaka3Selector}
+        {
+        }
+
+        auto getAlpaka3() const
+        {
+            return m_devSelectorImpl;
+        }
+
+    private:
+        DevSelectorType m_devSelectorImpl;
     };
 
     using PlatformCpu = PlatformAlpaka3<alpaka::onHost::DeviceSpec<alpaka::api::Host, alpaka::deviceKind::Cpu>>;

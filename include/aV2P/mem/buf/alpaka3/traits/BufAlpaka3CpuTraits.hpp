@@ -182,12 +182,13 @@ namespace aV2P::trait
         {
             ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
 
+            using Buff = BufAlpaka3<TDevSpec, TElem, TDim, TIdx>;
             if constexpr(std::is_integral_v<TExtent>)
-                return {
+                return Buff{
                     alpaka::onHost::allocDeferred<TElem>(queue.getAlpaka3(), alpaka::Vec{extent}),
                     aV2P::getDev(queue)};
             else
-                return {
+                return Buff{
                     alpaka::onHost::allocDeferred<TElem>(queue.getAlpaka3(), extent.getAlpaka3()),
                     aV2P::getDev(queue)};
         }
@@ -203,17 +204,42 @@ namespace aV2P::trait
     template<typename TElem, typename TDim, typename TIdx, alpaka::onHost::concepts::DeviceSpec TDevSpec>
     struct BufAllocMapped<PlatformAlpaka3<TDevSpec>, TElem, TDim, TIdx>
     {
+        /**
+         *  @return Buffer with CPU signature and not like in alpaka3 with GPU device kind
+         */
         template<typename TExtent>
         ALPAKA_FN_HOST static auto allocMappedBuf(
-            DevAlpaka3<TDevSpec> const& dev,
-            PlatformAlpaka3<TDevSpec> const& /*platform*/,
-            TExtent const& extent) -> BufAlpaka3<TDevSpec, TElem, TDim, TIdx>
+            DevCpu const& dev,
+            PlatformAlpaka3<TDevSpec> const& platform,
+            TExtent const& extent) -> BufAlpaka3<typename DevCpu::DevSpec, TElem, TDim, TIdx>
         {
             ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
+
+            using CpuDevSpec = typename DevCpu::DevSpec;
+            using Buff = BufAlpaka3<CpuDevSpec, TElem, TDim, TIdx>;
+            using AlpakaBuffType = typename Buff::BufType;
+            /* alpaka3 requires a device where the host memory should be available, we use the first device as dummy.
+             * In all implementations the memory should be visible on all devices.
+             */
+            auto alpaka3PlatformDev = platform.getAlpaka3().makeDevice(0);
             if constexpr(std::is_integral_v<TExtent>)
-                return {alpaka::onHost::allocMapped<TElem>(dev.getAlpaka3(), alpaka::Vec{extent}), dev};
+            {
+                auto alpaka3Buf = alpaka::onHost::allocMapped<TElem>(alpaka3PlatformDev, alpaka::Vec{extent});
+                /* @attention we force reinterpret the alpaka3 device buffer into a host buffer, that very, very, ...
+                 * dangerous but works because the deleter in the buffer is a void function. Don't do it at home!!
+                 */
+                auto buffer = *reinterpret_cast<AlpakaBuffType*>(&alpaka3Buf);
+                return Buff{buffer, dev};
+            }
             else
-                return {alpaka::onHost::allocMapped<TElem>(dev.getAlpaka3(), extent.getAlpaka3()), dev};
+            {
+                auto alpaka3Buf = alpaka::onHost::allocMapped<TElem>(alpaka3PlatformDev, extent.getAlpaka3());
+                /* @attention we force reinterpret the alpaka3 device buffer into a host buffer, that very, very, ...
+                 * dangerous but works because the deleter in the buffer is a void function. Don't do it at home!!
+                 */
+                auto buffer = *reinterpret_cast<AlpakaBuffType*>(&alpaka3Buf);
+                return Buff{buffer, dev};
+            }
         }
     };
 
@@ -221,17 +247,42 @@ namespace aV2P::trait
     template<typename TElem, typename TDim, typename TIdx, alpaka::onHost::concepts::DeviceSpec TDevSpec>
     struct BufAllocManaged<PlatformAlpaka3<TDevSpec>, TElem, TDim, TIdx>
     {
+        /**
+         *  @return Buffer with CPU signature and not like in alpaka3 with GPU device kind
+         */
         template<typename TExtent>
         ALPAKA_FN_HOST static auto allocManagedBuf(
-            DevAlpaka3<TDevSpec> const& dev,
-            PlatformAlpaka3<TDevSpec> const& /*platform*/,
-            TExtent const& extent) -> BufAlpaka3<TDevSpec, TElem, TDim, TIdx>
+            DevCpu const& dev,
+            PlatformAlpaka3<TDevSpec> const& platform,
+            TExtent const& extent) -> BufAlpaka3<typename DevCpu::DevSpec, TElem, TDim, TIdx>
         {
             ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
+
+            using CpuDevSpec = typename DevCpu::DevSpec;
+            using Buff = BufAlpaka3<CpuDevSpec, TElem, TDim, TIdx>;
+            using AlpakaBuffType = typename Buff::BufType;
+            /* alpaka3 requires a device where the host memory should be available, we use the first device as dummy.
+             * In all implementations the memory should be visible on all devices.
+             */
+            auto alpaka3PlatformDev = platform.getAlpaka3().makeDevice(0);
             if constexpr(std::is_integral_v<TExtent>)
-                return {alpaka::onHost::allocUnified<TElem>(dev.getAlpaka3(), alpaka::Vec{extent}), dev};
+            {
+                auto alpaka3Buf = alpaka::onHost::allocUnified<TElem>(alpaka3PlatformDev, alpaka::Vec{extent});
+                /* @attention we force reinterpret the alpaka3 device buffer into a host buffer, that very, very, ...
+                 * dangerous but works because the deleter in the buffer is a void function. Don't do it at home!!
+                 */
+                auto buffer = *reinterpret_cast<AlpakaBuffType*>(&alpaka3Buf);
+                return Buff{buffer, dev};
+            }
             else
-                return {alpaka::onHost::allocUnified<TElem>(dev.getAlpaka3(), extent.getAlpaka3()), dev};
+            {
+                auto alpaka3Buf = alpaka::onHost::allocUnified<TElem>(alpaka3PlatformDev, extent.getAlpaka3());
+                /* @attention we force reinterpret the alpaka3 device buffer into a host buffer, that very, very, ...
+                 * dangerous but works because the deleter in the buffer is a void function. Don't do it at home!!
+                 */
+                auto buffer = *reinterpret_cast<AlpakaBuffType*>(&alpaka3Buf);
+                return Buff{buffer, dev};
+            }
         }
     };
 } // namespace aV2P::trait
