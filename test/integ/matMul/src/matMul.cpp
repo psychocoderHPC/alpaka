@@ -34,6 +34,7 @@ public:
     //! \param C The pointer to the matrix C data.
     //! \param ldc The pitch of the C matrix in elements.
     ALPAKA_NO_HOST_ACC_WARNING
+
     template<typename TAcc, typename TElem, typename TIndex>
     ALPAKA_FN_ACC auto operator()(
         TAcc const& acc,
@@ -308,16 +309,31 @@ TEMPLATE_LIST_TEST_CASE("matMul", "[matMul]", TestAccs)
     auto const correctResult = static_cast<Val>(k);
 
     bool resultCorrect = true;
+
+#if 0
     auto const pHostData = std::data(bufCHost);
-    for(Idx i(0u); i < m * n; ++i)
+    for (Idx i(0u); i < m * n; ++i)
     {
         auto const& val(pHostData[i]);
-        if(val != correctResult)
+        if (val != correctResult)
         {
             std::cerr << "C[" << i << "] == " << val << " != " << correctResult << std::endl;
             resultCorrect = false;
         }
     }
+#else
+    aV2P::meta::ndLoopIncIdx(
+        extentC,
+        [&](auto const& idx)
+        {
+            auto val = bufCHost.getAlpaka3()[idx.getAlpaka3()];
+            if(val != correctResult)
+            {
+                std::cerr << "C[" << idx << "] == " << val << " != " << correctResult << std::endl;
+                resultCorrect = false;
+            }
+        });
+#endif
 
     REQUIRE(resultCorrect);
 }

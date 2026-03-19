@@ -35,7 +35,7 @@ namespace aV2P::test
 #    if(ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL)
             using type = QueueCudaRtBlocking;
 #    else
-            using type = QueueCudaNonBlocking;
+            using type = QueueCudaRtNonBlocking;
 #    endif
         };
 #endif
@@ -49,7 +49,7 @@ namespace aV2P::test
 #    if(ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL)
             using type = QueueHipRtBlocking;
 #    else
-            using type = QueueHipNonBlocking;
+            using type = QueueHipRtNonBlocking;
 #    endif
         };
 #endif
@@ -89,14 +89,14 @@ namespace aV2P::test
 
         //! The blocking queue trait specialization for a blocking CUDA/HIP RT queue.
         template<>
-        struct IsBlockingQueue<QueueCudaRtBlocking<TApi>>
+        struct IsBlockingQueue<QueueCudaRtBlocking>
         {
             static constexpr bool value = true;
         };
 
         //! The blocking queue trait specialization for a non-blocking CUDA/HIP RT queue.
-        template<typename TApi>
-        struct IsBlockingQueue<QueueCudaRtNonBlocking<TApi>>
+        template<>
+        struct IsBlockingQueue<QueueCudaRtNonBlocking>
         {
             static constexpr bool value = false;
         };
@@ -106,14 +106,14 @@ namespace aV2P::test
 
         //! The blocking queue trait specialization for a blocking CUDA/HIP RT queue.
         template<>
-        struct IsBlockingQueue<QueueHipRtBlocking<TApi>>
+        struct IsBlockingQueue<QueueHipRtBlocking>
         {
             static constexpr bool value = true;
         };
 
         //! The blocking queue trait specialization for a non-blocking CUDA/HIP RT queue.
-        template<typename TApi>
-        struct IsBlockingQueue<QueueHipRtNonBlocking<TApi>>
+        template<>
+        struct IsBlockingQueue<QueueHipRtNonBlocking>
         {
             static constexpr bool value = false;
         };

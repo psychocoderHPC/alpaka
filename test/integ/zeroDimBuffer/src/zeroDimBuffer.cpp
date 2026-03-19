@@ -2,19 +2,22 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-// make sure the CPU_B_SEQ_T_SEQ backend is always available
-#ifndef ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED
-#    define ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED
-#endif // ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED
-#include <aV2P/aV2P.hpp>
-#include <aV2P/test/acc/TestAccs.hpp>
-#include <catch2/catch_message.hpp>
-#include <catch2/catch_template_test_macros.hpp>
-#include <catch2/catch_test_macros.hpp>
+// alpaka3 currently does not support zero dimensional buffers
+#if 0
 
-#include <cstdint>
-#include <cstring>
-#include <iostream>
+// make sure the CPU_B_SEQ_T_SEQ backend is always available
+#    ifndef ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED
+#        define ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED
+#    endif // ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED
+#    include <aV2P/aV2P.hpp>
+#    include <aV2P/test/acc/TestAccs.hpp>
+#    include <catch2/catch_message.hpp>
+#    include <catch2/catch_template_test_macros.hpp>
+#    include <catch2/catch_test_macros.hpp>
+
+#    include <cstdint>
+#    include <cstring>
+#    include <iostream>
 
 // fill an trivial type with std::memset
 template<typename T>
@@ -138,3 +141,5 @@ TEMPLATE_LIST_TEST_CASE("zeroDimBuffer", "[zeroDimBuffer]", TestAccs)
     CHECK(expected1 == *h_buffer1);
     CHECK(expected2 == *h_buffer2);
 }
+
+#endif

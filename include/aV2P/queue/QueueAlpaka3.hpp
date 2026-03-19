@@ -82,7 +82,7 @@ namespace aV2P
         {
             ALPAKA_FN_HOST static auto getDev(QueueAlpaka3<TDev, TQueueKind> const& queue) -> TDev
             {
-                return queue.getAlpaka3().m_dev;
+                return TDev{queue.getAlpaka3().getDevice()};
             }
         };
 

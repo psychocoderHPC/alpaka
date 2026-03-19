@@ -51,13 +51,22 @@ namespace aV2P::trait
         using type = TElem const;
     };
 
+    template<alpaka::onHost::concepts::DeviceSpec TDevSpec, typename TElem, typename TDim, typename TIdx>
+    struct GetPitchesInBytes<ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
+    {
+        ALPAKA_FN_HOST_ACC constexpr auto operator()(ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf) const
+        {
+            return Vec<TDim, TIdx>{buf.getAlpaka3().getPitches()};
+        }
+    };
+
     //! The ConstBufAlpaka3Cpu width get trait specialization.
     template<typename TElem, typename TDim, typename TIdx, alpaka::onHost::concepts::DeviceSpec TDevSpec>
     struct GetExtents<ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
         ALPAKA_FN_HOST auto operator()(ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf)
         {
-            return buf.m_spBufImpl->m_extentElements;
+            return Vec<TDim, TIdx>{buf.getAlpaka3().getExtents()};
         }
     };
 
@@ -68,7 +77,7 @@ namespace aV2P::trait
         ALPAKA_FN_HOST static auto getPtrNative(ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf)
             -> TElem const*
         {
-            return buf.m_spBufImpl->m_pMem;
+            return buf.getAlpaka3().data();
         }
     };
 
@@ -82,7 +91,7 @@ namespace aV2P::trait
         {
             if(dev == getDev(buf))
             {
-                return buf.m_spBufImpl->m_pMem;
+                return buf.getAlpaka3().data();
             }
             else
             {

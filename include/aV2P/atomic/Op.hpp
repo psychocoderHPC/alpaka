@@ -7,6 +7,8 @@
 #include "aV2P/core/Common.hpp"
 #include "aV2P/core/Config.hpp"
 
+#include <alpaka/alpaka.hpp>
+
 #include <algorithm>
 #include <type_traits>
 

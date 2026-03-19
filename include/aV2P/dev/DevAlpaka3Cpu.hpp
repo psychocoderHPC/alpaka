@@ -27,7 +27,6 @@
 
 namespace aV2P
 {
-
     template<alpaka::onHost::concepts::DeviceSpec TDevSpec>
     struct PlatformAlpaka3;
 
@@ -56,6 +55,10 @@ namespace aV2P
     public:
         using DevSpec = TDevSpec;
         using DevType = decltype(alpaka::onHost::makeDeviceSelector(DevSpec{}).makeDevice(0));
+
+        ALPAKA_FN_HOST DevAlpaka3(DevType const& alpaka3Dev) : m_devImpl{alpaka3Dev}
+        {
+        }
 
         auto getAlpaka3() const
         {

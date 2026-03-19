@@ -22,6 +22,8 @@ namespace aV2P
     class BufAlpaka3 : public internal::ViewAccessorType<DevAlpaka3<TDevSpec>, BufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
     {
     public:
+        friend ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>;
+
         using BufType = decltype(alpaka::onHost::alloc<TElem>(
             std::declval<DevAlpaka3<TDevSpec>>().getAlpaka3(),
             std::declval<alpaka::Vec<TIdx, TDim::value>>()));
@@ -92,17 +94,6 @@ namespace aV2P
         DevAlpaka3<TDevSpec> m_dev;
     };
 
-    namespace trait
-    {
-        template<alpaka::onHost::concepts::DeviceSpec TDevSpec, typename TElem, typename TDim, typename TIdx>
-        struct GetPitchesInBytes<BufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
-        {
-            ALPAKA_FN_HOST_ACC constexpr auto operator()(BufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf) const
-            {
-                return Vec<TDim, TIdx>{buf.getAlpaka3().getPitches()};
-            }
-        };
-    } // namespace trait
 } // namespace aV2P
 
 namespace alpaka

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "alpaka/acc/Traits.hpp"
-#include "alpaka/core/Unreachable.hpp"
-#include "alpaka/dim/Traits.hpp"
-#include "alpaka/idx/Traits.hpp"
-#include "alpaka/workdiv/WorkDivMembers.hpp"
+#include "aV2P/acc/Traits.hpp"
+#include "aV2P/core/Unreachable.hpp"
+#include "aV2P/dim/Traits.hpp"
+#include "aV2P/idx/Traits.hpp"
+#include "aV2P/workdiv/WorkDivMembers.hpp"
 
 #include <type_traits>
 

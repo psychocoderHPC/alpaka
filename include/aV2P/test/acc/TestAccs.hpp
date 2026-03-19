@@ -30,85 +30,85 @@ namespace aV2P::test
     {
 #if defined(ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED)
         template<typename TDim, typename TIdx>
-        using AccCpuSerialIfAvailableElseInt = AccCpuSerial<TDim, TIdx>;
+        using AccCpuSerialIfAvailableElseInt = aV2P::AccCpuSerial<TDim, TIdx>;
 #else
         template<typename TDim, typename TIdx>
         using AccCpuSerialIfAvailableElseInt = int;
 #endif
 #if defined(ALPAKA_ACC_CPU_B_SEQ_T_THREADS_ENABLED) && !defined(ALPAKA_CUDA_CI)
         template<typename TDim, typename TIdx>
-        using AccCpuThreadsIfAvailableElseInt = AccCpuThreads<TDim, TIdx>;
+        using AccCpuThreadsIfAvailableElseInt = aV2P::AccCpuThreads<TDim, TIdx>;
 #else
         template<typename TDim, typename TIdx>
         using AccCpuThreadsIfAvailableElseInt = int;
 #endif
 #if defined(ALPAKA_ACC_CPU_B_TBB_T_SEQ_ENABLED)
         template<typename TDim, typename TIdx>
-        using AccCpuTbbIfAvailableElseInt = AccCpuTbbBlocks<TDim, TIdx>;
+        using AccCpuTbbIfAvailableElseInt = aV2P::AccCpuTbbBlocks<TDim, TIdx>;
 #else
         template<typename TDim, typename TIdx>
         using AccCpuTbbIfAvailableElseInt = int;
 #endif
 #if defined(ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLED)
         template<typename TDim, typename TIdx>
-        using AccCpuOmp2BlocksIfAvailableElseInt = AccCpuOmp2Blocks<TDim, TIdx>;
+        using AccCpuOmp2BlocksIfAvailableElseInt = aV2P::AccCpuOmp2Blocks<TDim, TIdx>;
 #else
         template<typename TDim, typename TIdx>
         using AccCpuOmp2BlocksIfAvailableElseInt = int;
 #endif
 #if defined(ALPAKA_ACC_CPU_B_SEQ_T_OMP2_ENABLED) && !defined(ALPAKA_CUDA_CI)
         template<typename TDim, typename TIdx>
-        using AccCpuOmp2ThreadsIfAvailableElseInt = AccCpuOmp2Threads<TDim, TIdx>;
+        using AccCpuOmp2ThreadsIfAvailableElseInt = aV2P::AccCpuOmp2Threads<TDim, TIdx>;
 #else
         template<typename TDim, typename TIdx>
         using AccCpuOmp2ThreadsIfAvailableElseInt = int;
 #endif
 #if defined(ALPAKA_ACC_GPU_CUDA_ENABLED) && (ALPAKA_LANG_CUDA || defined(ALPAKA_HOST_ONLY))
         template<typename TDim, typename TIdx>
-        using AccGpuCudaRtIfAvailableElseInt = AccGpuCudaRt<TDim, TIdx>;
+        using AccGpuCudaRtIfAvailableElseInt = aV2P::AccGpuCudaRt<TDim, TIdx>;
 #else
         template<typename TDim, typename TIdx>
         using AccGpuCudaRtIfAvailableElseInt = int;
 #endif
 #if defined(ALPAKA_ACC_GPU_HIP_ENABLED) && (ALPAKA_LANG_HIP || defined(ALPAKA_HOST_ONLY))
         template<typename TDim, typename TIdx>
-        using AccGpuHipRtIfAvailableElseInt =
-            typename std::conditional<std::is_same_v<TDim, DimInt<3u>> == false, AccGpuHipRt<TDim, TIdx>, int>::type;
+        using AccGpuHipRtIfAvailableElseInt = typename std::
+            conditional<std::is_same_v<TDim, DimInt<3u>> == false, aV2P::AccGpuHipRt<TDim, TIdx>, int>::type;
 #else
         template<typename TDim, typename TIdx>
         using AccGpuHipRtIfAvailableElseInt = int;
 #endif
 #if defined(ALPAKA_ACC_SYCL_ENABLED) && defined(ALPAKA_SYCL_TARGET_CPU)
         template<typename TDim, typename TIdx>
-        using AccCpuSyclIfAvailableElseInt = AccCpuSycl<TDim, TIdx>;
+        using AccCpuSyclIfAvailableElseInt = aV2P::AccCpuSycl<TDim, TIdx>;
 #else
         template<typename TDim, typename TIdx>
         using AccCpuSyclIfAvailableElseInt = int;
 #endif
 #if defined(ALPAKA_ACC_SYCL_ENABLED) && defined(ALPAKA_SYCL_TARGET_FPGA)
         template<typename TDim, typename TIdx>
-        using AccFpgaSyclIntelIfAvailableElseInt = AccFpgaSyclIntel<TDim, TIdx>;
+        using AccFpgaSyclIntelIfAvailableElseInt = aV2P::AccFpgaSyclIntel<TDim, TIdx>;
 #else
         template<typename TDim, typename TIdx>
         using AccFpgaSyclIntelIfAvailableElseInt = int;
 #endif
 #if defined(ALPAKA_ACC_SYCL_ENABLED) && defined(ALPAKA_SYCL_TARGET_GPU)
         template<typename TDim, typename TIdx>
-        using AccGpuSyclIntelIfAvailableElseInt = AccGpuSyclIntel<TDim, TIdx>;
+        using AccGpuSyclIntelIfAvailableElseInt = aV2P::AccGpuSyclIntel<TDim, TIdx>;
 #else
         template<typename TDim, typename TIdx>
         using AccGpuSyclIntelIfAvailableElseInt = int;
 #endif
 #if defined(ALPAKA_ACC_SYCL_ENABLED) && defined(ALPAKA_SYCL_TARGET_GPU_NVIDIA)
         template<typename TDim, typename TIdx>
-        using AccGpuSyclNvidiaIfAvailableElseInt = AccGpuSyclNvidia<TDim, TIdx>;
+        using AccGpuSyclNvidiaIfAvailableElseInt = aV2P::AccGpuSyclNvidia<TDim, TIdx>;
 #else
         template<typename TDim, typename TIdx>
         using AccGpuSyclNvidiaIfAvailableElseInt = int;
 #endif
 #if defined(ALPAKA_ACC_SYCL_ENABLED) && defined(ALPAKA_SYCL_TARGET_GPU_AMD)
         template<typename TDim, typename TIdx>
-        using AccGpuSyclAmdIfAvailableElseInt = AccGpuSyclAmd<TDim, TIdx>;
+        using AccGpuSyclAmdIfAvailableElseInt = aV2P::AccGpuSyclAmd<TDim, TIdx>;
 #else
         template<typename TDim, typename TIdx>
         using AccGpuSyclAmdIfAvailableElseInt = int;

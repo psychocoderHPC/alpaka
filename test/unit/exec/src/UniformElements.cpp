@@ -2,22 +2,20 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-#include "alpaka/exec/UniformElements.hpp"
+#include "aV2P/exec/UniformElements.hpp"
 
 #include "WorkDiv.hpp"
-#include "alpaka/acc/Traits.hpp"
-#include "alpaka/core/Config.hpp"
-#include "alpaka/dev/DevCpu.hpp"
-#include "alpaka/dev/Traits.hpp"
-#include "alpaka/exec/Once.hpp"
-#include "alpaka/idx/Traits.hpp"
-#include "alpaka/kernel/Traits.hpp"
-#include "alpaka/mem/view/Traits.hpp"
-#include "alpaka/platform/PlatformCpu.hpp"
-#include "alpaka/platform/Traits.hpp"
-#include "alpaka/queue/Traits.hpp"
-#include "alpaka/test/acc/TestAccs.hpp"
-#include "alpaka/wait/Traits.hpp"
+#include "aV2P/acc/Traits.hpp"
+#include "aV2P/core/Config.hpp"
+#include "aV2P/dev/Traits.hpp"
+#include "aV2P/exec/Once.hpp"
+#include "aV2P/idx/Traits.hpp"
+#include "aV2P/kernel/Traits.hpp"
+#include "aV2P/mem/view/Traits.hpp"
+#include "aV2P/platform/Traits.hpp"
+#include "aV2P/queue/Traits.hpp"
+#include "aV2P/test/acc/TestAccs.hpp"
+#include "aV2P/wait/Traits.hpp"
 
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>

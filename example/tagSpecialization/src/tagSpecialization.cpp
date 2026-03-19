@@ -56,7 +56,9 @@ struct specialized_Kernel
 template<typename TAcc>
 struct specialized_Kernel<
     TAcc,
-    std::enable_if_t<aV2P::accMatchesTags<TAcc, aV2P::TagCpuOmp2Blocks, aV2P::TagCpuOmp2Threads>>>
+    // we need to use alpaka3 executor to check for the tag because alpaka v2 tags will not be available in the kernel
+    std::enable_if_t<
+        std::is_same_v<ALPAKA_TYPEOF(std::declval<TAcc>()[alpaka::object::exec]), alpaka::exec::CpuOmpBlocks>>>
 {
     template<typename TData>
     ALPAKA_FN_INLINE ALPAKA_FN_ACC TData operator()(TAcc const& acc, TData const input)

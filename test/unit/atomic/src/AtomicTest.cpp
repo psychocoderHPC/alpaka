@@ -30,6 +30,7 @@ ALPAKA_FN_INLINE ALPAKA_FN_HOST_ACC auto equals(double a, double b) -> bool
 }
 
 ALPAKA_NO_HOST_ACC_WARNING
+
 template<typename TAcc, typename T>
 ALPAKA_FN_ACC auto testAtomicAdd(TAcc const& acc, bool* success, T operandOrig) -> void
 {
@@ -51,6 +52,7 @@ ALPAKA_FN_ACC auto testAtomicAdd(TAcc const& acc, bool* success, T operandOrig) 
 }
 
 ALPAKA_NO_HOST_ACC_WARNING
+
 template<typename TAcc, typename T>
 ALPAKA_FN_ACC auto testAtomicSub(TAcc const& acc, bool* success, T operandOrig) -> void
 {
@@ -72,6 +74,7 @@ ALPAKA_FN_ACC auto testAtomicSub(TAcc const& acc, bool* success, T operandOrig) 
 }
 
 ALPAKA_NO_HOST_ACC_WARNING
+
 template<typename TAcc, typename T>
 ALPAKA_FN_ACC auto testAtomicMin(TAcc const& acc, bool* success, T operandOrig) -> void
 {
@@ -93,6 +96,7 @@ ALPAKA_FN_ACC auto testAtomicMin(TAcc const& acc, bool* success, T operandOrig) 
 }
 
 ALPAKA_NO_HOST_ACC_WARNING
+
 template<typename TAcc, typename T>
 ALPAKA_FN_ACC auto testAtomicMax(TAcc const& acc, bool* success, T operandOrig) -> void
 {
@@ -114,6 +118,7 @@ ALPAKA_FN_ACC auto testAtomicMax(TAcc const& acc, bool* success, T operandOrig) 
 }
 
 ALPAKA_NO_HOST_ACC_WARNING
+
 template<typename TAcc, typename T>
 ALPAKA_FN_ACC auto testAtomicExch(TAcc const& acc, bool* success, T operandOrig) -> void
 {
@@ -135,6 +140,7 @@ ALPAKA_FN_ACC auto testAtomicExch(TAcc const& acc, bool* success, T operandOrig)
 }
 
 ALPAKA_NO_HOST_ACC_WARNING
+
 template<typename TAcc, typename T>
 ALPAKA_FN_ACC auto testAtomicInc(TAcc const& acc, bool* success, T operandOrig) -> void
 {
@@ -163,6 +169,7 @@ ALPAKA_FN_ACC auto testAtomicInc(TAcc const& acc, bool* success, T operandOrig) 
 }
 
 ALPAKA_NO_HOST_ACC_WARNING
+
 template<typename TAcc, typename T>
 ALPAKA_FN_ACC auto testAtomicDec(TAcc const& acc, bool* success, T operandOrig) -> void
 {
@@ -191,6 +198,7 @@ ALPAKA_FN_ACC auto testAtomicDec(TAcc const& acc, bool* success, T operandOrig) 
 }
 
 ALPAKA_NO_HOST_ACC_WARNING
+
 template<typename TAcc, typename T>
 ALPAKA_FN_ACC auto testAtomicAnd(TAcc const& acc, bool* success, T operandOrig) -> void
 {
@@ -212,6 +220,7 @@ ALPAKA_FN_ACC auto testAtomicAnd(TAcc const& acc, bool* success, T operandOrig) 
 }
 
 ALPAKA_NO_HOST_ACC_WARNING
+
 template<typename TAcc, typename T>
 ALPAKA_FN_ACC auto testAtomicOr(TAcc const& acc, bool* success, T operandOrig) -> void
 {
@@ -233,6 +242,7 @@ ALPAKA_FN_ACC auto testAtomicOr(TAcc const& acc, bool* success, T operandOrig) -
 }
 
 ALPAKA_NO_HOST_ACC_WARNING
+
 template<typename TAcc, typename T>
 ALPAKA_FN_ACC auto testAtomicXor(TAcc const& acc, bool* success, T operandOrig) -> void
 {
@@ -254,6 +264,7 @@ ALPAKA_FN_ACC auto testAtomicXor(TAcc const& acc, bool* success, T operandOrig) 
 }
 
 ALPAKA_NO_HOST_ACC_WARNING
+
 template<typename TAcc, typename T>
 ALPAKA_FN_ACC auto testAtomicCas(TAcc const& acc, bool* success, T operandOrig) -> void
 {
@@ -302,7 +313,8 @@ class AtomicTestKernel
 {
 public:
     ALPAKA_NO_HOST_ACC_WARNING
-    ALPAKA_FN_ACC auto operator()(TAcc const& acc, bool* success, T operandOrig) const -> void
+    ALPAKA_FN_ACC auto operator()(alpaka::onAcc::concepts::Acc auto const& acc, bool* success, T operandOrig) const
+        -> void
     {
         testAtomicAdd(acc, success, operandOrig);
         testAtomicSub(acc, success, operandOrig);
@@ -332,7 +344,8 @@ class AtomicTestKernel<TAcc, T, std::enable_if_t<std::is_floating_point_v<T>>>
 {
 public:
     ALPAKA_NO_HOST_ACC_WARNING
-    ALPAKA_FN_ACC auto operator()(TAcc const& acc, bool* success, T operandOrig) const -> void
+    ALPAKA_FN_ACC auto operator()(alpaka::onAcc::concepts::Acc auto const& acc, bool* success, T operandOrig) const
+        -> void
     {
         testAtomicAdd(acc, success, operandOrig);
         testAtomicSub(acc, success, operandOrig);
@@ -356,18 +369,16 @@ public:
 #if(defined(ALPAKA_ACC_GPU_CUDA_ENABLED) && ALPAKA_LANG_CUDA)                                                         \
     || (defined(ALPAKA_ACC_GPU_HIP_ENABLED) && ALPAKA_LANG_HIP)
 
-template<typename TApi, typename TDim, typename TIdx, typename T>
-class AtomicTestKernel<
-    aV2P::AccGpuUniformCudaHipRt<TApi, TDim, TIdx>,
-    T,
-    std::enable_if_t<sizeof(T) != 4u && sizeof(T) != 8u>>
+template<typename TAcc, typename T>
+requires(aV2P::accMatchesTags<TAcc, aV2P::TagGpuHipRt, aV2P::TagGpuCudaRt>)
+class AtomicTestKernel<TAcc, T, std::enable_if_t<sizeof(T) != 4u && sizeof(T) != 8u>>
 {
 public:
     ALPAKA_NO_HOST_ACC_WARNING
-    ALPAKA_FN_ACC auto operator()(
-        aV2P::AccGpuUniformCudaHipRt<TApi, TDim, TIdx> const& /* acc */,
-        bool* success,
-        T /* operandOrig */) const -> void
+
+    ALPAKA_FN_ACC
+    auto operator()(alpaka::onAcc::concepts::Acc auto const& /* acc */, bool* success, T /* operandOrig */) const
+        -> void
     {
         // All other types are not supported by CUDA/HIP atomic operations.
         ALPAKA_CHECK(*success, true);

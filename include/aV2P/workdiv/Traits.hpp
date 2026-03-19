@@ -29,7 +29,7 @@ namespace aV2P
     //! Get the extent requested.
     ALPAKA_NO_HOST_ACC_WARNING
     template<typename TOrigin, typename TUnit, typename TWorkDiv>
-    ALPAKA_FN_HOST_ACC auto getWorkDiv(TWorkDiv const& workDiv) -> Vec<Dim<TWorkDiv>, Idx<TWorkDiv>>
+    ALPAKA_FN_HOST_ACC auto getWorkDiv(TWorkDiv const& workDiv) -> aV2P::Vec<Dim<TWorkDiv>, Idx<TWorkDiv>>
     {
         using ImplementationBase = interface::ImplementationBase<ConceptWorkDiv, TWorkDiv>;
         return trait::GetWorkDiv<ImplementationBase, TOrigin, TUnit>::getWorkDiv(workDiv);

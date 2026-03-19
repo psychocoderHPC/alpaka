@@ -58,15 +58,15 @@ namespace aV2P
         {
         }
 
-        ALPAKA_FN_HOST ConstBufAlpaka3(BufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf, DevAlpaka3<TDevSpec> dev)
-            : m_memImpl{buf.m_spBufImpl}
-            , m_dev{dev}
+        ALPAKA_FN_HOST ConstBufAlpaka3(BufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf)
+            : m_memImpl{buf.m_memImpl}
+            , m_dev{buf.m_dev}
         {
         }
 
-        ALPAKA_FN_HOST ConstBufAlpaka3(BufAlpaka3<TDevSpec, TElem, TDim, TIdx>&& buf, DevAlpaka3<TDevSpec> dev)
-            : m_memImpl{std::move(buf.m_spBufImpl)}
-            , m_dev{dev}
+        ALPAKA_FN_HOST ConstBufAlpaka3(BufAlpaka3<TDevSpec, TElem, TDim, TIdx>&& buf)
+            : m_memImpl{std::move(buf.m_memImpl)}
+            , m_dev{std::move(buf.m_dev)}
         {
         }
 

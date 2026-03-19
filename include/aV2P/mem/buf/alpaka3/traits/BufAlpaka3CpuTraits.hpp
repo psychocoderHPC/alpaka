@@ -48,6 +48,15 @@ namespace aV2P::trait
         using type = TElem;
     };
 
+    template<alpaka::onHost::concepts::DeviceSpec TDevSpec, typename TElem, typename TDim, typename TIdx>
+    struct GetPitchesInBytes<BufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
+    {
+        ALPAKA_FN_HOST_ACC constexpr auto operator()(BufAlpaka3<TDevSpec, TElem, TDim, TIdx> const& buf) const
+        {
+            return Vec<TDim, TIdx>{buf.getAlpaka3().getPitches()};
+        }
+    };
+
     //! The BufAlpaka3Cpu width get trait specialization.
     template<typename TElem, typename TDim, typename TIdx, alpaka::onHost::concepts::DeviceSpec TDevSpec>
     struct GetExtents<BufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
@@ -174,9 +183,13 @@ namespace aV2P::trait
             ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
 
             if constexpr(std::is_integral_v<TExtent>)
-                return {alpaka::onHost::allocDeferred<TElem>(queue.getAlpaka3(), alpaka::Vec{extent})};
+                return {
+                    alpaka::onHost::allocDeferred<TElem>(queue.getAlpaka3(), alpaka::Vec{extent}),
+                    aV2P::getDev(queue)};
             else
-                return {alpaka::onHost::allocDeferred<TElem>(queue.getAlpaka3(), extent.getAlpaka3())};
+                return {
+                    alpaka::onHost::allocDeferred<TElem>(queue.getAlpaka3(), extent.getAlpaka3()),
+                    aV2P::getDev(queue)};
         }
     };
 
@@ -196,10 +209,11 @@ namespace aV2P::trait
             PlatformAlpaka3<TDevSpec> const& /*platform*/,
             TExtent const& extent) -> BufAlpaka3<TDevSpec, TElem, TDim, TIdx>
         {
+            ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
             if constexpr(std::is_integral_v<TExtent>)
-                return {alpaka::onHost::allocMapped<TElem>(dev.getAlpaka3(), alpaka::Vec{extent})};
+                return {alpaka::onHost::allocMapped<TElem>(dev.getAlpaka3(), alpaka::Vec{extent}), dev};
             else
-                return {alpaka::onHost::allocMapped<TElem>(dev.getAlpaka3(), extent.getAlpaka3())};
+                return {alpaka::onHost::allocMapped<TElem>(dev.getAlpaka3(), extent.getAlpaka3()), dev};
         }
     };
 
@@ -213,10 +227,11 @@ namespace aV2P::trait
             PlatformAlpaka3<TDevSpec> const& /*platform*/,
             TExtent const& extent) -> BufAlpaka3<TDevSpec, TElem, TDim, TIdx>
         {
+            ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
             if constexpr(std::is_integral_v<TExtent>)
-                return {alpaka::onHost::allocUnified<TElem>(dev.getAlpaka3(), alpaka::Vec{extent})};
+                return {alpaka::onHost::allocUnified<TElem>(dev.getAlpaka3(), alpaka::Vec{extent}), dev};
             else
-                return {alpaka::onHost::allocUnified<TElem>(dev.getAlpaka3(), extent.getAlpaka3())};
+                return {alpaka::onHost::allocUnified<TElem>(dev.getAlpaka3(), extent.getAlpaka3()), dev};
         }
     };
 } // namespace aV2P::trait

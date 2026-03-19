@@ -52,10 +52,10 @@ struct CpuOmp2Blocks
     using MaxBlockSize = aV2P::DimInt<1u>;
 };
 
-template<typename T, typename TBuf, typename... TArgs>
-struct GetIterator<T, TBuf, aV2P::AccCpuOmp2Blocks<TArgs...>>
+template<typename T, typename TBuf, typename TDim, typename TIdx>
+struct GetIterator<T, TBuf, aV2P::AccCpuOmp2Blocks<TDim, TIdx>>
 {
-    using Iterator = IteratorCpu<aV2P::AccCpuOmp2Blocks<TArgs...>, T, TBuf>;
+    using Iterator = IteratorCpu<aV2P::AccCpuOmp2Blocks<TDim, TIdx>, T, TBuf>;
 };
 #endif
 
@@ -70,10 +70,10 @@ struct CpuSerial
     using MaxBlockSize = aV2P::DimInt<1u>;
 };
 
-template<typename T, typename TBuf, typename... TArgs>
-struct GetIterator<T, TBuf, aV2P::AccCpuSerial<TArgs...>>
+template<typename T, typename TBuf, typename TDim, typename TIdx>
+struct GetIterator<T, TBuf, aV2P::AccCpuSerial<TDim, TIdx>>
 {
-    using Iterator = IteratorCpu<aV2P::AccCpuSerial<TArgs...>, T, TBuf>;
+    using Iterator = IteratorCpu<aV2P::AccCpuSerial<TDim, TIdx>, T, TBuf>;
 };
 #endif
 
@@ -88,10 +88,10 @@ struct CpuThreads
     using MaxBlockSize = aV2P::DimInt<1u>;
 };
 
-template<typename T, typename TBuf, typename... TArgs>
-struct GetIterator<T, TBuf, aV2P::AccCpuThreads<TArgs...>>
+template<typename T, typename TBuf, typename TDim, typename TIdx>
+struct GetIterator<T, TBuf, aV2P::AccCpuThreads<TDim, TIdx>>
 {
-    using Iterator = IteratorCpu<aV2P::AccCpuThreads<TArgs...>, T, TBuf>;
+    using Iterator = IteratorCpu<aV2P::AccCpuThreads<TDim, TIdx>, T, TBuf>;
 };
 #endif
 
@@ -107,10 +107,10 @@ struct GpuCudaRt
     using MaxBlockSize = aV2P::DimInt<1024u>;
 };
 
-template<typename T, typename TBuf, typename... TArgs>
-struct GetIterator<T, TBuf, aV2P::AccGpuUniformCudaHipRt<TArgs...>>
+template<typename T, typename TBuf, typename TDim, typename TIdx>
+struct GetIterator<T, TBuf, aV2P::AccGpuUniformCudaHipRt<TDim, TIdx>>
 {
-    using Iterator = IteratorGpu<aV2P::AccGpuUniformCudaHipRt<TArgs...>, T, TBuf>;
+    using Iterator = IteratorGpu<aV2P::AccGpuUniformCudaHipRt<TDim, TIdx>, T, TBuf>;
 };
 #    endif
 #endif

@@ -86,13 +86,17 @@ namespace aV2P
     template<typename TDim, typename TIdx>
     using AccCpuSerial = AccAlpaka3<TDim, TIdx, alpaka::api::Host, alpaka::deviceKind::Cpu, alpaka::exec::CpuSerial>;
 
+#    ifdef ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLED
     template<typename TDim, typename TIdx>
-    using AccAlpaka3Omp
+    using AccCpuOmp2Blocks
         = AccAlpaka3<TDim, TIdx, alpaka::api::Host, alpaka::deviceKind::Cpu, alpaka::exec::CpuOmpBlocks>;
+#    endif
 
+#    ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
     template<typename TDim, typename TIdx>
-    using AccAlpaka3Cuda
+    using AccGpuCudaRt
         = AccAlpaka3<TDim, TIdx, alpaka::api::Cuda, alpaka::deviceKind::NvidiaGpu, alpaka::exec::GpuCuda>;
+#    endif
 
     namespace trait
     {
@@ -110,29 +114,29 @@ namespace aV2P
 
 #    ifdef ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLED
         template<typename TDim, typename TIdx>
-        struct TagToAcc<aV2P::TagAlpaka3Omp, TDim, TIdx>
+        struct TagToAcc<aV2P::TagCpuOmp2Blocks, TDim, TIdx>
         {
-            using type = aV2P::AccAlpaka3Omp<TDim, TIdx>;
+            using type = aV2P::AccCpuOmp2Blocks<TDim, TIdx>;
         };
 
         template<typename TDim, typename TIdx>
-        struct AccToTag<aV2P::AccAlpaka3Omp<TDim, TIdx>>
+        struct AccToTag<aV2P::AccCpuOmp2Blocks<TDim, TIdx>>
         {
-            using type = aV2P::TagAlpaka3Omp;
+            using type = aV2P::TagCpuOmp2Blocks;
         };
 #    endif
 
 #    ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
         template<typename TDim, typename TIdx>
-        struct TagToAcc<aV2P::TagGpuHipRt, TDim, TIdx>
+        struct TagToAcc<aV2P::TagGpuCudaRt, TDim, TIdx>
         {
-            using type = aV2P::AccAlpaka3Cuda<TDim, TIdx>;
+            using type = aV2P::AccGpuCudaRt<TDim, TIdx>;
         };
 
         template<typename TDim, typename TIdx>
-        struct AccToTag<aV2P::AccAlpaka3Cuda<TDim, TIdx>>
+        struct AccToTag<aV2P::AccGpuCudaRt<TDim, TIdx>>
         {
-            using type = aV2P::TagGpuHipRt;
+            using type = aV2P::TagGpuCudaRt;
         };
 #    endif
 
@@ -474,7 +478,7 @@ namespace aV2P
         {
             static constexpr auto atomicOp(TAlpakaAcc const& acc, T* const addr, T const& value) -> T
             {
-                // attention alpaka::onAcc::scope::system is currently not supported therefor we use device whcih will
+                // attention alpaka::onAcc::scope::system is currently not supported therefor we use device which will
                 // be equal to alpaka v2
                 if constexpr(std::same_as<THierarchy, hierarchy::Grids>)
                     return alpaka::onAcc::atomicOp<TAtomicOp>(acc, addr, value, alpaka::onAcc::scope::device);
@@ -486,31 +490,16 @@ namespace aV2P
                 ALPAKA_UNREACHABLE(T{});
             }
 
-            static auto atomicOp(TAlpakaAcc const& acc, T* const addr, T const& expected, T const& desired) -> T
+            static constexpr auto atomicOp(TAlpakaAcc const& acc, T* const addr, T const& compare, T const& value) -> T
             {
-                // attention alpaka::onAcc::scope::system is currently not supported therefor we use device whcih will
+                // attention alpaka::onAcc::scope::system is currently not supported therefor we use device which will
                 // be equal to alpaka v2
                 if constexpr(std::same_as<THierarchy, hierarchy::Grids>)
-                    return alpaka::onAcc::atomicOp<TAtomicOp>(
-                        acc,
-                        addr,
-                        expected,
-                        desired,
-                        alpaka::onAcc::scope::device);
+                    return alpaka::onAcc::atomicOp<TAtomicOp>(acc, addr, compare, value, alpaka::onAcc::scope::device);
                 else if constexpr(std::same_as<THierarchy, hierarchy::Blocks>)
-                    return alpaka::onAcc::atomicOp<TAtomicOp>(
-                        acc,
-                        addr,
-                        expected,
-                        desired,
-                        alpaka::onAcc::scope::device);
+                    return alpaka::onAcc::atomicOp<TAtomicOp>(acc, addr, compare, value, alpaka::onAcc::scope::device);
                 else if constexpr(std::same_as<THierarchy, hierarchy::Threads>)
-                    return alpaka::onAcc::atomicOp<TAtomicOp>(
-                        acc,
-                        addr,
-                        expected,
-                        desired,
-                        alpaka::onAcc::scope::block);
+                    return alpaka::onAcc::atomicOp<TAtomicOp>(acc, addr, compare, value, alpaka::onAcc::scope::block);
 
                 ALPAKA_UNREACHABLE(T{});
             }

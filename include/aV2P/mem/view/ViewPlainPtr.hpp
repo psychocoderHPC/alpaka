@@ -154,3 +154,42 @@ namespace aV2P
         };
     } // namespace trait
 } // namespace aV2P
+
+namespace alpaka
+{
+    namespace internal
+    {
+        template<typename TDev, typename TElem, typename TDim, typename TIdx>
+        struct GetApi::Op<aV2P::ViewPlainPtr<TDev, TElem, TDim, TIdx>>
+        {
+            inline constexpr auto operator()(auto&& buff) const
+            {
+                alpaka::unused(buff);
+                return alpaka::getApi(buff.getAlpaka3());
+            }
+        };
+    } // namespace internal
+
+    namespace onHost::internal
+    {
+        template<typename TDev, typename TElem, typename TDim, typename TIdx>
+        struct GetExtents::Op<aV2P::ViewPlainPtr<TDev, TElem, TDim, TIdx>>
+        {
+            inline constexpr auto operator()(auto&& buff) const
+            {
+                alpaka::unused(buff);
+                return aV2P::getExtents(buff).getAlpaka3();
+            }
+        };
+
+        template<typename TDev, typename TElem, typename TDim, typename TIdx>
+        struct GetPitches::Op<aV2P::ViewPlainPtr<TDev, TElem, TDim, TIdx>>
+        {
+            inline constexpr auto operator()(auto&& buff) const
+            {
+                alpaka::unused(buff);
+                return aV2P::getPitchesInBytes(buff).getAlpaka3();
+            }
+        };
+    } // namespace onHost::internal
+} // namespace alpaka

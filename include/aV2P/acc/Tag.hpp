@@ -28,11 +28,19 @@ namespace aV2P
 
 namespace aV2P
 {
+    CREATE_ACC_TAG(TagCpuOmp2Blocks);
+    CREATE_ACC_TAG(TagCpuOmp2Threads);
     CREATE_ACC_TAG(TagCpuSerial);
-
-    CREATE_ACC_TAG(TagAlpaka3Omp);
-
+    CREATE_ACC_TAG(TagCpuSycl);
+    CREATE_ACC_TAG(TagCpuTbbBlocks);
+    CREATE_ACC_TAG(TagCpuThreads);
+    CREATE_ACC_TAG(TagFpgaSyclIntel);
+    CREATE_ACC_TAG(TagGenericSycl);
+    CREATE_ACC_TAG(TagGpuCudaRt);
     CREATE_ACC_TAG(TagGpuHipRt);
+    CREATE_ACC_TAG(TagGpuSyclIntel);
+    CREATE_ACC_TAG(TagGpuSyclNvidia);
+    CREATE_ACC_TAG(TagGpuSyclAmd);
 
     namespace concepts
     {
@@ -71,7 +79,7 @@ namespace aV2P
     inline constexpr bool accMatchesTags = (std::is_same_v<aV2P::AccToTag<TAcc>, TTag> || ...);
 
     //! list of all available tags
-    using AccTags = std::tuple<aV2P::TagCpuSerial, TagAlpaka3Omp, TagGpuHipRt>;
+    using AccTags = std::tuple<aV2P::TagCpuSerial, aV2P::TagCpuOmp2Blocks, aV2P::TagGpuCudaRt>;
 
     //!  \brief Function to print the names of each tag in the given tuple of tags
     //!  \tparam TTuple is the type of the tuple of tags

@@ -4,14 +4,9 @@
 
 #pragma once
 
-#include "aV2P/dev/DevCpu.hpp"
 #include "aV2P/dev/Traits.hpp"
-#include "aV2P/event/EventCpu.hpp"
 #include "aV2P/event/Traits.hpp"
-#include "aV2P/kernel/TaskKernelCpuOmp2Blocks.hpp"
-#include "aV2P/queue/QueueCpuBlocking.hpp"
 #include "aV2P/queue/Traits.hpp"
-#include "aV2P/queue/cpu/ICpuQueue.hpp"
 #include "aV2P/test/event/EventHostManualTrigger.hpp"
 #include "aV2P/test/queue/Queue.hpp"
 #include "aV2P/wait/Traits.hpp"
@@ -38,7 +33,7 @@ namespace aV2P
 #        pragma clang diagnostic ignored "-Wweak-vtables"
 #    endif
         //! The CPU collective device queue implementation.
-        struct QueueCpuOmp2CollectiveImpl final : cpu::ICpuQueue
+        struct QueueCpuOmp2CollectiveImpl final : aV2P::QueueAlpaka3<aV2P::DevAlpaka3<>>
 #    if ALPAKA_COMP_CLANG
 #        pragma clang diagnostic pop
 #    endif

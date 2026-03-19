@@ -2,13 +2,13 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-#include "alpaka/exec/Once.hpp"
+#include "aV2P/exec/Once.hpp"
 
-#include "alpaka/atomic/Traits.hpp"
-#include "alpaka/kernel/Traits.hpp"
-#include "alpaka/meta/ForEachType.hpp"
-#include "alpaka/test/KernelExecutionFixture.hpp"
-#include "alpaka/test/acc/TestAccs.hpp"
+#include "aV2P/atomic/Traits.hpp"
+#include "aV2P/kernel/Traits.hpp"
+#include "aV2P/meta/ForEachType.hpp"
+#include "aV2P/test/KernelExecutionFixture.hpp"
+#include "aV2P/test/acc/TestAccs.hpp"
 
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
