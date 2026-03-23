@@ -71,19 +71,19 @@ namespace aV2P
                 std::is_same_v<TDim, aV2P::Dim<TOffsets>>,
                 "The dim type of TOffsets and the TDim template parameter have to be identical!");
 
-            ALPAKA_ASSERT(((m_offsetsElements + m_extentElements) <= getExtents(view)).all());
+            ALPAKA_ASSERT(((m_offsetsElements + m_extentElements) <= aV2P::getExtents(view)).all());
         }
 
         //! \param view The view this view is a sub-view of.
         template<typename TView>
-        explicit ViewSubView(TView const& view) : ViewSubView(view, getExtents(view), Vec<TDim, TIdx>::zeros())
+        explicit ViewSubView(TView const& view) : ViewSubView(view, aV2P::getExtents(view), Vec<TDim, TIdx>::zeros())
         {
             ALPAKA_DEBUG_FULL_LOG_SCOPE;
         }
 
         //! \param view The view this view is a sub-view of.
         template<typename TView>
-        explicit ViewSubView(TView& view) : ViewSubView(view, getExtents(view), Vec<TDim, TIdx>::zeros())
+        explicit ViewSubView(TView& view) : ViewSubView(view, aV2P::getExtents(view), Vec<TDim, TIdx>::zeros())
         {
             ALPAKA_DEBUG_FULL_LOG_SCOPE;
         }
@@ -218,7 +218,7 @@ namespace alpaka
             inline constexpr auto operator()(auto&& buff) const
             {
                 alpaka::unused(buff);
-                return alpaka::getApi(buff.getAlpaka3());
+                return alpaka::getApi(typename ALPAKA_TYPEOF(buff)::Dev::DevSpec{});
             }
         };
     } // namespace internal

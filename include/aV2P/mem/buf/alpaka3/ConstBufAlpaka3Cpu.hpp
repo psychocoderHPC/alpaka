@@ -70,8 +70,47 @@ namespace aV2P
         {
         }
 
-    private:
+    public:
         BufType m_memImpl;
         DevAlpaka3<TDevSpec> m_dev;
     };
 } // namespace aV2P
+
+namespace alpaka
+{
+    namespace internal
+    {
+        template<alpaka::onHost::concepts::DeviceSpec TDevSpec, typename TElem, typename TDim, typename TIdx>
+        struct GetApi::Op<aV2P::ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
+        {
+            inline constexpr auto operator()(auto&& buff) const
+            {
+                alpaka::unused(buff);
+                return alpaka::getApi(buff.getAlpaka3());
+            }
+        };
+    } // namespace internal
+
+    namespace onHost::internal
+    {
+        template<alpaka::onHost::concepts::DeviceSpec TDevSpec, typename TElem, typename TDim, typename TIdx>
+        struct GetExtents::Op<aV2P::ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
+        {
+            inline constexpr auto operator()(auto&& buff) const
+            {
+                alpaka::unused(buff);
+                return alpaka::onHost::getExtents(buff.getAlpaka3());
+            }
+        };
+
+        template<alpaka::onHost::concepts::DeviceSpec TDevSpec, typename TElem, typename TDim, typename TIdx>
+        struct GetPitches::Op<aV2P::ConstBufAlpaka3<TDevSpec, TElem, TDim, TIdx>>
+        {
+            inline constexpr auto operator()(auto&& buff) const
+            {
+                alpaka::unused(buff);
+                return alpaka::onHost::getPitches(buff.getAlpaka3());
+            }
+        };
+    } // namespace onHost::internal
+} // namespace alpaka

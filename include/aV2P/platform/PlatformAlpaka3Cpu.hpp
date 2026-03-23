@@ -44,6 +44,10 @@ namespace aV2P
         = PlatformAlpaka3<alpaka::onHost::DeviceSpec<alpaka::api::Cuda, alpaka::deviceKind::NvidiaGpu>>;
 #endif
 
+    // forward declaration
+    template<alpaka::onHost::concepts::DeviceSpec TDevSpec>
+    class DevAlpaka3;
+
     namespace trait
     {
         //! The CPU device device type trait specialization.

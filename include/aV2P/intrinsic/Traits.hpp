@@ -21,11 +21,23 @@ namespace aV2P
     {
         //! The popcount trait.
         template<typename TWarp, typename TSfinae = void>
-        struct Popcount;
+        struct Popcount
+        {
+            static auto popcount(auto const& /*intrinsic*/, auto value) -> std::int32_t
+            {
+                return alpaka::popcount(value);
+            }
+        };
 
         //! The ffs trait.
         template<typename TWarp, typename TSfinae = void>
-        struct Ffs;
+        struct Ffs
+        {
+            static auto ffs(auto const& /*intrinsic*/, auto value) -> std::int32_t
+            {
+                return alpaka::ffs(value);
+            }
+        };
     } // namespace trait
 
     //! Returns the number of 1 bits in the given 32-bit value.

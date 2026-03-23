@@ -43,18 +43,38 @@ namespace aV2P
     namespace trait
     {
         //! The mem_fence trait.
-        template<typename TMemFence, MemoryOrder TMemOrder, MemoryScope TMemScope, typename TSfinae = void>
-        struct MemFence;
+        template<typename TAcc, MemoryOrder TMemOrder, MemoryScope TMemScope, typename TSfinae = void>
+        struct MemFence
+        {
+            static constexpr auto mem_fence(TAcc const& acc, TMemOrder /*order*/, TMemScope const&)
+            {
+                // attention alpaka::onAcc::scope::system is currently not supported therefor we use device which will
+                // be equal to alpaka v2
+                if constexpr(std::same_as<TMemScope, memory_scope::Device>)
+                    alpaka::onAcc::memFence(acc, alpaka::onAcc::scope::device);
+                else if constexpr(std::same_as<TMemScope, memory_scope::Grid>)
+                    alpaka::onAcc::memFence(acc, alpaka::onAcc::scope::block);
+                else if constexpr(std::same_as<TMemScope, memory_scope::Block>)
+                    alpaka::onAcc::memFence(acc, alpaka::onAcc::scope::block);
+            }
+        };
 
         template<typename TAcc>
-        struct MemFenceDefaultOrder;
+        struct MemFenceDefaultOrder
+        {
+            // @todo this is not correct  because alpaka3 does not provide this information, if0 is a dummy to find
+            // this place later during the review
+#if 0
+#endif
+            using type = mem_order::AcqRel;
+            static constexpr auto value = mem_order::acq_rel;
+        };
 
         template<typename TAcc>
         using MemFenceDefaultOrder_t = typename MemFenceDefaultOrder<TAcc>::type;
 
         template<typename TAcc>
         inline constexpr auto MemFenceDefaultOrder_v = MemFenceDefaultOrder<TAcc>::value;
-
     } // namespace trait
 
     //! Issues memory fence instructions.
@@ -76,6 +96,7 @@ namespace aV2P
     //! \param fence The memory fence implementation.
     //! \param scope The memory scope.
     ALPAKA_NO_HOST_ACC_WARNING
+
     template<typename TMemFence, MemoryOrder TMemOrder, MemoryScope TMemScope>
     ALPAKA_FN_ACC auto mem_fence(TMemFence const& fence, TMemOrder order, TMemScope const& scope) -> void
     {
@@ -97,11 +118,11 @@ namespace aV2P
     }
 
     ALPAKA_NO_HOST_ACC_WARNING
+
     template<typename TMemFence, MemoryScope TMemScope>
     ALPAKA_FN_ACC auto mem_fence(TMemFence const& fence, TMemScope const& scope) -> void
     {
         using ImplementationBase = interface::ImplementationBase<ConceptMemFence, TMemFence>;
         mem_fence(fence, trait::MemFenceDefaultOrder_v<ImplementationBase>, scope);
     }
-
 } // namespace aV2P

@@ -29,7 +29,9 @@ TEMPLATE_LIST_TEST_CASE("genericLambdaKernelIsWorking", "[kernel]", aV2P::test::
     REQUIRE(fixture(kernel));
 }
 
-TEMPLATE_LIST_TEST_CASE("variadicGenericLambdaKernelIsWorking", "[kernel]", aV2P::test::TestAccs)
+// alpaka3 does not support generic lambdas we do not know the acc type on the host side
+#    if 0
+TEMPLATE_LIST_TEST_CASE ("variadicGenericLambdaKernelIsWorking", "[kernel]", aV2P::test::TestAccs)
 {
     using Acc = TestType;
     using Dim = aV2P::Dim<Acc>;
@@ -44,5 +46,5 @@ TEMPLATE_LIST_TEST_CASE("variadicGenericLambdaKernelIsWorking", "[kernel]", aV2P
 
     REQUIRE(fixture(kernel, arg1, arg2));
 }
-
+#    endif
 #endif

@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "aV2P/acc/AccAlpaka3Cpu.hpp"
 #include "aV2P/core/Common.hpp"
 #include "aV2P/core/Config.hpp"
 #include "aV2P/mem/view/Traits.hpp"
@@ -12,7 +13,6 @@
 
 namespace aV2P
 {
-
     //! The buffer traits.
     namespace trait
     {
@@ -55,7 +55,6 @@ namespace aV2P
         //! The trait to transform a mutable buffer into a constant one.
         template<typename TBuf>
         struct MakeConstBuf;
-
     } // namespace trait
 
     //! The memory buffer type trait alias template to remove the ::type for a Buffer type.
@@ -250,5 +249,4 @@ namespace aV2P
     {
         return trait::MakeConstBuf<std::remove_cvref_t<TBuf>>::makeConstBuf(std::move(buf));
     }
-
 } // namespace aV2P

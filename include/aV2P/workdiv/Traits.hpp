@@ -8,6 +8,7 @@
 #include "aV2P/core/Interface.hpp"
 #include "aV2P/core/Positioning.hpp"
 #include "aV2P/idx/Traits.hpp"
+#include "aV2P/vec/Vec.hpp"
 
 #include <type_traits>
 #include <utility>

@@ -5,11 +5,15 @@
 
 #pragma once
 
-#include "aV2P/aV2P.hpp"
+/* disabled because CPU queue implementation details are used in the test, this is not valid for alpaka3
+ * @todo check if we can make this test running
+ * */
+#if 0
+#    include "aV2P/aV2P.hpp"
 
-#include <condition_variable>
-#include <mutex>
-#include <utility>
+#    include <condition_variable>
+#    include <mutex>
+#    include <utility>
 
 namespace aV2P::test
 {
@@ -232,17 +236,17 @@ namespace aV2P::trait
     };
 } // namespace aV2P::trait
 
-#ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
+#    ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
 
-#    include "aV2P/core/Config.hpp"
+#        include "aV2P/core/Config.hpp"
 
-#    include <cuda.h>
+#        include <cuda.h>
 
-#    if !ALPAKA_LANG_CUDA && !defined(ALPAKA_HOST_ONLY)
-#        error If ALPAKA_ACC_GPU_CUDA_ENABLED is set, the compiler has to support CUDA!
-#    endif
+#        if !ALPAKA_LANG_CUDA && !defined(ALPAKA_HOST_ONLY)
+#            error If ALPAKA_ACC_GPU_CUDA_ENABLED is set, the compiler has to support CUDA!
+#        endif
 
-#    include "aV2P/core/Cuda.hpp"
+#        include "aV2P/core/Cuda.hpp"
 
 namespace aV2P::test
 {
@@ -349,13 +353,13 @@ namespace aV2P::test
         {
             ALPAKA_FN_HOST static auto isSupported([[maybe_unused]] DevCudaRt const& dev) -> bool
             {
-#    if CUDA_VERSION < 11070
+#        if CUDA_VERSION < 11070
                 int result = 0;
                 cuDeviceGetAttribute(&result, CU_DEVICE_ATTRIBUTE_CAN_USE_STREAM_MEM_OPS, dev.getNativeHandle());
                 return result != 0;
-#    else
+#        else
                 return true; // Always enabled as of CUDA 11.7
-#    endif
+#        endif
             }
         };
     } // namespace trait
@@ -373,11 +377,11 @@ namespace aV2P::trait
             // functions were suffixed with `_v2`. With CUDA 12.0 v1 of the API was removed and the `_v2` removed
             // from the new functions. So CUDA <= 11.6 and CUDA >= 12.0 share the same function signature but
             // internally do different things.
-#    if(CUDA_VERSION < 11070) || (CUDA_VERSION >= 12000)
+#        if(CUDA_VERSION < 11070) || (CUDA_VERSION >= 12000)
             return cuStreamWaitValue32(stream, addr, value, flags);
-#    else
+#        else
             return cuStreamWaitValue32_v2(stream, addr, value, flags);
-#    endif
+#        endif
         }
     } // namespace detail
 
@@ -471,21 +475,21 @@ namespace aV2P::trait
         }
     };
 } // namespace aV2P::trait
-#endif
-
-
-#ifdef ALPAKA_ACC_GPU_HIP_ENABLED
-
-#    if ALPAKA_COMP_HIP >= ALPAKA_VERSION_NUMBER(6, 2, 0) && ALPAKA_COMP_HIP < ALPAKA_VERSION_NUMBER(7, 0, 0)
-#        define HIP_ENABLE_WARP_SYNC_BUILTINS
-#    endif
-#    include <hip/hip_runtime.h>
-
-#    if !ALPAKA_LANG_HIP && !defined(ALPAKA_HOST_ONLY)
-#        error If ALPAKA_ACC_GPU_HIP_ENABLED is set, the compiler has to support HIP!
 #    endif
 
-#    include "aV2P/core/Hip.hpp"
+
+#    ifdef ALPAKA_ACC_GPU_HIP_ENABLED
+
+#        if ALPAKA_COMP_HIP >= ALPAKA_VERSION_NUMBER(6, 2, 0) && ALPAKA_COMP_HIP < ALPAKA_VERSION_NUMBER(7, 0, 0)
+#            define HIP_ENABLE_WARP_SYNC_BUILTINS
+#        endif
+#        include <hip/hip_runtime.h>
+
+#        if !ALPAKA_LANG_HIP && !defined(ALPAKA_HOST_ONLY)
+#            error If ALPAKA_ACC_GPU_HIP_ENABLED is set, the compiler has to support HIP!
+#        endif
+
+#        include "aV2P/core/Hip.hpp"
 
 namespace aV2P::test
 {
@@ -652,10 +656,10 @@ namespace aV2P::trait
             //   the device build upon value-based CUDA queue synchronization APIs such as
             //   cuStreamWaitValue32() and cuStreamWriteValue32().
             int32_t hostMem = 0;
-#    if ALPAKA_DEBUG >= ALPAKA_DEBUG_MINIMAL
+#        if ALPAKA_DEBUG >= ALPAKA_DEBUG_MINIMAL
             std::cerr << "[Workaround] polling of device-located value in stream, as hipStreamWaitValue32 is not "
                          "available.\n";
-#    endif
+#        endif
             while(hostMem < 0x0101'0101)
             {
                 ALPAKA_UNIFORM_CUDA_HIP_RT_CHECK(hipMemcpyDtoHAsync(
@@ -708,9 +712,9 @@ namespace aV2P::trait
         }
     };
 } // namespace aV2P::trait
-#endif
+#    endif
 
-#ifdef ALPAKA_ACC_SYCL_ENABLED
+#    ifdef ALPAKA_ACC_SYCL_ENABLED
 namespace aV2P
 {
     namespace test
@@ -779,4 +783,7 @@ namespace aV2P
         };
     } // namespace trait
 } // namespace aV2P
+#    endif
+
+
 #endif

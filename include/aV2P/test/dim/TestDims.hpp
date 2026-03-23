@@ -15,7 +15,10 @@ namespace aV2P::test
 {
     //! A std::tuple holding dimensions.
     using TestDims = std::tuple<
+#if 0
+        // alpaka3 does not support zero dimensions
         DimInt<0u>,
+#endif
         DimInt<1u>,
         DimInt<2u>,
         DimInt<3u>

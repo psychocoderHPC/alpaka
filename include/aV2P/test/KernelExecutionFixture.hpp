@@ -70,10 +70,11 @@ namespace aV2P::test
             memset(m_queue, bufAccResult, static_cast<std::uint8_t>(true));
 
 
-            aV2P::KernelCfg<Acc> const kernelCfg = {m_extent, Vec<Dim, Idx>::ones()};
+            aV2P::KernelCfg<Acc> const kernelCfg = {m_extent, aV2P::Vec<Dim, Idx>::ones()};
 
             // set workdiv if it is not before
-            if(m_workDiv == WorkDiv{Vec<Dim, Idx>::all(0), Vec<Dim, Idx>::all(0), Vec<Dim, Idx>::all(0)})
+            if(m_workDiv
+               == WorkDiv{aV2P::Vec<Dim, Idx>::all(0), aV2P::Vec<Dim, Idx>::all(0), aV2P::Vec<Dim, Idx>::all(0)})
                 m_workDiv = aV2P::getValidWorkDiv(
                     kernelCfg,
                     m_device,
@@ -99,8 +100,8 @@ namespace aV2P::test
         Platform m_platform{};
         Device m_device{getDevByIdx(m_platform, 0)};
         Queue m_queue;
-        WorkDiv m_workDiv{Vec<Dim, Idx>::all(0), Vec<Dim, Idx>::all(0), Vec<Dim, Idx>::all(0)};
-        Vec<Dim, Idx> m_extent;
+        WorkDiv m_workDiv{aV2P::Vec<Dim, Idx>::all(0), aV2P::Vec<Dim, Idx>::all(0), aV2P::Vec<Dim, Idx>::all(0)};
+        aV2P::Vec<Dim, Idx> m_extent;
     };
 
 } // namespace aV2P::test

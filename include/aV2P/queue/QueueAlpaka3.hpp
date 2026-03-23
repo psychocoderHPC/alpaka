@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include "aV2P/acc/AccAlpaka3Cpu.hpp"
 #include "aV2P/core/Config.hpp"
-#include "aV2P/dev/DevAlpaka3Cpu.hpp"
 #include "aV2P/dev/Traits.hpp"
 #include "aV2P/event/Traits.hpp"
 #include "aV2P/queue/Traits.hpp"
@@ -26,7 +26,7 @@ namespace aV2P
     class EventAlpaka3Cpu;
 
     //! The CPU device queue.
-    template<typename TDev, typename TQueueKind>
+    template<typename TDev, alpaka::concepts::QueueKind TQueueKind>
     class QueueAlpaka3 final
         : public interface::Implements<ConceptCurrentThreadWaitFor, QueueAlpaka3<TDev, TQueueKind>>
         , public interface::Implements<ConceptQueue, QueueAlpaka3<TDev, TQueueKind>>
@@ -58,14 +58,6 @@ namespace aV2P
     public:
         QueueType m_queueImpl;
     };
-
-    using QueueCpuBlocking = QueueAlpaka3<DevCpu, alpaka::queueKind::Blocking>;
-    using QueueCpuNonBlocking = QueueAlpaka3<DevCpu, alpaka::queueKind::NonBlocking>;
-
-#ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
-    using QueueCudaRtBlocking = QueueAlpaka3<DevCudaRt, alpaka::queueKind::Blocking>;
-    using QueueCudaRtNonBlocking = QueueAlpaka3<DevCudaRt, alpaka::queueKind::NonBlocking>;
-#endif
 
     namespace trait
     {

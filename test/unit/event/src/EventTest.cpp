@@ -2,20 +2,25 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-#include <aV2P/event/Traits.hpp>
-#include <aV2P/test/event/EventHostManualTrigger.hpp>
-#include <aV2P/test/queue/Queue.hpp>
-#include <aV2P/test/queue/QueueCpuOmp2Collective.hpp>
-#include <aV2P/test/queue/QueueTestFixture.hpp>
-#include <catch2/catch_template_test_macros.hpp>
-#include <catch2/catch_test_macros.hpp>
+/* disabled because CPU queue implementation details are used in the test, this is not valid for alpaka3
+ * @todo check if we can make this test running
+ * */
+#if 0
+
+#    include <aV2P/event/Traits.hpp>
+#    include <aV2P/test/event/EventHostManualTrigger.hpp>
+#    include <aV2P/test/queue/Queue.hpp>
+#    include <aV2P/test/queue/QueueCpuOmp2Collective.hpp>
+#    include <aV2P/test/queue/QueueTestFixture.hpp>
+#    include <catch2/catch_template_test_macros.hpp>
+#    include <catch2/catch_test_macros.hpp>
 
 using TestQueues = aV2P::meta::Concatenate<
     aV2P::test::TestQueues
-#ifdef ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLED
+#    ifdef ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLED
     ,
     std::tuple<std::tuple<aV2P::DevCpu, aV2P::QueueCpuOmp2Collective>>
-#endif
+#    endif
     >;
 
 TEMPLATE_LIST_TEST_CASE("eventTestShouldInitiallyBeTrue", "[event]", TestQueues)
@@ -503,3 +508,5 @@ TEMPLATE_LIST_TEST_CASE("eventReEnqueueWithSomeoneWaitsForEventOutOfOrderLifetim
         }
     }
 }
+
+#endif

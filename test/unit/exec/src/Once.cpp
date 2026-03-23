@@ -15,6 +15,9 @@
 
 #include <type_traits>
 
+// alpaka3 does not support dim zero
+#if 0
+
 class KernelOncePerGrid
 {
 public:
@@ -142,3 +145,4 @@ TEMPLATE_LIST_TEST_CASE("oncePerBlock", "[exec]", aV2P::test::TestAccs)
     REQUIRE(*status == true);
     REQUIRE(*value == blocks);
 }
+#endif

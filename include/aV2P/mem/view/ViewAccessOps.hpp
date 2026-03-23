@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "aV2P/acc/AccAlpaka3Cpu.hpp"
+#include "aV2P/acc/AccAlpaka3Traits.hpp"
 #include "aV2P/acc/Tag.hpp"
 #include "aV2P/extent/Traits.hpp"
 #include "aV2P/mem/view/Traits.hpp"
@@ -107,7 +107,7 @@ namespace aV2P::internal
             return getExtents(*static_cast<TView const*>(this))[dim];
         }
 
-        ALPAKA_FN_HOST auto extents() const -> Vec<Dim, Idx>;
+        ALPAKA_FN_HOST auto extents() const -> aV2P::Vec<Dim, Idx>;
 
 #if ALPAKA_COMP_CLANG
 #    pragma clang diagnostic push
@@ -183,7 +183,7 @@ namespace aV2P::internal
 
     private:
         template<typename TIdx>
-        [[nodiscard]] ALPAKA_FN_HOST auto ptr_at([[maybe_unused]] Vec<Dim, TIdx> index) const -> const_pointer
+        [[nodiscard]] ALPAKA_FN_HOST auto ptr_at([[maybe_unused]] aV2P::Vec<Dim, TIdx> index) const -> const_pointer
         {
             static_assert(
                 std::is_convertible_v<TIdx, Idx>,
@@ -200,21 +200,21 @@ namespace aV2P::internal
 
     public:
         template<typename TIdx>
-        ALPAKA_FN_HOST auto operator[](Vec<Dim, TIdx> index) -> reference
+        ALPAKA_FN_HOST auto operator[](aV2P::Vec<Dim, TIdx> index) -> reference
         {
             return *const_cast<pointer>(ptr_at(index));
         }
 
         template<typename TIdx>
-        ALPAKA_FN_HOST auto operator[](Vec<Dim, TIdx> index) const -> const_reference
+        ALPAKA_FN_HOST auto operator[](aV2P::Vec<Dim, TIdx> index) const -> const_reference
         {
             return *ptr_at(index);
         }
 
         template<typename TIdx>
-        ALPAKA_FN_HOST auto at(Vec<Dim, TIdx> index) -> reference
+        ALPAKA_FN_HOST auto at(aV2P::Vec<Dim, TIdx> index) -> reference
         {
-            auto extent = getExtents(*static_cast<TView*>(this));
+            auto extent = aV2P::getExtents(*static_cast<TView*>(this));
             if(!(index < extent).all())
             {
                 std::stringstream msg;
@@ -225,9 +225,9 @@ namespace aV2P::internal
         }
 
         template<typename TIdx>
-        [[nodiscard]] ALPAKA_FN_HOST auto at(Vec<Dim, TIdx> index) const -> const_reference
+        [[nodiscard]] ALPAKA_FN_HOST auto at(aV2P::Vec<Dim, TIdx> index) const -> const_reference
         {
-            auto extent = getExtents(*static_cast<TView const*>(this));
+            auto extent = aV2P::getExtents(*static_cast<TView const*>(this));
             if(!(index < extent).all())
             {
                 std::stringstream msg;

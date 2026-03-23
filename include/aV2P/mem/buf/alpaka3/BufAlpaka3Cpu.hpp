@@ -67,6 +67,7 @@ namespace aV2P
 #endif
         constexpr BufAlpaka3& operator=(BufAlpaka3&&) = default;
 
+#if 0
         ALPAKA_FN_HOST decltype(auto) operator[](TIdx i)
         {
             static_assert(BufType::dim() == 1, "operator[i] is only valid for Buffers and Views of dimension 1");
@@ -78,15 +79,15 @@ namespace aV2P
             static_assert(BufType::dim() == 1, "operator[i] is only valid for Buffers and Views of dimension 1");
             return m_memImpl[i];
         }
-
+#endif
         ALPAKA_FN_HOST decltype(auto) data() const
         {
-            return m_memImpl.data();
+            return alpaka::onHost::data(m_memImpl);
         }
 
         ALPAKA_FN_HOST decltype(auto) data()
         {
-            return m_memImpl.data();
+            return alpaka::onHost::data(m_memImpl);
         }
 
     public:
@@ -94,6 +95,8 @@ namespace aV2P
         DevAlpaka3<TDevSpec> m_dev;
     };
 
+    template<typename TElem, typename TDim, typename TIdx>
+    using BufCpu = BufAlpaka3<typename AccCpuSerial<TDim, TIdx>::DevSpec, TElem, TDim, TIdx>;
 } // namespace aV2P
 
 namespace alpaka
@@ -136,9 +139,7 @@ namespace alpaka
 } // namespace alpaka
 
 #include "aV2P/mem/buf/alpaka3/Copy.hpp"
+#include "aV2P/mem/buf/alpaka3/Fill.hpp"
 #include "aV2P/mem/buf/alpaka3/Set.hpp"
-#if 0
-#    include "aV2P/mem/buf/alpaka3/Fill.hpp"
-#endif
 #include "aV2P/mem/buf/alpaka3/traits/BufAlpaka3CpuTraits.hpp"
 #include "aV2P/mem/buf/alpaka3/traits/ConstBufAlpaka3CpuTraits.hpp"

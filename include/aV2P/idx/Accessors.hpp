@@ -19,7 +19,7 @@ namespace aV2P
     //! Get the indices requested.
     ALPAKA_NO_HOST_ACC_WARNING
     template<typename TOrigin, typename TUnit, typename TIdx, typename TWorkDiv>
-    ALPAKA_FN_HOST_ACC auto getIdx(TIdx const& idx, TWorkDiv const& workDiv) -> Vec<Dim<TWorkDiv>, Idx<TIdx>>
+    ALPAKA_FN_HOST_ACC auto getIdx(TIdx const& idx, TWorkDiv const& workDiv) -> aV2P::Vec<Dim<TWorkDiv>, Idx<TIdx>>
     {
         return trait::GetIdx<TIdx, TOrigin, TUnit>::getIdx(idx, workDiv);
     }
@@ -27,7 +27,7 @@ namespace aV2P
     //! Get the indices requested.
     ALPAKA_NO_HOST_ACC_WARNING
     template<typename TOrigin, typename TUnit, typename TIdxWorkDiv>
-    ALPAKA_FN_HOST_ACC auto getIdx(TIdxWorkDiv const& idxWorkDiv) -> Vec<Dim<TIdxWorkDiv>, Idx<TIdxWorkDiv>>
+    ALPAKA_FN_HOST_ACC auto getIdx(TIdxWorkDiv const& idxWorkDiv) -> aV2P::Vec<Dim<TIdxWorkDiv>, Idx<TIdxWorkDiv>>
     {
         return trait::GetIdx<TIdxWorkDiv, TOrigin, TUnit>::getIdx(idxWorkDiv, idxWorkDiv);
     }
@@ -44,7 +44,7 @@ namespace aV2P
             ALPAKA_NO_HOST_ACC_WARNING
             template<typename TWorkDiv>
             ALPAKA_FN_HOST_ACC static auto getIdx(TIdxGb const& idx, TWorkDiv const& workDiv)
-                -> Vec<Dim<ImplementationBase>, Idx<ImplementationBase>>
+                -> aV2P::Vec<Dim<ImplementationBase>, Idx<ImplementationBase>>
             {
                 return trait::GetIdx<ImplementationBase, origin::Grid, unit::Blocks>::getIdx(idx, workDiv);
             }
@@ -60,7 +60,7 @@ namespace aV2P
             ALPAKA_NO_HOST_ACC_WARNING
             template<typename TWorkDiv>
             ALPAKA_FN_HOST_ACC static auto getIdx(TIdxBt const& idx, TWorkDiv const& workDiv)
-                -> Vec<Dim<ImplementationBase>, Idx<ImplementationBase>>
+                -> aV2P::Vec<Dim<ImplementationBase>, Idx<ImplementationBase>>
             {
                 return trait::GetIdx<ImplementationBase, origin::Block, unit::Threads>::getIdx(idx, workDiv);
             }
@@ -88,7 +88,7 @@ namespace aV2P
     ALPAKA_FN_HOST_ACC auto getIdxThreadFirstElem(
         [[maybe_unused]] TIdxWorkDiv const& idxWorkDiv,
         TGridThreadIdx const& gridThreadIdx,
-        TThreadElemExtent const& threadElemExtent) -> Vec<Dim<TIdxWorkDiv>, Idx<TIdxWorkDiv>>
+        TThreadElemExtent const& threadElemExtent) -> aV2P::Vec<Dim<TIdxWorkDiv>, Idx<TIdxWorkDiv>>
     {
         return gridThreadIdx * threadElemExtent;
     }
@@ -97,7 +97,7 @@ namespace aV2P
     ALPAKA_NO_HOST_ACC_WARNING
     template<typename TIdxWorkDiv, typename TGridThreadIdx>
     ALPAKA_FN_HOST_ACC auto getIdxThreadFirstElem(TIdxWorkDiv const& idxWorkDiv, TGridThreadIdx const& gridThreadIdx)
-        -> Vec<Dim<TIdxWorkDiv>, Idx<TIdxWorkDiv>>
+        -> aV2P::Vec<Dim<TIdxWorkDiv>, Idx<TIdxWorkDiv>>
     {
         auto const threadElemExtent(aV2P::getWorkDiv<aV2P::Thread, aV2P::Elems>(idxWorkDiv));
         return getIdxThreadFirstElem(idxWorkDiv, gridThreadIdx, threadElemExtent);
@@ -107,7 +107,7 @@ namespace aV2P
     ALPAKA_NO_HOST_ACC_WARNING
     template<typename TIdxWorkDiv>
     ALPAKA_FN_HOST_ACC auto getIdxThreadFirstElem(TIdxWorkDiv const& idxWorkDiv)
-        -> Vec<Dim<TIdxWorkDiv>, Idx<TIdxWorkDiv>>
+        -> aV2P::Vec<Dim<TIdxWorkDiv>, Idx<TIdxWorkDiv>>
     {
         auto const gridThreadIdx(aV2P::getIdx<aV2P::Grid, aV2P::Threads>(idxWorkDiv));
         return getIdxThreadFirstElem(idxWorkDiv, gridThreadIdx);

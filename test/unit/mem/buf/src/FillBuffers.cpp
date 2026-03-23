@@ -116,6 +116,8 @@ TEMPLATE_LIST_TEST_CASE("memBufFillNonPrimitiveValuesTest", "[memBuf]", aV2P::te
     CHECK(passed);
 }
 
+// alpaka3 does not support zero dimensional buffers
+#if 0
 TEMPLATE_LIST_TEST_CASE("memBufFillScalarFloatTest", "[memBuf]", aV2P::test::TestAccs)
 {
     using Acc = TestType;
@@ -152,3 +154,4 @@ TEMPLATE_LIST_TEST_CASE("memBufFillScalarFloatTest", "[memBuf]", aV2P::test::Tes
     ElemT const* ptr = std::data(bufHost);
     CHECK(std::fabs(ptr[0] - fillVal) < epsilon);
 }
+#endif

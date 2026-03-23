@@ -152,8 +152,8 @@ TEMPLATE_LIST_TEST_CASE("specialization of functions with tags", "[acc][tag]", T
 
 struct InitKernel
 {
-    template<typename TAcc, typename TData>
-    ALPAKA_FN_ACC auto operator()(TAcc const&, TData* const data) const noexcept -> void
+    template<typename TData>
+    ALPAKA_FN_ACC auto operator()(alpaka::onAcc::concepts::Acc auto const&, TData* const data) const noexcept -> void
     {
         data[0] = 42;
     }
@@ -163,7 +163,7 @@ template<typename TAcc, typename = void>
 struct specialized_Kernel
 {
     template<typename TData>
-    ALPAKA_FN_INLINE ALPAKA_FN_ACC TData operator()(TAcc const& acc, TData input)
+    ALPAKA_FN_INLINE ALPAKA_FN_ACC TData operator()(alpaka::onAcc::concepts::Acc auto const& acc, TData input)
     {
         return aV2P::math::min(acc, 0, input);
     }
@@ -173,7 +173,7 @@ template<typename TAcc>
 struct specialized_Kernel<TAcc, std::enable_if_t<aV2P::accMatchesTags<TAcc, aV2P::TagGpuCudaRt>>>
 {
     template<typename TData>
-    ALPAKA_FN_INLINE ALPAKA_FN_ACC TData operator()(TAcc const& acc, TData input)
+    ALPAKA_FN_INLINE ALPAKA_FN_ACC TData operator()(alpaka::onAcc::concepts::Acc auto const& acc, TData input)
     {
         return aV2P::math::min(acc, 1, input);
     }
@@ -185,16 +185,18 @@ struct specialized_Kernel<
     std::enable_if_t<aV2P::accMatchesTags<TAcc, aV2P::TagCpuOmp2Blocks, aV2P::TagCpuOmp2Threads>>>
 {
     template<typename TData>
-    ALPAKA_FN_INLINE ALPAKA_FN_ACC TData operator()(TAcc const& acc, TData input)
+    ALPAKA_FN_INLINE ALPAKA_FN_ACC TData operator()(alpaka::onAcc::concepts::Acc auto const& acc, TData input)
     {
         return aV2P::math::min(acc, 2, input);
     }
 };
 
+template<typename TAcc>
 struct WrapperKernel
 {
-    template<typename TAcc, typename TData>
-    ALPAKA_FN_ACC auto operator()(TAcc const& acc, TData* const data) const noexcept -> void
+    template<typename TData>
+    ALPAKA_FN_ACC auto operator()(alpaka::onAcc::concepts::Acc auto const& acc, TData* const data) const noexcept
+        -> void
     {
         data[0] = specialized_Kernel<TAcc>{}(acc, data[0]);
     }
@@ -222,7 +224,7 @@ TEMPLATE_LIST_TEST_CASE("kernel specialization with tags", "[acc][tag]", TestAcc
     aV2P::WorkDivMembers<Dim, Idx> workdiv{1, 1, 1};
 
     aV2P::exec<TestAcc>(queue, workdiv, InitKernel{}, memAccPtr);
-    aV2P::exec<TestAcc>(queue, workdiv, WrapperKernel{}, memAccPtr);
+    aV2P::exec<TestAcc>(queue, workdiv, WrapperKernel<TestAcc>{}, memAccPtr);
     aV2P::wait(queue);
 
     aV2P::memcpy(queue, memHost, memAcc);

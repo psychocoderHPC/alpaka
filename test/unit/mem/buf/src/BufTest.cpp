@@ -310,6 +310,8 @@ TEMPLATE_LIST_TEST_CASE("memBufAccessorAdaptorTest", "[memBuf]", aV2P::test::Tes
     testBufferAccessorAdaptor<Acc>(aV2P::test::extentBuf<Dim, Idx>, aV2P::test::offset<Dim, Idx>);
 }
 
+// alpaka3 does not support zero dimensional buffers
+#if 0
 TEMPLATE_LIST_TEST_CASE("memBufMove", "[memBuf]", aV2P::test::TestAccs)
 {
     using Acc = TestType;
@@ -411,7 +413,7 @@ TEMPLATE_LIST_TEST_CASE("memBufAccessors", "[memBuf]", aV2P::test::TestAccs)
         CHECK(foo(buf));
     }
 }
-
+#endif
 TEMPLATE_LIST_TEST_CASE("memBufAllocDeducedIdx", "[memBuf]", aV2P::test::TestAccs)
 {
     using Acc = TestType;

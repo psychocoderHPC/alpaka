@@ -2,14 +2,16 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+// alpaka3 does not support generic lambdas because we do not know the acc type on the host side
+#if 0
 // NVCC needs --expt-extended-lambda
-#if !defined(__NVCC__) || (defined(__NVCC__) && defined(__CUDACC_EXTENDED_LAMBDA__))
+#    if !defined(__NVCC__) || (defined(__NVCC__) && defined(__CUDACC_EXTENDED_LAMBDA__))
 
-#    include <aV2P/core/Config.hpp>
-#    include <aV2P/kernel/Traits.hpp>
-#    include <aV2P/test/KernelExecutionFixture.hpp>
-#    include <aV2P/test/acc/TestAccs.hpp>
-#    include <catch2/catch_test_macros.hpp>
+#        include <aV2P/core/Config.hpp>
+#        include <aV2P/kernel/Traits.hpp>
+#        include <aV2P/test/KernelExecutionFixture.hpp>
+#        include <aV2P/test/acc/TestAccs.hpp>
+#        include <catch2/catch_test_macros.hpp>
 
 struct TestTemplateLambda
 {
@@ -21,19 +23,19 @@ struct TestTemplateLambda
 
         aV2P::test::KernelExecutionFixture<TAcc> fixture(aV2P::Vec<Dim, Idx>::ones());
 
-#    if ALPAKA_COMP_MSVC
-#        pragma warning(push)
-#        pragma warning(disable : 4702) // warning C4702: unreachable code
-#    endif
+#        if ALPAKA_COMP_MSVC
+#            pragma warning(push)
+#            pragma warning(disable : 4702) // warning C4702: unreachable code
+#        endif
         auto kernel = [] ALPAKA_FN_ACC(TAcc const& acc, bool* success) -> void
         {
             ALPAKA_CHECK(
                 *success,
                 static_cast<aV2P::Idx<TAcc>>(1) == (aV2P::getWorkDiv<aV2P::Grid, aV2P::Threads>(acc)).prod());
         };
-#    if ALPAKA_COMP_MSVC
-#        pragma warning(pop)
-#    endif
+#        if ALPAKA_COMP_MSVC
+#            pragma warning(pop)
+#        endif
 
         REQUIRE(fixture(kernel));
     }
@@ -91,4 +93,5 @@ TEST_CASE("lambdaKernelWithCapturingIsWorking", "[kernel]")
     aV2P::meta::forEachType<aV2P::test::TestAccs>(TestTemplateCapture());
 }
 
+#    endif
 #endif

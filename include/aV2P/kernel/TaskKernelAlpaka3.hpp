@@ -18,6 +18,7 @@
 #include "aV2P/kernel/KernelFunctionAttributes.hpp"
 #include "aV2P/kernel/Traits.hpp"
 #include "aV2P/meta/NdLoop.hpp"
+#include "aV2P/platform/PlatformAlpaka3Cpu.hpp"
 #include "aV2P/workdiv/WorkDivMembers.hpp"
 
 #include <functional>

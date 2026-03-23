@@ -13,7 +13,7 @@ namespace aV2P::test
     template<typename TDim, typename TVal>
     inline constexpr auto extentBuf = []
     {
-        Vec<TDim, TVal> v;
+        aV2P::Vec<TDim, TVal> v;
         if constexpr(TDim::value > 0)
             for(TVal i = 0; i < TVal{TDim::value}; i++)
                 v[i] = 11 - i;
@@ -23,7 +23,7 @@ namespace aV2P::test
     template<typename TDim, typename TVal>
     inline constexpr auto extentSubView = []
     {
-        Vec<TDim, TVal> v;
+        aV2P::Vec<TDim, TVal> v;
         if constexpr(TDim::value > 0)
             for(TVal i = 0; i < TVal{TDim::value}; i++)
                 v[i] = 8 - i * 2;
@@ -33,7 +33,7 @@ namespace aV2P::test
     template<typename TDim, typename TVal>
     inline constexpr auto offset = []
     {
-        Vec<TDim, TVal> v;
+        aV2P::Vec<TDim, TVal> v;
         if constexpr(TDim::value > 0)
             for(TVal i = 0; i < TVal{TDim::value}; i++)
                 v[i] = 2 + i;

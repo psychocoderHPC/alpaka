@@ -13,127 +13,53 @@
 
 namespace aV2P
 {
-    class DevCpu;
-
     namespace detail
     {
-        //! The CPU device N-dimensional memory fill task.
-        template<typename TDim, typename TView, typename TExtent>
-        struct TaskFillCpu
+        template<typename TView, typename Elem, typename TExtents>
+        struct TaskFillAlpaka3
         {
-            static_assert(TDim::value > 0);
-
-            using ExtentSize = Idx<TExtent>;
-            using DstSize = Idx<TView>;
-            using Elem = aV2P::Elem<TView>;
-
-            static_assert(std::is_trivially_copyable_v<Elem>, "Only trivially copyable types supported for fill");
-
-            template<typename TViewFwd>
-            TaskFillCpu(TViewFwd&& view, Elem const& value, TExtent const& extent)
-                : m_value(value)
-                , m_extent(getExtents(extent))
-#if(!defined(NDEBUG))
-                , m_dstExtent(getExtents(view))
-#endif
-                , m_dstPitchBytes(getPitchesInBytes(view))
-                , m_dstMemNative(getPtrNative(view))
+            TaskFillAlpaka3(TView&& viewDst, Elem value, TExtents const& extent)
+                : m_dest{std::forward<TView>(viewDst)}
+                , m_extents{extent}
+                , m_value{value}
             {
-                ALPAKA_ASSERT((castVec<DstSize>(m_extent) <= m_dstExtent).all());
-                if constexpr(TDim::value > 0)
-                {
-                    ALPAKA_ASSERT(static_cast<std::size_t>(m_dstPitchBytes[TDim::value - 1]) >= sizeof(Elem));
-                    ALPAKA_ASSERT(static_cast<std::size_t>(m_dstPitchBytes[TDim::value - 1]) % alignof(Elem) == 0);
-                }
-                if constexpr(TDim::value > 1)
-                {
-                    for(int dim = TDim::value - 2; dim >= 0; --dim)
-                    {
-                        ALPAKA_ASSERT(
-                            static_cast<std::size_t>(m_dstPitchBytes[dim])
-                            >= static_cast<std::size_t>(m_dstPitchBytes[dim + 1] * m_dstExtent[dim + 1]));
-                        ALPAKA_ASSERT(static_cast<std::size_t>(m_dstPitchBytes[dim]) % alignof(Elem) == 0);
-                    }
-                }
-                ALPAKA_ASSERT(reinterpret_cast<std::uintptr_t>(m_dstMemNative) % alignof(Elem) == 0);
             }
 
-            ALPAKA_FN_HOST auto operator()() const -> void
-            {
-                if(static_cast<std::size_t>(m_extent.prod()) != 0u)
-                {
-                    meta::ndLoopIncIdx(
-                        m_extent,
-                        [&](Vec<TDim, ExtentSize> const& idx)
-                        {
-                            // All elements of m_dstPitchBytes are multiples of the alignment of Elem.
-                            std::uintptr_t offsetBytes = static_cast<std::uintptr_t>((idx * m_dstPitchBytes).sum());
-                            Elem* elem = reinterpret_cast<Elem*>(__builtin_assume_aligned(
-                                reinterpret_cast<std::uint8_t*>(m_dstMemNative) + offsetBytes,
-                                alignof(Elem)));
-                            *elem = m_value;
-                        });
-                }
-            }
-
-        private:
-            Elem const m_value;
-            Vec<TDim, ExtentSize> const m_extent;
-#if(!defined(NDEBUG)) || (ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL)
-            Vec<TDim, DstSize> const m_dstExtent;
-#endif
-            Vec<TDim, DstSize> const m_dstPitchBytes;
-            Elem* const m_dstMemNative;
-        };
-
-        //! The CPU device 0-dimensional memory fill task specialisation.
-        template<typename TView, typename TExtent>
-        struct TaskFillCpu<DimInt<0u>, TView, TExtent>
-        {
-            using Elem = aV2P::Elem<TView>;
-
-            template<typename TViewFwd>
-            TaskFillCpu(TViewFwd&& view, Elem const& value, [[maybe_unused]] TExtent const& extent)
-                : m_value(value)
-                , m_dstMemNative(getPtrNative(view))
-            {
-                ALPAKA_ASSERT(getExtents(extent).prod() == 1u);
-                ALPAKA_ASSERT(getExtents(view).prod() == 1u);
-                ALPAKA_ASSERT(reinterpret_cast<std::uintptr_t>(m_dstMemNative) % alignof(Elem) == 0);
-            }
-
-            ALPAKA_FN_HOST auto operator()() const noexcept -> void
-            {
-                *m_dstMemNative = m_value;
-            }
-
-        private:
-            Elem const m_value;
-            Elem* const m_dstMemNative;
+            TView m_dest;
+            TExtents m_extents;
+            Elem m_value;
         };
     } // namespace detail
 
     namespace trait
     {
-        //! The memory fill task trait specialization for CPU devices.
-        template<typename TDim>
-        struct CreateTaskFill<TDim, DevCpu>
+        template<alpaka::onHost::concepts::DeviceSpec TDevSpec, typename TDim>
+        struct CreateTaskFill<TDim, DevAlpaka3<TDevSpec>>
         {
-            template<typename TExtent, typename TViewFwd>
+            template<typename TExtents, typename TView>
             ALPAKA_FN_HOST static auto createTaskFill(
-                TViewFwd&& view,
-                aV2P::Elem<std::remove_reference_t<TViewFwd>> const& value,
-                TExtent const& extent)
+                TView&& viewDst,
+                aV2P::Elem<std::remove_reference_t<TView>> const& value,
+                TExtents const& extent)
             {
-                using TView = std::remove_reference_t<TViewFwd>;
-                using Elem = aV2P::Elem<TView>;
-                static_assert(
-                    std::is_trivially_copyable_v<Elem>,
-                    "Only trivially copyable types are supported for fill");
+                if constexpr(std::is_integral_v<TExtents>)
+                    return aV2P::detail::TaskFillAlpaka3{viewDst.getAlpaka3(), value, alpaka::Vec{extent}};
+                else
+                    return aV2P::detail::TaskFillAlpaka3{viewDst.getAlpaka3(), value, extent.getAlpaka3()};
+            }
+        };
 
-                return aV2P::detail::TaskFillCpu<TDim, TView, TExtent>{std::forward<TViewFwd>(view), value, extent};
+        template<typename TDev, typename TView, typename TElem, typename TExtents, typename TQueueKind>
+        struct Enqueue<QueueAlpaka3<TDev, TQueueKind>, aV2P::detail::TaskFillAlpaka3<TView, TElem, TExtents>>
+        {
+            ALPAKA_FN_HOST static auto enqueue(
+                QueueAlpaka3<TDev, TQueueKind>& queue,
+                aV2P::detail::TaskFillAlpaka3<TView, TElem, TExtents> task) -> void
+            {
+                ALPAKA_DEBUG_FULL_LOG_SCOPE;
+
+                alpaka::onHost::fill(queue.getAlpaka3(), task.m_dest, task.m_value, task.m_extents);
             }
         };
     } // namespace trait
-
 } // namespace aV2P

@@ -20,8 +20,8 @@ namespace aV2P::test
     ALPAKA_FN_HOST auto testViewImmutable(
         TView const& view,
         TDev const& dev,
-        Vec<TDim, TIdx> const& extent,
-        Vec<TDim, TIdx> const& offset) -> void
+        aV2P::Vec<TDim, TIdx> const& extent,
+        aV2P::Vec<TDim, TIdx> const& offset) -> void
     {
         // trait::DevType
         {
@@ -51,7 +51,7 @@ namespace aV2P::test
 
         // trait::GetExtents
         {
-            REQUIRE(extent == getExtents(view));
+            REQUIRE(extent == aV2P::getExtents(view));
         }
 
         // trait::GetPitchBytes
@@ -135,7 +135,7 @@ namespace aV2P::test
         using Dim = Dim<TView>;
         using Idx = Idx<TView>;
 
-        KernelExecutionFixture<TAcc> fixture(Vec<Dim, Idx>::ones());
+        KernelExecutionFixture<TAcc> fixture(aV2P::Vec<Dim, Idx>::ones());
 
         VerifyBytesSetKernel verifyBytesSet;
 
@@ -185,7 +185,7 @@ namespace aV2P::test
         using IdxB = Idx<TViewB>;
         static_assert(std::is_same_v<IdxA, IdxB>, "viewA and viewB are required to have identical Idx");
 
-        test::KernelExecutionFixture<TAcc> fixture(Vec<DimA, IdxA>::ones());
+        test::KernelExecutionFixture<TAcc> fixture(aV2P::Vec<DimA, IdxA>::ones());
 
         VerifyViewsEqualKernel verifyViewsEqualKernel;
 
@@ -201,7 +201,7 @@ namespace aV2P::test
         auto const platformHost = aV2P::PlatformCpu{};
         auto const devHost = aV2P::getDevByIdx(platformHost, 0);
 
-        auto const extent = getExtents(view);
+        auto const extent = aV2P::getExtents(view);
 
         // Init buf with increasing values
         std::vector<Elem> v(static_cast<std::size_t>(extent.prod()), static_cast<Elem>(0));
@@ -240,8 +240,8 @@ namespace aV2P::test
             using Elem = Elem<TView>;
             using Idx = Idx<TView>;
 
-            auto const devAcc = getDev(view);
-            auto const extent = getExtents(view);
+            auto const devAcc = aV2P::getDev(view);
+            auto const extent = aV2P::getExtents(view);
 
             // copy into given view
             {

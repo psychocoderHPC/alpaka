@@ -2,11 +2,13 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-#include <aV2P/block/sync/Traits.hpp>
-#include <aV2P/test/KernelExecutionFixture.hpp>
-#include <aV2P/test/acc/TestAccs.hpp>
-#include <catch2/catch_template_test_macros.hpp>
-#include <catch2/catch_test_macros.hpp>
+// alpaka3 does not support predicate sync operations
+#if 0
+#    include <aV2P/block/sync/Traits.hpp>
+#    include <aV2P/test/KernelExecutionFixture.hpp>
+#    include <aV2P/test/acc/TestAccs.hpp>
+#    include <catch2/catch_template_test_macros.hpp>
+#    include <catch2/catch_test_macros.hpp>
 
 class BlockSyncPredicateTestKernel
 {
@@ -98,3 +100,5 @@ TEMPLATE_LIST_TEST_CASE("synchronizePredicate", "[blockSync]", aV2P::test::TestA
         REQUIRE(fixture(kernel));
     }
 }
+
+#endif

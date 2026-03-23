@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <alpaka/alpaka.hpp>
 #include <alpaka/core/config.hpp>
 
 #ifdef __INTEL_COMPILER
