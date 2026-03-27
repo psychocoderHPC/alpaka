@@ -346,3 +346,5 @@ namespace aV2P::warp
         return trait::ShflXor<ImplementationBase>::shfl_xor(warp, value, mask, width ? width : getSize(warp));
     }
 } // namespace aV2P::warp
+
+#include "aV2P/warp/WarpAlpaka3.hpp"

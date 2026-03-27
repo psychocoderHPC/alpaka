@@ -20,6 +20,8 @@ namespace aV2P
     template<typename TView>
     struct ViewConst : internal::ViewAccessorType<aV2P::Dev<TView>, ViewConst<TView>>
     {
+        using Dev = aV2P::Dev<TView>;
+
         static_assert(!std::is_const_v<TView>, "ViewConst must be instantiated with a non-const type");
         static_assert(
             !std::is_reference_v<TView>,
@@ -113,3 +115,42 @@ namespace aV2P
         };
     } // namespace trait
 } // namespace aV2P
+
+namespace alpaka
+{
+    namespace internal
+    {
+        template<typename TView>
+        struct GetApi::Op<aV2P::ViewConst<TView>>
+        {
+            inline constexpr auto operator()(auto&& buff) const
+            {
+                alpaka::unused(buff);
+                return alpaka::getApi(typename ALPAKA_TYPEOF(buff)::Dev::DevSpec{});
+            }
+        };
+    } // namespace internal
+
+    namespace onHost::internal
+    {
+        template<typename TView>
+        struct GetExtents::Op<aV2P::ViewConst<TView>>
+        {
+            inline constexpr auto operator()(auto&& buff) const
+            {
+                alpaka::unused(buff);
+                return aV2P::getExtents(buff).getAlpaka3();
+            }
+        };
+
+        template<typename TView>
+        struct GetPitches::Op<aV2P::ViewConst<TView>>
+        {
+            inline constexpr auto operator()(auto&& buff) const
+            {
+                alpaka::unused(buff);
+                return aV2P::getPitchesInBytes(buff).getAlpaka3();
+            }
+        };
+    } // namespace onHost::internal
+} // namespace alpaka

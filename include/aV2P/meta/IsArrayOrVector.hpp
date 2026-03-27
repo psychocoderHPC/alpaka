@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "aV2P/aV2P.hpp"
+#include "aV2P/vec/Vec.hpp"
 
 #include <functional>
 #include <numeric>

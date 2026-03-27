@@ -20,8 +20,8 @@ namespace aV2P
         template<typename TView, typename TExtents>
         struct TaskSetAlpaka3
         {
-            TaskSetAlpaka3(TView&& viewDst, uint8_t byte, TExtents const& extent)
-                : m_dest{std::forward<TView>(viewDst)}
+            TaskSetAlpaka3(TView viewDst, uint8_t byte, TExtents const& extent)
+                : m_dest{viewDst}
                 , m_extents{extent}
                 , m_value{byte}
             {
@@ -44,10 +44,16 @@ namespace aV2P
                 std::uint8_t const& byte,
                 TExtents const& extent)
             {
+                auto dst = alpaka::makeView(
+                    alpaka::getApi(viewDst),
+                    alpaka::onHost::data(viewDst),
+                    alpaka::onHost::getExtents(viewDst),
+                    alpaka::onHost::getPitches(viewDst));
+
                 if constexpr(std::is_integral_v<TExtents>)
-                    return aV2P::detail::TaskSetAlpaka3{viewDst.getAlpaka3(), byte, alpaka::Vec{extent}};
+                    return aV2P::detail::TaskSetAlpaka3{dst, byte, alpaka::Vec{extent}};
                 else
-                    return aV2P::detail::TaskSetAlpaka3{viewDst.getAlpaka3(), byte, extent.getAlpaka3()};
+                    return aV2P::detail::TaskSetAlpaka3{dst, byte, extent.getAlpaka3()};
             }
         };
 

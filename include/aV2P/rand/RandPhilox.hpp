@@ -151,7 +151,7 @@ namespace aV2P::rand
         };
 
         template<typename TRes>
-        struct ResultType<TRes, std::enable_if_t<meta::IsArrayOrVector<TRes>::value>>
+        struct ResultType<TRes, std::enable_if_t<aV2P::meta::IsArrayOrVector<TRes>::value>>
         {
             using type = typename TRes::value_type;
         };
@@ -171,7 +171,7 @@ namespace aV2P::rand
         template<typename TEngine>
         ALPAKA_FN_HOST_ACC auto operator()(TEngine& engine) -> TResult
         {
-            if constexpr(meta::IsArrayOrVector<TResult>::value)
+            if constexpr(aV2P::meta::IsArrayOrVector<TResult>::value)
             {
                 auto result = engine();
                 T scale = static_cast<T>(1) / static_cast<T>(engine.max()) * _range;

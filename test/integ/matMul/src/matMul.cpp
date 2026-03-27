@@ -310,12 +310,12 @@ TEMPLATE_LIST_TEST_CASE("matMul", "[matMul]", TestAccs)
 
     bool resultCorrect = true;
 
-#if 0
+#if 1
     auto const pHostData = std::data(bufCHost);
-    for (Idx i(0u); i < m * n; ++i)
+    for(Idx i(0u); i < m * n; ++i)
     {
         auto const& val(pHostData[i]);
-        if (val != correctResult)
+        if(val != correctResult)
         {
             std::cerr << "C[" << i << "] == " << val << " != " << correctResult << std::endl;
             resultCorrect = false;

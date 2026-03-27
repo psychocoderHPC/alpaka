@@ -26,9 +26,9 @@ namespace aV2P
     {
         static_assert(!std::is_const_v<TIdx>, "The idx type of the view can not be const!");
 
+    public:
         using Dev = aV2P::Dev<TDev>;
 
-    public:
         //! Constructor.
         //! \param view The view this view is a sub-view of.
         //! \param extentElements The extent in elements.

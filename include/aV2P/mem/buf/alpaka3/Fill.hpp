@@ -18,8 +18,8 @@ namespace aV2P
         template<typename TView, typename Elem, typename TExtents>
         struct TaskFillAlpaka3
         {
-            TaskFillAlpaka3(TView&& viewDst, Elem value, TExtents const& extent)
-                : m_dest{std::forward<TView>(viewDst)}
+            TaskFillAlpaka3(TView viewDst, Elem value, TExtents const& extent)
+                : m_dest{viewDst}
                 , m_extents{extent}
                 , m_value{value}
             {
@@ -42,10 +42,15 @@ namespace aV2P
                 aV2P::Elem<std::remove_reference_t<TView>> const& value,
                 TExtents const& extent)
             {
+                auto dst = alpaka::makeView(
+                    alpaka::getApi(viewDst),
+                    alpaka::onHost::data(viewDst),
+                    alpaka::onHost::getExtents(viewDst),
+                    alpaka::onHost::getPitches(viewDst));
                 if constexpr(std::is_integral_v<TExtents>)
-                    return aV2P::detail::TaskFillAlpaka3{viewDst.getAlpaka3(), value, alpaka::Vec{extent}};
+                    return aV2P::detail::TaskFillAlpaka3{dst, value, alpaka::Vec{extent}};
                 else
-                    return aV2P::detail::TaskFillAlpaka3{viewDst.getAlpaka3(), value, extent.getAlpaka3()};
+                    return aV2P::detail::TaskFillAlpaka3{dst, value, extent.getAlpaka3()};
             }
         };
 

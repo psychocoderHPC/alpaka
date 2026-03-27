@@ -408,6 +408,50 @@ namespace aV2P
         enqueue(queue, createTaskMemcpy(std::forward<TViewDstFwd>(viewDst), viewSrc, extent));
     }
 
+    template<typename TExtent, typename TViewSrc, typename TDstType, typename TDstStorage, typename TQueue>
+    ALPAKA_FN_HOST auto memcpy(
+        TQueue& queue,
+        alpaka::onAcc::internal::GlobalDeviceMemoryWrapper<TDstStorage, TDstType> dest,
+        TViewSrc const& viewSrc,
+        TExtent const& extent) -> void
+    {
+        static_assert(
+            sizeof(TExtent) && false,
+            "partial memcpy for device global memory is currently not supported by alpaka3");
+        alpaka::onHost::memcpy(queue.getAlpaka3(), dest, viewSrc);
+    }
+
+    template<typename TExtent, typename TViewDst, typename TSrcType, typename TSrcStorage, typename TQueue>
+    ALPAKA_FN_HOST auto memcpy(
+        TQueue& queue,
+        TViewDst const&& viewDst,
+        alpaka::onAcc::internal::GlobalDeviceMemoryWrapper<TSrcStorage, TSrcType> src,
+        TExtent const& extent) -> void
+    {
+        static_assert(
+            sizeof(TExtent) && false,
+            "partial memcpy for device global memory is currently not supported by alpaka3");
+        alpaka::onHost::memcpy(queue.getAlpaka3(), std::forward<TViewDst>(viewDst), src);
+    }
+
+    template<typename TViewSrc, typename TDstType, typename TDstStorage, typename TQueue>
+    ALPAKA_FN_HOST auto memcpy(
+        TQueue& queue,
+        alpaka::onAcc::internal::GlobalDeviceMemoryWrapper<TDstStorage, TDstType> dest,
+        TViewSrc const& viewSrc) -> void
+    {
+        alpaka::onHost::memcpy(queue.getAlpaka3(), dest, viewSrc);
+    }
+
+    template<typename TViewDst, typename TSrcType, typename TSrcStorage, typename TQueue>
+    ALPAKA_FN_HOST auto memcpy(
+        TQueue& queue,
+        TViewDst&& viewDst,
+        alpaka::onAcc::internal::GlobalDeviceMemoryWrapper<TSrcStorage, TSrcType> src) -> void
+    {
+        alpaka::onHost::memcpy(queue.getAlpaka3(), viewDst, src);
+    }
+
     //! Copies the entire memory of viewSrc to viewDst. Possibly copies between different memory
     //! spaces.
     //!

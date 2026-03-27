@@ -11,6 +11,8 @@
 
 namespace aV2P
 {
+    constexpr std::uint32_t BlockSharedDynMemberAllocKiB = ALPAKA_BLOCK_SHARED_DYN_MEMBER_ALLOC_KIB;
+
     template<typename TAcc, typename TDim, typename TIdx, typename TKernelFnObj, typename... TArgs>
     class TaskKernelAlpaka3;
 

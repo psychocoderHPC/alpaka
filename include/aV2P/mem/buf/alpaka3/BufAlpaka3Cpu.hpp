@@ -52,19 +52,8 @@ namespace aV2P
         }
 
         BufAlpaka3(BufAlpaka3 const&) = default;
-#if 0
-        BufAlpaka3& operator=(BufAlpaka3& otherSharedBuffer)
-        {
-            this->m_memImpl = otherSharedBuffer.m_memImpl;
-            this->m_dev = otherSharedBuffer.m_dev;
-            return *this;
-        }
-#else
-        constexpr BufAlpaka3& operator=(BufAlpaka3 const& other)
-            requires(std::is_const_v<typename ALPAKA_TYPEOF(other)::value_type>)
-            = default;
-        constexpr BufAlpaka3& operator=(BufAlpaka3&) = default;
-#endif
+        constexpr BufAlpaka3& operator=(BufAlpaka3 const& other) = default;
+
         constexpr BufAlpaka3& operator=(BufAlpaka3&&) = default;
 
 #if 0

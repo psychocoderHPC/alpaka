@@ -2,15 +2,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-#include <aV2P/acc/AccCpuOmp2Blocks.hpp>
-#include <aV2P/acc/AccCpuOmp2Threads.hpp>
-#include <aV2P/acc/AccCpuSerial.hpp>
-#include <aV2P/acc/AccCpuTbbBlocks.hpp>
+#include <aV2P/acc/AccAlpaka3Cpu.hpp>
 #include <aV2P/acc/AccDevProps.hpp>
-#include <aV2P/acc/AccGpuUniformCudaHipRt.hpp>
 #include <aV2P/idx/Traits.hpp>
 #include <aV2P/kernel/KernelFunctionAttributes.hpp>
-#include <aV2P/math/MathStdLib.hpp>
 #include <aV2P/test/acc/TestAccs.hpp>
 #include <aV2P/workdiv/WorkDivHelpers.hpp>
 #include <catch2/catch_template_test_macros.hpp>

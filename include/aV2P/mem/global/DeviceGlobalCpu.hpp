@@ -35,7 +35,7 @@ namespace aV2P
         TViewSrc const& viewSrc) -> void
     {
         using Type = std::remove_const_t<std::remove_all_extents_t<TTypeDst>>;
-        auto extent = getExtents(viewSrc);
+        auto extent = aV2P::getExtents(viewSrc);
         auto view = aV2P::ViewPlainPtr<DevCpu, Type, aV2P::Dim<decltype(extent)>, aV2P::Idx<decltype(extent)>>(
             reinterpret_cast<Type*>(const_cast<std::remove_const_t<TTypeDst>*>(&viewDst)),
             aV2P::getDev(queue),
@@ -55,7 +55,7 @@ namespace aV2P
         aV2P::detail::DevGlobalImplGeneric<TTag, TTypeSrc>& viewSrc) -> void
     {
         using Type = std::remove_all_extents_t<TTypeSrc>;
-        auto extent = getExtents(viewDst);
+        auto extent = aV2P::getExtents(viewDst);
         auto view = aV2P::ViewPlainPtr<DevCpu, Type, aV2P::Dim<decltype(extent)>, aV2P::Idx<decltype(extent)>>(
             reinterpret_cast<Type*>(&viewSrc),
             aV2P::getDev(queue),

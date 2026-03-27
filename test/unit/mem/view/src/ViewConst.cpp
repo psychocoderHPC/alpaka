@@ -31,7 +31,7 @@ namespace aV2P::test
         aV2P::test::testViewImmutable<float const>(view, dev, extents, offsets);
 
         // test copying from view
-        auto dstBuf = allocBuf<float, TIdx>(dev, getExtents(view));
+        auto dstBuf = allocBuf<float, TIdx>(dev, aV2P::getExtents(view));
         memcpy(queue, dstBuf, view);
         wait(queue);
         verifyViewsEqual<TAcc>(dstBuf, view);

@@ -2,12 +2,14 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-#include <aV2P/kernel/Traits.hpp>
-#include <aV2P/meta/ForEachType.hpp>
-#include <aV2P/test/KernelExecutionFixture.hpp>
-#include <aV2P/test/acc/TestAccs.hpp>
-#include <catch2/catch_template_test_macros.hpp>
-#include <catch2/catch_test_macros.hpp>
+// the macro ALPAKA_KERNEL_NAME is not supporte and was only working with cuda
+#if 0
+#    include <aV2P/kernel/Traits.hpp>
+#    include <aV2P/meta/ForEachType.hpp>
+#    include <aV2P/test/KernelExecutionFixture.hpp>
+#    include <aV2P/test/acc/TestAccs.hpp>
+#    include <catch2/catch_template_test_macros.hpp>
+#    include <catch2/catch_test_macros.hpp>
 
 class KernelWithName
 {
@@ -60,3 +62,5 @@ TEMPLATE_LIST_TEST_CASE("KernelWithScopedName", "[kernel]", aV2P::test::TestAccs
 
     REQUIRE(fixture(kernel, 42));
 }
+
+#endif
