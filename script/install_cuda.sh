@@ -214,6 +214,12 @@ else
     fi
 fi
 
+# If the CI set the architecture of the GPU use it
+# CI_GPU_ARCH is provided by the HZDR Gitlab CI
+if [ -n "${CI_GPU_ARCH:-}" ]; then
+    export CMAKE_CUDA_ARCHITECTURES=${CI_GPU_ARCH}
+fi
+
 if [ "${ALPAKA_CI_CUDA_COMPILER}" == "nvcc" ]
 then
     export CMAKE_CUDA_COMPILER=$(which nvcc)
