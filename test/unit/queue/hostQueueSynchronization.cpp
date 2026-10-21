@@ -1,4 +1,4 @@
-/* Copyright 2026 alpaka contributors
+/* Copyright 2026 Tim Hanel
  * SPDX-License-Identifier: MPL-2.0
  */
 
@@ -49,10 +49,12 @@ TEST_CASE("host blocking event wait allows concurrent re-recording", "[queue]")
     waitStarted.get_future().wait();
     // waitStarted only precedes API entry. Wait until waitFor published its pending dependency.
     auto const waitRegistrationDeadline = std::chrono::steady_clock::now() + waitRegistrationTimeout;
+    // wait until the consumer wait is registered
     while(consumer.isEmpty() && std::chrono::steady_clock::now() < waitRegistrationDeadline)
         std::this_thread::sleep_for(std::chrono::milliseconds{1});
     REQUIRE_FALSE(consumer.isEmpty());
     auto const waitStatus = waiter.wait_for(blockingInterval);
+    CHECK(waitStatus == std::future_status::timeout);
 
     std::promise<void> recordStarted;
     auto recorder = std::async(
@@ -65,14 +67,14 @@ TEST_CASE("host blocking event wait allows concurrent re-recording", "[queue]")
     recordStarted.get_future().wait();
     recorder.wait_for(blockingInterval);
 
+    // event is blocked until here because producer host function is waiting on producerGate/releaseProducer
     releaseProducer.set_value();
     // Releasing the gate must allow E1 -> consumer wait -> E2 to finish.
     // Regression: recorder holds the event lock while waiting for the consumer
     // lock; the consumer holds its lock while E1 needs the event lock to finish.
     waiter.get();
     recorder.get();
-    onHost::wait(producer);
-    CHECK(waitStatus == std::future_status::timeout);
+    onHost::wait(event);
     CHECK(event.isComplete());
 }
 
@@ -106,17 +108,19 @@ TEST_CASE("host blocking event wait keeps the queue nonempty", "[queue]")
         std::this_thread::sleep_for(std::chrono::milliseconds{1});
     REQUIRE_FALSE(consumer.isEmpty());
     auto const eventWaitStatus = eventWaiter.wait_for(blockingInterval);
+    CHECK(eventWaitStatus == std::future_status::timeout);
+
     bool const emptyWhileWaiting = consumer.isEmpty();
+    CHECK_FALSE(emptyWhileWaiting);
 
     // Queue synchronization must stay blocked for the same dependency.
     auto queueWaiter = std::async(std::launch::async, [&] { onHost::wait(consumer); });
     auto const queueWaitStatus = queueWaiter.wait_for(blockingInterval);
+    CHECK(queueWaitStatus == std::future_status::timeout);
+
     releaseProducer.set_value();
     eventWaiter.get();
     queueWaiter.get();
-    onHost::wait(producer);
-
-    CHECK(eventWaitStatus == std::future_status::timeout);
-    CHECK_FALSE(emptyWhileWaiting);
-    CHECK(queueWaitStatus == std::future_status::timeout);
+    onHost::wait(event);
+    CHECK(event.isComplete());
 }
